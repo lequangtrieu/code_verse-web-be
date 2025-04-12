@@ -1,35 +1,32 @@
 package codeverse.com.web_be.entity;
 
-import codeverse.com.web_be.enums.MaterialType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "course_material")
+@Table(name = "message")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CourseMaterial {
-
+public class Message {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MaterialType type;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id", nullable = false)
+    private User receiver;
 
     @Column(columnDefinition = "TEXT")
-    private String content;
-
-    private String url;
+    private String messageText;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

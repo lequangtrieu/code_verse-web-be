@@ -1,18 +1,17 @@
 package codeverse.com.web_be.entity;
 
-import codeverse.com.web_be.enums.MaterialType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "course_material")
+@Table(name = "assignment")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CourseMaterial {
+public class Assignment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,14 +21,10 @@ public class CourseMaterial {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MaterialType type;
+    private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String content;
-
-    private String url;
+    private String description;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

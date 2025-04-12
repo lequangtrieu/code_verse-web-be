@@ -25,7 +25,7 @@ public class SecurityConfig {
         this.customJwtDecoder = customJwtDecoder;
     }
     private final String[] PUBLIC_ENDPOINTS = {
-            "/users",
+            "/api/users",
             "/auth/login",
             "/auth/introspect",
             "/auth/logout",

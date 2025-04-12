@@ -24,13 +24,13 @@ public abstract class GenericServiceImpl<T, ID> implements IGenericService<T, ID
     }
 
     @Override
-    public T save(T entity) {
-        return repository.save(entity);
+    public T save(T t) {
+        return repository.save(t);
     }
 
     @Override
-    public T update(T entity) {
-        return repository.save(entity);
+    public T update(T t) {
+        return repository.save(t);
     }
 
     @Override

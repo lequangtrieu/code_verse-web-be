@@ -36,7 +36,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class AuthenticationServiceImpl {
+public class AuthenticationService {
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
 
@@ -103,7 +103,7 @@ public class AuthenticationServiceImpl {
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
-                .claim("role", user.getRole())
+                .claim("scope", user.getRole())
                 .claim("userId", user.getId())
                 .build();
 

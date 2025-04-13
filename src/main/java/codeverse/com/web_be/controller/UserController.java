@@ -12,14 +12,9 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -34,15 +29,9 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        log.info("Username: {}", authentication.getName());
-        log.info("Authorities: {}", authentication.getAuthorities());
-        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
-
         List<UserResponse> users = userService.findAll().stream()
                 .map(userMapper::userToUserResponse)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(users);
     }
 
@@ -61,15 +50,14 @@ public class UserController {
                 .build();
     }
 
-    // Tạo mới user sử dụng DTO Request (UserCreationRequest)
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserCreationRequest request) {
         User userToCreate = userMapper.userRequestToUser(request);
         User createdUser = userService.save(userToCreate);
-        return new ResponseEntity<>(userMapper.userToUserResponse(createdUser), HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userMapper.userToUserResponse(createdUser));
     }
 
-    // Cập nhật user
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserCreationRequest request) {
         return userService.findById(id)
@@ -81,12 +69,8 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Delete user theo id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        if (userService.findById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

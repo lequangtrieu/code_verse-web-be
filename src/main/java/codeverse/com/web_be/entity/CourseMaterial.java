@@ -1,10 +1,8 @@
 package codeverse.com.web_be.entity;
 
+import codeverse.com.web_be.enums.MaterialType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -26,23 +24,16 @@ public class CourseMaterial {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Type type;
+    private MaterialType type;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(length = 255)
     private String url;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public enum Type {
-        TEXT,
-        VIDEO,
-        CODE
-    }
 }

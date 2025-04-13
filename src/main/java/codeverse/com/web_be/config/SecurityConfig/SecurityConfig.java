@@ -29,6 +29,7 @@ public class SecurityConfig {
             "/auth/login",
             "/auth/introspect",
             "/auth/logout",
+            "/auth/refresh",
             "/api/test"
     };
 
@@ -37,14 +38,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
                         jwtConfigurer.decoder(customJwtDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // config exception
         );
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 

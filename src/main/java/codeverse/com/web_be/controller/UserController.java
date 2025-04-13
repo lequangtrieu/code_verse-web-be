@@ -1,6 +1,7 @@
 package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
+import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.mapper.UserMapper;
@@ -11,10 +12,13 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,7 +32,6 @@ public class UserController {
     IUserService userService;
     UserMapper userMapper;
 
-    // Lấy tất cả users - trả về Response DTO
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -43,13 +46,19 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    // Lấy user theo id
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return userService.findById(id)
                 .map(userMapper::userToUserResponse)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/myInfo")
+    ApiResponse<UserResponse> getMyInfo(){
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
     }
 
     // Tạo mới user sử dụng DTO Request (UserCreationRequest)

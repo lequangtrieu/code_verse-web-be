@@ -36,4 +36,24 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "verification_token")
+    private String verificationToken;
+
+    @Column(name = "is_verified")
+    private Boolean isVerified = false;
+
+    @Column(name = "is_deleted", columnDefinition = "boolean default false")
+    private boolean isDeleted = false;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

@@ -1,35 +1,33 @@
 package codeverse.com.web_be.entity;
 
-import codeverse.com.web_be.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user")
+@Table(name = "progress_tracking")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
-
+public class ProgressTracking {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String username;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(unique = true)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
-    @Column(nullable = false)
-    private String password;
+    private Float completionPercentage;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole role;
+    private LocalDateTime lastAccessed;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

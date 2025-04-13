@@ -1,13 +1,12 @@
 package codeverse.com.web_be.service.AuthenService;
 
-import codeverse.com.web_be.dto.request.AuthenRequest.AuthenticationRequest;
-import codeverse.com.web_be.dto.request.AuthenRequest.IntrospectRequest;
-import codeverse.com.web_be.dto.request.AuthenRequest.LogoutRequest;
-import codeverse.com.web_be.dto.request.AuthenRequest.RefreshRequest;
+import codeverse.com.web_be.config.SystemConfig.EmailService;
+import codeverse.com.web_be.dto.request.AuthenRequest.*;
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse;
 import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.entity.InvalidatedToken;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.InvalidatedTokenRepository;
@@ -17,12 +16,17 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,6 +44,8 @@ import java.util.UUID;
 public class AuthenticationService {
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    @Autowired
+    private JavaMailSender emailSender;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -64,6 +70,57 @@ public class AuthenticationService {
         }
 
         var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
+
+    public AuthenticationResponse authenticateSignup(SignUpRequest request) throws MessagingException {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already in use");
+        }
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        String verificationToken = UUID.randomUUID().toString();
+        User newUser = User.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail())
+                .role(UserRole.LEARNER)
+                .verificationToken(verificationToken)
+                .isVerified(false)
+                .build();
+
+        userRepository.save(newUser);
+        String subject = "Verify Your Email - Welcome to Our Service";
+        String verificationLink = "http://localhost:3000/api/verify-email/" + verificationToken;
+                String htmlContent = """
+            <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
+              <h2 style="color: #333; text-align: center;">Welcome to Our Service!</h2>
+              <p style="font-size: 16px; color: #555;">Thank you for signing up. Please verify your email address by clicking the button below:</p>
+              <div style="text-align: center; margin: 20px 0;">
+                <a href="%s"
+                   style="background-color: #007bff; color: #fff; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
+                   Verify Your Email
+                </a>
+              </div>
+              <p style="font-size: 14px; color: #777;">If you didn’t create an account, you can safely ignore this email.</p>
+              <hr style="border: none; border-top: 1px solid #ddd;">
+              <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 Our Service. All rights reserved.</p>
+            </div>
+        """.formatted(verificationLink);
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setTo(request.getEmail());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+
+        emailSender.send(message);
+
+        String token = generateToken(newUser);
 
         return AuthenticationResponse.builder()
                 .token(token)

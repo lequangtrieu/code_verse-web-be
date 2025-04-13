@@ -4,11 +4,13 @@ import codeverse.com.web_be.dto.request.AuthenRequest.AuthenticationRequest;
 import codeverse.com.web_be.dto.request.AuthenRequest.IntrospectRequest;
 import codeverse.com.web_be.dto.request.AuthenRequest.LogoutRequest;
 import codeverse.com.web_be.dto.request.AuthenRequest.RefreshRequest;
+import codeverse.com.web_be.dto.request.AuthenRequest.SignUpRequest;
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse;
 import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
+import jakarta.mail.MessagingException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,13 +22,23 @@ import java.text.ParseException;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@CrossOrigin("*")
+
 public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/login")
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request){
+        System.out.println(request);
         var result = authenticationService.authenticate(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(result)
+                .build();
+    }
+
+    @PostMapping("/signup")
+    ApiResponse<AuthenticationResponse> authenticateSignup(@RequestBody SignUpRequest request) throws MessagingException {
+        System.out.println(request);
+        var result = authenticationService.authenticateSignup(request);
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(result)
                 .build();

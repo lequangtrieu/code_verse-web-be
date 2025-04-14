@@ -4,6 +4,7 @@ import codeverse.com.web_be.config.SystemConfig.EmailService;
 import codeverse.com.web_be.dto.request.AuthenRequest.*;
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse;
 import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
+import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.InvalidatedToken;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.enums.UserRole;
@@ -59,16 +60,45 @@ public class AuthenticationService {
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        var user = userRepository.findByUsername(request.getUsername()).orElse(null);
+    public void verifyEmail(String token) {
+        User user = userRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_KEY));
 
-        boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
-
-        if (!authenticated) {
-            throw new RuntimeException("invalid username or password");
+        if (user.getIsVerified()) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_VERIFIED);
         }
 
+        user.setIsVerified(true);
+        user.setVerificationToken(null);
+
+        userRepository.save(user);
+    }
+
+    public UserResponse getUserByEmail(String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .isDeleted(user.isDeleted())
+                .build();
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        var user = userRepository.findByEmail(request.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        if (!authenticated) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        if(user.isDeleted()) {
+            throw new AppException(ErrorCode.USER_BANNED);
+        }
         var token = generateToken(user);
 
         return AuthenticationResponse.builder()
@@ -79,7 +109,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticateSignup(SignUpRequest request) throws MessagingException {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already in use");
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
@@ -95,7 +125,7 @@ public class AuthenticationService {
 
         userRepository.save(newUser);
         String subject = "Verify Your Email - Welcome to Our Service";
-        String verificationLink = "http://localhost:3000/api/verify-email/" + verificationToken;
+        String verificationLink = "http://localhost:8080/codeVerse/auth/verify-email/" + verificationToken;
                 String htmlContent = """
             <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
               <h2 style="color: #333; text-align: center;">Welcome to Our Service!</h2>

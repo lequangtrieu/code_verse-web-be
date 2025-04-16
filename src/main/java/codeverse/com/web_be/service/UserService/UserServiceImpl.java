@@ -45,11 +45,6 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         return userRepository.findByUsername(username);
     }
 
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public List<User> findAll() {

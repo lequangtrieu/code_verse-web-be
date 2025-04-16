@@ -7,5 +7,4 @@ import java.time.LocalDateTime;
 @Getter
 public class CodeVerseUpdateModel {
     private final LocalDateTime updatedAt = LocalDateTime.now();
-
 }

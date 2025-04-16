@@ -21,11 +21,12 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(unique = true)
-    private String email;
+    private String name;
 
     @Column(nullable = false)
     private String password;
+
+    private String avartar;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

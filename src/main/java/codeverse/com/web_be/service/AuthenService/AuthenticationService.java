@@ -31,6 +31,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -80,6 +81,7 @@ public class AuthenticationService {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
+                .name(user.getName())
                 .role(user.getRole().name())
                 .isDeleted(user.isDeleted())
                 .build();
@@ -108,6 +110,50 @@ public class AuthenticationService {
                 .build();
     }
 
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
+    public void authenticateResetPassword(SignUpRequest request) throws MessagingException {
+        var user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        System.out.println(user);
+
+        String newPassword = generateRandomPassword(10);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
+
+        String subject = "Your Password Has Been Reset";
+        String htmlContent = """
+        <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
+          <h2 style="color: #333; text-align: center;">Password Reset Successful</h2>
+          <p style="font-size: 16px; color: #555;">Your new password is:</p>
+          <div style="text-align: center; font-size: 18px; font-weight: bold; background: #f4f4f4; padding: 10px; border-radius: 5px; margin: 10px 0;">
+            %s
+          </div>
+          <p style="font-size: 14px; color: #777;">Please log in and change your password for security reasons.</p>
+          <hr style="border: none; border-top: 1px solid #ddd;">
+          <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 Our Service. All rights reserved.</p>
+        </div>
+    """.formatted(newPassword);
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setTo(user.getUsername()); // username là email
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+
+        emailSender.send(message);
+    }
+
     public AuthenticationResponse authenticateSignup(SignUpRequest request) throws MessagingException {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new AppException(ErrorCode.USER_EXISTED);
@@ -117,6 +163,7 @@ public class AuthenticationService {
         String verificationToken = UUID.randomUUID().toString();
         User newUser = User.builder()
                 .username(request.getUsername())
+                .name(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(UserRole.LEARNER)
                 .verificationToken(verificationToken)

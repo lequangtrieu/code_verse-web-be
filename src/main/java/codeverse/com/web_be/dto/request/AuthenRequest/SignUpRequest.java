@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SignUpRequest {
     String username;
+    String name;
     String password;
     String confirmPassword;
 }

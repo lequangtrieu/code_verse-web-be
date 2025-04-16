@@ -11,6 +11,5 @@ import lombok.experimental.FieldDefaults;
 public class SignUpRequest {
     String username;
     String password;
-    String email;
     String confirmPassword;
 }

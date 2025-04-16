@@ -1,6 +1,5 @@
 package codeverse.com.web_be.service.AuthenService;
 
-import codeverse.com.web_be.config.SystemConfig.EmailService;
 import codeverse.com.web_be.dto.request.AuthenRequest.*;
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse;
 import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
@@ -75,13 +74,12 @@ public class AuthenticationService {
     }
 
     public UserResponse getUserByEmail(String email) {
-        var user = userRepository.findByEmail(email)
+        var user = userRepository.findByUsername(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .email(user.getEmail())
                 .role(user.getRole().name())
                 .isDeleted(user.isDeleted())
                 .build();
@@ -89,12 +87,15 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        var user = userRepository.findByEmail(request.getUsername())
+        var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        if (Boolean.FALSE.equals(user.getIsVerified())) {
+            throw new AppException(ErrorCode.UN_VERIFY_EMAIL);
         }
         if(user.isDeleted()) {
             throw new AppException(ErrorCode.USER_BANNED);
@@ -108,7 +109,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticateSignup(SignUpRequest request) throws MessagingException {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
 
@@ -117,7 +118,6 @@ public class AuthenticationService {
         User newUser = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .email(request.getEmail())
                 .role(UserRole.LEARNER)
                 .verificationToken(verificationToken)
                 .isVerified(false)
@@ -144,7 +144,7 @@ public class AuthenticationService {
 
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(request.getEmail());
+        helper.setTo(request.getUsername());
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
 

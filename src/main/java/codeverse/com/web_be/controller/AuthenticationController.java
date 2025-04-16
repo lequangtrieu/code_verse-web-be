@@ -89,6 +89,12 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/resetPassword")
+    ResponseEntity<?> authenticateResetPassword(@RequestBody SignUpRequest request) throws MessagingException {
+         authenticationService.authenticateResetPassword(request);
+        return ResponseEntity.ok("A new password has been sent to your email.");
+    }
+
     @PostMapping("/userDetail")
     ApiResponse<UserResponse> authenticateUserDetail(@RequestBody AuthenticationRequest request){
         var result = authenticationService.getUserByEmail(request.getUsername());

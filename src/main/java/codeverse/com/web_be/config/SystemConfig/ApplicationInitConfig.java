@@ -30,6 +30,7 @@ public class ApplicationInitConfig {
 
                 User user = User.builder()
                         .username("admin")
+                        .email("admin")
                         .password(passwordEncoder.encode("admin"))
                         .role(UserRole.ADMIN)
                         .createdAt(LocalDateTime.now())

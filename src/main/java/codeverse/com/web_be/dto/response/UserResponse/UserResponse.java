@@ -12,6 +12,6 @@ public class UserResponse {
     Long id;
     String username;
     String role;
-    String email;
+    String name;
     Boolean isDeleted;
 }

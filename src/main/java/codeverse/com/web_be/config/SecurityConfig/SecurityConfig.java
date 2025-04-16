@@ -32,6 +32,7 @@ public class SecurityConfig {
             "/auth/logout",
             "/auth/refresh",
             "/auth/userDetail",
+            "/auth/resetPassword",
             "/api/test",
     };
 

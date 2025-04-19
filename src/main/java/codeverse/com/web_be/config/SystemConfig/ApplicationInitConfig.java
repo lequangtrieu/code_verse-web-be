@@ -26,11 +26,12 @@ public class ApplicationInitConfig {
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository){
         return args -> {
-            if (userRepository.findByUsername("admin").isEmpty()){
+            if (userRepository.findByUsername("admin@gmail.com").isEmpty()){
 
                 User user = User.builder()
-                        .username("admin")
+                        .username("admin@gmail.com")
                         .password(passwordEncoder.encode("admin"))
+                        .isVerified(true)
                         .role(UserRole.ADMIN)
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())

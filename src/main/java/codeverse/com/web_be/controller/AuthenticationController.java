@@ -90,7 +90,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/resetPassword")
-    ResponseEntity<?> authenticateResetPassword(@RequestBody SignUpRequest request) throws MessagingException {
+    ResponseEntity<String> authenticateResetPassword(@RequestBody SignUpRequest request) throws MessagingException {
          authenticationService.authenticateResetPassword(request);
         return ResponseEntity.ok("A new password has been sent to your email.");
     }

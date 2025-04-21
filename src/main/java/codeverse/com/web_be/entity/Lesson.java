@@ -36,6 +36,9 @@ public class Lesson {
     @OneToOne(mappedBy = "lesson", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Exercise exercise;
 
+    @Column(name = "default_code")
+    private String defaultCode;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

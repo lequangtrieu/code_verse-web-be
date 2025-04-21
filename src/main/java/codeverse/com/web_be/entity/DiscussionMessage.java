@@ -7,14 +7,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "progress_tracking")
+@Table(name = "discussion_message")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProgressTracking {
+public class DiscussionMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,14 +26,18 @@ public class ProgressTracking {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "lesson_id")
+    private Lesson lesson;
 
-    @Column(name = "completion_percentage")
-    private Float completionPercentage;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_message_id")
+    private DiscussionMessage parentMessage;
 
-    @Column(name = "last_accessed")
-    private LocalDateTime lastAccessed;
+    @OneToMany(mappedBy = "parentMessage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiscussionMessage> replies;
+
+    @Column(name = "message_text", columnDefinition = "TEXT")
+    private String messageText;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -50,4 +55,4 @@ public class ProgressTracking {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-} 
+}

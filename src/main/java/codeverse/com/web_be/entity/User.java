@@ -28,9 +28,20 @@ public class User {
 
     private String avatar;
 
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
+
+    @Column(name = "total_learning_hours", columnDefinition = "float default 0")
+    @Builder.Default
+    private float totalLearningHours = 0;
+
+    @Column(name = "total_exp")
+    @Builder.Default
+    private int totalExp = 0;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -42,9 +53,11 @@ public class User {
     private String verificationToken;
 
     @Column(name = "is_verified")
+    @Builder.Default
     private Boolean isVerified = false;
 
-    @Column(name = "is_deleted", columnDefinition = "boolean default false")
+    @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
     private boolean isDeleted = false;
 
     @PrePersist

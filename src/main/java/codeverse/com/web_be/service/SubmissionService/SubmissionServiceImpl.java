@@ -19,7 +19,7 @@ public class SubmissionServiceImpl extends GenericServiceImpl<Submission, Long> 
 
     @Override
     public List<Submission> findByAssignmentId(Long assignmentId) {
-        return submissionRepository.findByAssignmentId(assignmentId);
+        return submissionRepository.findByExerciseId(assignmentId);
     }
 
     @Override

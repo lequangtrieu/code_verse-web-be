@@ -1,5 +1,6 @@
 package codeverse.com.web_be.entity;
 
+import codeverse.com.web_be.enums.TestCasePriority;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,12 +17,19 @@ public class TestCase {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment_id", nullable = false)
-    private Assignment assignment;
+    @JoinColumn(name = "exercise_id", nullable = false)
+    private Exercise exercise;
 
     @Column(columnDefinition = "TEXT")
     private String input;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "expected_output", columnDefinition = "TEXT")
     private String expectedOutput;
+
+    @Enumerated(EnumType.STRING)
+    private TestCasePriority priority;
+
+    @Column(name = "is_public", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
+    private boolean isPublic = false;
 }

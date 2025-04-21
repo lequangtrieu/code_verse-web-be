@@ -9,30 +9,26 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "progress_tracking")
+@Table(name = "theory")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProgressTracking {
+public class Theory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(nullable = false)
+    private String title;
 
-    @Column(name = "completion_percentage")
-    private Float completionPercentage;
-
-    @Column(name = "last_accessed")
-    private LocalDateTime lastAccessed;
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

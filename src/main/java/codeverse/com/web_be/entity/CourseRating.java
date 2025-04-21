@@ -9,12 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "progress_tracking")
+@Table(name = "course_rating", 
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "course_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProgressTracking {
+public class CourseRating {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,26 +29,16 @@ public class ProgressTracking {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(name = "completion_percentage")
-    private Float completionPercentage;
+    private Integer rating;
 
-    @Column(name = "last_accessed")
-    private LocalDateTime lastAccessed;
+    @Column(columnDefinition = "TEXT")
+    private String comment;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 } 

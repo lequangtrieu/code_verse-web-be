@@ -19,6 +19,6 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     @Override
     public List<Course> findByInstructorId(Long instructorId) {
-        return courseRepository.findByUserId(instructorId);
+        return courseRepository.findByInstructorId(instructorId);
     }
 }

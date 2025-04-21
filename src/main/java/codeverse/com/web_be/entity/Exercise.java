@@ -7,32 +7,35 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "progress_tracking")
+@Table(name = "exercise")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProgressTracking {
+public class Exercise {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(nullable = false)
+    private String title;
 
-    @Column(name = "completion_percentage")
-    private Float completionPercentage;
+    @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ExerciseTask> tasks;
 
-    @Column(name = "last_accessed")
-    private LocalDateTime lastAccessed;
+    @Column(name = "exp_reward")
+    private Integer expReward;
+
+    @Column(columnDefinition = "TEXT")
+    private String instruction;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

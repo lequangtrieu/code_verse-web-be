@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import codeverse.com.web_be.enums.CourseLevel;
 
 @Entity
 @Table(name = "course")
@@ -26,13 +29,57 @@ public class Course {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
+    @Enumerated(EnumType.STRING)
+    private CourseLevel level;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column(columnDefinition = "decimal(10,2)")
+    private BigDecimal price;
+
+    @Column(name = "is_published", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
+    private boolean isPublished = false;
+
+    @Column(columnDefinition = "float default 0")
+    @Builder.Default
+    private float rating = 0;
+
+    @Column(name = "total_students", columnDefinition = "int default 0")
+    @Builder.Default
+    private int totalStudents = 0;
+
+    @Column(name = "is_trending", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
+    private boolean isTrending = false;
+
+    @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
+    private boolean isDeleted = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instructor_id", nullable = false)
-    private User user;
+    private User instructor;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

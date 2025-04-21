@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "progress_tracking")
+@Table(name = "user_notification")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProgressTracking {
+public class UserNotification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,29 +25,21 @@ public class ProgressTracking {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "notification_id", nullable = false)
+    private Notification notification;
 
-    @Column(name = "completion_percentage")
-    private Float completionPercentage;
+    @Column(name = "is_read", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
+    private boolean isRead = false;
 
-    @Column(name = "last_accessed")
-    private LocalDateTime lastAccessed;
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 } 

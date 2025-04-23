@@ -52,6 +52,9 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails;
 
+    @Column(name = "is_cart", columnDefinition = "tinyint(1) default 0")
+    private boolean isCart;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

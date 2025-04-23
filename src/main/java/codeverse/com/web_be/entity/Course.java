@@ -1,5 +1,6 @@
 package codeverse.com.web_be.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,7 @@ import codeverse.com.web_be.enums.CourseLevel;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category", "instructor"})
 public class Course {
 
     @Id

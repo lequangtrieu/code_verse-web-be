@@ -37,7 +37,9 @@ public class SecurityConfig {
     };
 
     private final String[] PUBLIC_ENDPOINTS_GET = {
-            "/auth/verify-email/**"
+            "/auth/verify-email/**",
+            "/course/**",
+            "/category/**"
     };
 
 

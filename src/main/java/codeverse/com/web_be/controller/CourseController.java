@@ -7,8 +7,10 @@ import codeverse.com.web_be.entity.Category;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.mapper.CourseMapper;
+import codeverse.com.web_be.repository.CourseRepository;
 import codeverse.com.web_be.service.CategoryService.ICategoryService;
 import codeverse.com.web_be.service.CourseService.CourseServiceImpl;
+import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.UserService.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,8 +25,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CourseController {
     private final CourseServiceImpl courseService;
-    private final ICategoryService categoryService;
-    private final IUserService userService;
     private final CourseMapper courseMapper;
 
     @GetMapping
@@ -47,13 +47,9 @@ public class CourseController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CourseResponse> createCourse(@ModelAttribute CourseCreateRequest course) {
-        Category category = categoryService.findById(course.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-        User instructor = userService.findById(course.getInstructorId())
-                .orElseThrow(() -> new RuntimeException("Instructor not found"));
-        Course courseToCreate = courseMapper.courseCreateRequestToCourse(course, category, instructor);
-        Course courseCreated = courseService.save(courseToCreate);
+        Course  courseCreated = courseService.createFullCourse(course);
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(CourseResponse.fromEntity(courseCreated));
+                .body(courseMapper.courseToCourseResponse(courseCreated));
     }
 }

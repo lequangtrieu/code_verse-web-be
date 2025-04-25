@@ -36,7 +36,7 @@ public class FirebaseConfig {
 
             byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
             if (!new String(header).equals("Salted__")) {
-                throw new RuntimeException("File không đúng định dạng AES OpenSSL");
+                throw new RuntimeException("File not formatted AES OpenSSL");
             }
 
             byte[] salt = Arrays.copyOfRange(encryptedData, 8, 16);

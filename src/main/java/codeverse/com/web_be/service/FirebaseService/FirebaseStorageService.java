@@ -18,7 +18,7 @@ public class FirebaseStorageService {
     public String uploadFile(MultipartFile file, String folder) {
         try{
             String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            String fullPath = folder + "/" + fileName;
+            String fullPath = folder + fileName;
 
             StorageClient.getInstance().bucket().create(fullPath, file.getInputStream(), file.getContentType());
 

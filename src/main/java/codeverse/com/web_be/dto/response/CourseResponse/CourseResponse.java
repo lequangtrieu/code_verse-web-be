@@ -15,6 +15,7 @@ public class CourseResponse {
     private String thumbnailUrl;
     private String level;
     private String category;
+    private String instructor;
     private BigDecimal price;
     private float rating;
     private int totalStudents;

@@ -17,7 +17,9 @@ public enum ErrorCode {
     NOT_EXISTED_ENTITY(1008, "Entity not existed", HttpStatus.BAD_REQUEST),
     EMAIL_ALREADY_VERIFIED(1009, "EMAIL ALREADY VERIFIED", HttpStatus.BAD_REQUEST),
     USER_BANNED(1010, "Your account has been banned", HttpStatus.FORBIDDEN),
-    UN_VERIFY_EMAIL(1011, "Your account need to verify to login", HttpStatus.UNAUTHORIZED)
+    UN_VERIFY_EMAIL(1011, "Your account need to verify to login", HttpStatus.UNAUTHORIZED),
+    RESOURCE_NOT_EXISTED(1012, "Resource not found", HttpStatus.NOT_FOUND),
+    ILLEGAL_ARGS(1013, "Invalid arguments", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

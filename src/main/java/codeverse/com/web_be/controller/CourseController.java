@@ -1,14 +1,16 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
+import codeverse.com.web_be.entity.Course;
+import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.service.CourseService.CourseServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CourseController {
     private final CourseServiceImpl courseService;
+    private final CourseMapper courseMapper;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CourseResponse>>> getAllCourses() {
@@ -28,14 +31,19 @@ public class CourseController {
         );
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ApiResponse<CourseResponse>> getCourseById(@PathVariable Long id) {
-//        return ResponseEntity.ok(
-//                ApiResponse.<CourseResponse>builder()
-//                        .result(courseService.getById(id))
-//                        .message("Success")
-//                        .build()
-//        );
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<CourseResponse> getCourseById(@PathVariable Long id) {
+        return courseService.findById(id)
+                .map(courseMapper::courseToCourseResponse)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CourseResponse> createCourse(@ModelAttribute CourseCreateRequest course) {
+        Course  courseCreated = courseService.createFullCourse(course);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(courseMapper.courseToCourseResponse(courseCreated));
+    }
 }

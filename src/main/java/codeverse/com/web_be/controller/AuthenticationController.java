@@ -89,6 +89,17 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> refresh(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        AuthenticationResponse response = authenticationService.refreshToken(request);
+        return ResponseEntity.ok(
+                ApiResponse.<AuthenticationResponse>builder()
+                        .message("Token refreshed successfully")
+                        .result(response)
+                        .build()
+        );
+    }
+
     @PostMapping("/resetPassword")
     ResponseEntity<String> authenticateResetPassword(@RequestBody SignUpRequest request) throws MessagingException {
          authenticationService.authenticateResetPassword(request);
@@ -108,13 +119,6 @@ public class AuthenticationController {
             throws ParseException, JOSEException {
         var result = authenticationService.introspectToken(request);
         return ApiResponse.<IntrospectResponse>builder().result(result).build();
-    }
-
-    @PostMapping("/refresh")
-    ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request)
-            throws ParseException, JOSEException {
-        var result = authenticationService.refreshToken(request);
-        return ApiResponse.<AuthenticationResponse>builder().result(result).build();
     }
 
     @PostMapping("/logout")

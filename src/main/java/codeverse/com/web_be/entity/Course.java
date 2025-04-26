@@ -48,18 +48,6 @@ public class Course {
     @Builder.Default
     private boolean isPublished = false;
 
-    @Column(columnDefinition = "float default 0")
-    @Builder.Default
-    private float rating = 0;
-
-    @Column(name = "total_students", columnDefinition = "int default 0")
-    @Builder.Default
-    private int totalStudents = 0;
-
-    @Column(name = "is_trending", columnDefinition = "tinyint(1) default 0")
-    @Builder.Default
-    private boolean isTrending = false;
-
     @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
     @Builder.Default
     private boolean isDeleted = false;

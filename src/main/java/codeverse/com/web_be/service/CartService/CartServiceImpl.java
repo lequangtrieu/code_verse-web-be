@@ -1,0 +1,191 @@
+package codeverse.com.web_be.service.CartService;
+
+import codeverse.com.web_be.dto.response.CheckoutResponse.CheckoutResponse;
+import codeverse.com.web_be.entity.*;
+import codeverse.com.web_be.enums.OrderStatus;
+import codeverse.com.web_be.repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vn.payos.PayOS;
+import vn.payos.type.CheckoutResponseData;
+import vn.payos.type.PaymentData;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class CartServiceImpl implements ICartService {
+
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final PayOS payOS;
+
+    @Override
+    @Transactional
+    public String addToCart(String username, Long courseId) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        Cart cart = cartRepository.findByUser(user)
+                .orElseGet(() -> cartRepository.save(
+                        Cart.builder()
+                                .user(user)
+                                .cartItems(new ArrayList<>())
+                                .build()
+                ));
+
+        boolean alreadyInCart = cart.getCartItems().stream()
+                .anyMatch(item -> item.getCourse().getId().equals(course.getId()));
+
+        if (alreadyInCart) {
+            return "Course already in cart";
+        }
+
+
+        CartItem cartItem = CartItem.builder()
+                .cart(cart)
+                .course(course)
+                .build();
+
+        cartItemRepository.save(cartItem);
+        return "Added to cart successfully";
+    }
+
+    @Override
+    @Transactional
+    public void removeCartItem(Long cartItemId) {
+        cartItemRepository.deleteById(cartItemId);
+    }
+
+    @Override
+    @Transactional
+    public void clearCart(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Cart cart = cartRepository.findByUser(user)
+                .orElse(null);
+
+        if (cart != null && cart.getCartItems() != null && !cart.getCartItems().isEmpty()) {
+            cartItemRepository.deleteAll(cart.getCartItems());
+            cart.getCartItems().clear();
+            cartRepository.save(cart);
+        }
+    }
+
+    @Override
+    public List<CartItem> getCartDetails(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return cartRepository.findByUser(user)
+                .map(Cart::getCartItems)
+                .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public int countCartItems(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return cartRepository.findByUser(user)
+                .map(cart -> cart.getCartItems().size())
+                .orElse(0);
+    }
+
+    public CheckoutResponse checkoutWithPayOS(String username, List<Long> selectedCartItemIds) {
+        if (selectedCartItemIds == null || selectedCartItemIds.isEmpty()) {
+            throw new RuntimeException("No items selected for checkout.");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Cart cart = cartRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("No active cart"));
+
+        List<CartItem> selectedItems = cart.getCartItems().stream()
+                .filter(item -> selectedCartItemIds.contains(item.getId()))
+                .collect(Collectors.toList());
+
+
+
+        BigDecimal total = selectedItems.stream()
+                .map(CartItem::getCourse)
+                .map(Course::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Order order = Order.builder()
+                .user(user)
+                .totalAmount(total)
+                .status(OrderStatus.PENDING)
+                .orderDate(LocalDateTime.now())
+                .build();
+
+        orderRepository.save(order);
+
+        for (CartItem cartItem : selectedItems) {
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .course(cartItem.getCourse())
+                    .priceAtPurchase(cartItem.getCourse().getPrice())
+                    .build();
+
+            orderItemRepository.save(orderItem);
+        }
+
+        long orderCode = System.currentTimeMillis();
+
+        try {
+            PaymentData paymentRequest = PaymentData.builder()
+                    .amount(total.intValue())
+                    .orderCode(orderCode)
+                    .description("CodeVerse Course Payment")
+                    .returnUrl("http://localhost:3000/payment-success?orderCode=" + orderCode + "&orderId=" + order.getId())
+                    .cancelUrl("http://localhost:3000/payment-failed?orderCode=" + orderCode + "&orderId=" + order.getId())
+                    .build();
+
+            CheckoutResponseData paymentLink = payOS.createPaymentLink(paymentRequest);
+
+            return CheckoutResponse.builder()
+                    .checkoutUrl(paymentLink.getCheckoutUrl())
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Payment failed: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void updateOrderStatusToPaid(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setStatus(OrderStatus.PAID);
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void clearOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        orderItemRepository.deleteAllByOrder(order);
+        orderRepository.delete(order);
+    }
+
+
+
+}

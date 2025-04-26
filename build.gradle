@@ -43,6 +43,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
     implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.37.3'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation 'vn.payos:payos-java:1.0.3'
 }
 
 tasks.named('test') {

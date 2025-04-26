@@ -4,11 +4,13 @@ import codeverse.com.web_be.dto.request.AuthenRequest.*;
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse;
 import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
+import codeverse.com.web_be.entity.Cart;
 import codeverse.com.web_be.entity.InvalidatedToken;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
+import codeverse.com.web_be.repository.CartRepository;
 import codeverse.com.web_be.repository.InvalidatedTokenRepository;
 import codeverse.com.web_be.repository.UserRepository;
 import com.nimbusds.jose.*;
@@ -44,6 +46,7 @@ import java.util.UUID;
 @Slf4j
 public class AuthenticationService {
     UserRepository userRepository;
+    CartRepository cartRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
     @Autowired
     private JavaMailSender emailSender;
@@ -102,10 +105,11 @@ public class AuthenticationService {
         if(user.isDeleted()) {
             throw new AppException(ErrorCode.USER_BANNED);
         }
-        var token = generateToken(user);
-
+        var token = generateToken(user, false);
+        var refreshToken = generateToken(user, true);
         return AuthenticationResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .authenticated(true)
                 .build();
     }
@@ -171,6 +175,10 @@ public class AuthenticationService {
                 .build();
 
         userRepository.save(newUser);
+        Cart cart = Cart.builder()
+                .user(newUser)
+                .build();
+        cartRepository.save(cart);
         String subject = "Verify Your Email - Welcome to Our Service";
         String verificationLink = "http://localhost:8080/codeVerse/auth/verify-email/" + verificationToken;
                 String htmlContent = """
@@ -197,7 +205,7 @@ public class AuthenticationService {
 
         emailSender.send(message);
 
-        String token = generateToken(newUser);
+        String token = generateToken(newUser, false);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -238,7 +246,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken(), true);
+        var signedJWT = verifyToken(request.getRefreshToken(), true);
 
         var jit = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
@@ -250,24 +258,29 @@ public class AuthenticationService {
 
         var username = signedJWT.getJWTClaimsSet().getSubject();
 
-        var user =
-                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
-        var token = generateToken(user);
+        var token = generateToken(user, false);
 
-        return AuthenticationResponse.builder().token(token).authenticated(true).build();
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 
-    private String generateToken(User user) {
+    private String generateToken(User user, boolean isRefresh) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+        Date expiration = isRefresh
+                ? new Date(Instant.now().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+                : new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
                 .issuer("codeVerse.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
-                ))
+                .expirationTime(expiration)
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", user.getRole())
                 .claim("userId", user.getId())

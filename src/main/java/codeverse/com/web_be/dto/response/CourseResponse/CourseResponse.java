@@ -30,9 +30,6 @@ public class CourseResponse {
                 .level(course.getLevel().name())
                 .category(course.getCategory().getName())
                 .price(course.getPrice())
-                .rating(course.getRating())
-                .totalStudents(course.getTotalStudents())
-                .isTrending(course.isTrending())
                 .build();
     }
 }

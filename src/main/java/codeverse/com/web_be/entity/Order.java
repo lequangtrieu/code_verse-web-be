@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "`order`")
+@Table(name = "orders")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,46 +32,15 @@ public class Order {
     @Column(name = "status", nullable = false)
     private OrderStatus status;
 
-    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
+    private LocalDateTime orderDate;
+
     private BigDecimal totalAmount;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "voucher_id")
-    private Voucher voucher;
-
-    @Column(name = "final_amount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal finalAmount;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method")
-    private PaymentMethod paymentMethod;
-
-    @Column(name = "payment_time")
-    private LocalDateTime paymentTime;
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderDetail> orderDetails;
-
-    @Column(name = "is_cart", columnDefinition = "tinyint(1) default 0")
-    private boolean isCart;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private List<OrderItem> orderItems;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        if (this.status == null) {
-            this.status = OrderStatus.PENDING;
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.orderDate = LocalDateTime.now();
     }
 }

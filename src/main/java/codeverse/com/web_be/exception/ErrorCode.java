@@ -1,6 +1,5 @@
 package codeverse.com.web_be.exception;
 
-import codeverse.com.web_be.entity.Category;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

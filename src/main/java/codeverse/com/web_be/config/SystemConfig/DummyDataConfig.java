@@ -33,7 +33,8 @@ public class DummyDataConfig {
     ExerciseRepository exerciseRepository;
     PasswordEncoder passwordEncoder;
     String password = "pass";
-
+    String thumbnailUrl1 = "https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/images%2Fa53129ba-4965-4353-8bd2-6e917bdc9d3a_tutien.png?alt=media";
+    String thumbnailUrl2 = "https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/images%2F5ec60b9c-00a0-4f6e-a8d5-5d217f286e4b_tutien2.png?alt=media";
     private static final boolean DUMMY_DATA = false;
 
     @Bean
@@ -78,7 +79,7 @@ public class DummyDataConfig {
                     Course.builder()
                             .title("Complete Web Development Bootcamp")
                             .description("Learn HTML, CSS, JavaScript, React, Node.js, MongoDB and more!")
-                            .thumbnailUrl("https://example.com/web-dev.jpg")
+                            .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(0))
                             .price(new BigDecimal("99.99"))
@@ -88,7 +89,7 @@ public class DummyDataConfig {
                     Course.builder()
                             .title("iOS App Development with Swift")
                             .description("Build iOS apps from scratch using Swift and Xcode")
-                            .thumbnailUrl("https://example.com/ios-dev.jpg")
+                            .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
                             .price(new BigDecimal("79.99"))
@@ -98,7 +99,7 @@ public class DummyDataConfig {
                     Course.builder()
                             .title("Data Science Fundamentals")
                             .description("Learn Python, NumPy, Pandas, and data visualization")
-                            .thumbnailUrl("https://example.com/data-science.jpg")
+                            .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(2))
                             .price(new BigDecimal("89.99"))
@@ -108,7 +109,7 @@ public class DummyDataConfig {
                     Course.builder()
                             .title("Machine Learning with Python")
                             .description("Master machine learning algorithms and techniques")
-                            .thumbnailUrl("https://example.com/ml.jpg")
+                            .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
                             .price(new BigDecimal("129.99"))
@@ -118,7 +119,7 @@ public class DummyDataConfig {
                     Course.builder()
                             .title("AWS Certified Solutions Architect")
                             .description("Prepare for AWS certification with hands-on projects")
-                            .thumbnailUrl("https://example.com/aws.jpg")
+                            .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
                             .price(new BigDecimal("149.99"))

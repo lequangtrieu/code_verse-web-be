@@ -26,7 +26,8 @@ public class CourseController {
         return ResponseEntity.ok(
                 ApiResponse.<List<CourseResponse>>builder()
                         .result(courseService.getAllCourses())
-                        .message("Success")
+                        .message("GetAllCourses Success")
+                        .code(HttpStatus.OK.value())
                         .build()
         );
     }

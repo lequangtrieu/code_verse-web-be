@@ -30,7 +30,6 @@ public class SecurityConfig {
             "/auth/signup",
             "/auth/introspect",
             "/auth/logout",
-            "/auth/refresh",
             "/auth/userDetail",
             "/auth/resetPassword",
             "/api/test",

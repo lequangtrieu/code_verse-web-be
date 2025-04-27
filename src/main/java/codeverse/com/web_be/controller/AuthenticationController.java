@@ -6,6 +6,7 @@ import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.exception.AppException;
+import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 import jakarta.mail.MessagingException;
@@ -90,8 +91,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> refresh(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
-        AuthenticationResponse response = authenticationService.refreshToken(request);
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> refresh(@RequestHeader("Authorization") String authorizationHeader) throws ParseException, JOSEException {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        String refreshToken = authorizationHeader.substring(7);
+
+        AuthenticationResponse response = authenticationService.refreshToken(refreshToken);
+
         return ResponseEntity.ok(
                 ApiResponse.<AuthenticationResponse>builder()
                         .message("Token refreshed successfully")

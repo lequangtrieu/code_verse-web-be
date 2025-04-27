@@ -32,6 +32,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.text.ParseException;
@@ -245,26 +246,38 @@ public class AuthenticationService {
         }
     }
 
-    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getRefreshToken(), true);
+    @Transactional
+    public AuthenticationResponse refreshToken(String refreshToken) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(refreshToken, true);
 
         var jit = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        InvalidatedToken invalidatedToken =
-                InvalidatedToken.builder().id(jit).expiryTime(expiryTime).build();
-
-        invalidatedTokenRepository.save(invalidatedToken);
+        try {
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jit)
+                    .expiryTime(expiryTime)
+                    .build();
+            invalidatedTokenRepository.save(invalidatedToken);
+        } catch (Exception e) {
+            if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
+                System.out.println("Refresh token.");
+            } else {
+                throw e;
+            }
+        }
 
         var username = signedJWT.getJWTClaimsSet().getSubject();
 
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
-        var token = generateToken(user, false);
+        var tokenNew = generateToken(user, false);
+        var refreshTokenNew = generateToken(user, true);
 
         return AuthenticationResponse.builder()
-                .token(token)
+                .token(tokenNew)
+                .refreshToken(refreshTokenNew)
                 .authenticated(true)
                 .build();
     }

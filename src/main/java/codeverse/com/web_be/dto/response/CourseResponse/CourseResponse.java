@@ -20,6 +20,7 @@ public class CourseResponse {
     private float rating;
     private int totalStudents;
     private boolean isTrending;
+    private Long totalLessons;
 
     public static CourseResponse fromEntity(Course course) {
         return CourseResponse.builder()

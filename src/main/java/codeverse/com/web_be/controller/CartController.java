@@ -86,9 +86,6 @@ public class CartController {
 
     @PostMapping("/confirm-payment")
     public ResponseEntity<ApiResponse<String>> confirmPayment(@RequestBody PaymentConfirmationRequest request) {
-        System.out.println(request);
-        System.out.println("hellooooohellooooohellooooohellooooohellooooohellooooohellooooohellooooohellooooohellooooohellooooohellooooo");
-        System.out.println(request.getStatus());
         if ("success".equals(request.getStatus())) {
             cartService.updateOrderStatusToPaid(request.getOrderId());
         } else if ("failed".equals(request.getStatus())) {

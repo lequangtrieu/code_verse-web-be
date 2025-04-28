@@ -176,6 +176,16 @@ public class CartServiceImpl implements ICartService {
 
         order.setStatus(OrderStatus.PAID);
         orderRepository.save(order);
+
+        List<Long> purchasedCourseIds = order.getOrderItems()
+                .stream()
+                .map(orderItem -> orderItem.getCourse().getId())
+                .toList();
+
+        Cart cart = cartRepository.findByUser(order.getUser())
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+        cartItemRepository.deleteByCartIdAndCourseIds(cart.getId(), purchasedCourseIds);
     }
 
     @Transactional

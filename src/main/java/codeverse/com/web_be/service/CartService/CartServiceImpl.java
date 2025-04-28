@@ -39,7 +39,18 @@ public class CartServiceImpl implements ICartService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
-        Cart cart = cartRepository.findByUser(user)
+        List<Order> paidOrders = orderRepository.findByUserAndStatus(user, OrderStatus.PAID);
+        boolean alreadyPurchased = paidOrders.stream()
+                .flatMap(order -> order.getOrderItems().stream())
+                .anyMatch(orderItem -> orderItem.getCourse().getId().equals(course.getId()));
+
+        if (alreadyPurchased) {
+            return "You already own this course";
+
+        }
+
+
+            Cart cart = cartRepository.findByUser(user)
                 .orElseGet(() -> cartRepository.save(
                         Cart.builder()
                                 .user(user)

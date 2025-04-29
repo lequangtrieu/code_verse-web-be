@@ -19,7 +19,10 @@ public enum ErrorCode {
     USER_BANNED(1010, "Your account has been banned", HttpStatus.FORBIDDEN),
     UN_VERIFY_EMAIL(1011, "Your account need to verify to login", HttpStatus.UNAUTHORIZED),
     RESOURCE_NOT_EXISTED(1012, "Resource not found", HttpStatus.NOT_FOUND),
-    ILLEGAL_ARGS(1013, "Invalid arguments", HttpStatus.BAD_REQUEST)
+    ILLEGAL_ARGS(1013, "Invalid arguments", HttpStatus.BAD_REQUEST),
+    INVALID_TOKEN(1014, "Invalid Google ID token", HttpStatus.UNAUTHORIZED),
+    EMAIL_REGISTERED_WITH_PASSWORD(1015, "This email is already registered with a password. Please login with your password.", HttpStatus.BAD_REQUEST),
+    RESET_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE(1016, "Password reset is not supported for Google accounts.", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

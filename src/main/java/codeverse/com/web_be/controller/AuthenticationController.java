@@ -82,6 +82,14 @@ public class AuthenticationController {
                 .build();
     }
 
+    @PostMapping("/googleLogin")
+    ApiResponse<AuthenticationResponse> authenticateGoogleLogin(@RequestBody AuthenticationRequest request){
+        var result = authenticationService.authenticateGoogleLogin(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(result)
+                .build();
+    }
+
     @PostMapping("/signup")
     ApiResponse<AuthenticationResponse> authenticateSignup(@RequestBody SignUpRequest request) throws MessagingException {
         var result = authenticationService.authenticateSignup(request);

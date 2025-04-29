@@ -13,6 +13,7 @@ import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.CartRepository;
 import codeverse.com.web_be.repository.InvalidatedTokenRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.GoogleService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -46,6 +47,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class AuthenticationService {
+    private final GoogleService googleService;
     UserRepository userRepository;
     CartRepository cartRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
@@ -88,6 +90,7 @@ public class AuthenticationService {
                 .name(user.getName())
                 .role(user.getRole().name())
                 .isDeleted(user.isDeleted())
+                .avatar(user.getAvatar())
                 .build();
     }
 
@@ -115,6 +118,65 @@ public class AuthenticationService {
                 .build();
     }
 
+    public AuthenticationResponse authenticateGoogleLogin(AuthenticationRequest request) {
+        try {
+            String idToken = request.getUsername();
+
+            if (idToken == null || idToken.isBlank()) {
+                throw new AppException(ErrorCode.INVALID_TOKEN);
+            }
+
+            var googlePayload = googleService.verifyToken(idToken);
+            String email = googlePayload.getEmail();
+            String name = (String) googlePayload.get("name");
+            String avatarUrl = (String) googlePayload.get("picture");
+
+            var userOptional = userRepository.findByUsername(email);
+            User user;
+
+            if (userOptional.isPresent()) {
+                user = userOptional.get();
+
+                if (user.getPassword() != null
+                        && !user.getPassword().isBlank()
+                        && !user.getPassword().startsWith("GOOGLE_CODEVERSE")) {
+                    throw new AppException(ErrorCode.EMAIL_REGISTERED_WITH_PASSWORD);
+                }
+
+                if (user.isDeleted()) {
+                    throw new AppException(ErrorCode.USER_BANNED);
+                }
+
+            } else {
+                user = User.builder()
+                        .username(email)
+                        .name(name)
+                        .avatar(avatarUrl)
+                        .role(UserRole.LEARNER)
+                        .password("GOOGLE_CODEVERSE" + UUID.randomUUID().toString())
+                        .isVerified(true)
+                        .build();
+                userRepository.save(user);
+            }
+
+            var token = generateToken(user, false);
+            var refreshToken = generateToken(user, true);
+
+            return AuthenticationResponse.builder()
+                    .token(token)
+                    .refreshToken(refreshToken)
+                    .username(email)
+                    .authenticated(true)
+                    .build();
+
+        } catch (AppException ae) {
+            throw ae;
+        } catch (Exception e) {
+            log.error("Unexpected error during Google login: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+    }
+
     private String generateRandomPassword(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         SecureRandom random = new SecureRandom();
@@ -128,7 +190,10 @@ public class AuthenticationService {
     public void authenticateResetPassword(SignUpRequest request) throws MessagingException {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        System.out.println(user);
+
+        if (!user.getPassword().isBlank() && user.getPassword().startsWith("GOOGLE_CODEVERSE")) {
+            throw new AppException(ErrorCode.RESET_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE);
+        }
 
         String newPassword = generateRandomPassword(10);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
@@ -152,7 +217,7 @@ public class AuthenticationService {
 
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(user.getUsername()); // username là email
+        helper.setTo(user.getUsername());
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
 

@@ -14,4 +14,5 @@ public class UserResponse {
     String role;
     String name;
     Boolean isDeleted;
+    String avatar;
 }

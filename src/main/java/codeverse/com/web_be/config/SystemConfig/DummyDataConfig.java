@@ -65,9 +65,9 @@ public class DummyDataConfig {
                             .isVerified(true)
                             .build(),
                     User.builder()
-                            .username("dolv@gmail.com")
+                            .username("trieulqde160447@gmail.com")
                             .password(passwordEncoder.encode(password))
-                            .name("Lê Văn Độ")
+                            .name("Lê Quang Triêu")
                             .isVerified(true)
                             .role(UserRole.LEARNER)
                             .build()

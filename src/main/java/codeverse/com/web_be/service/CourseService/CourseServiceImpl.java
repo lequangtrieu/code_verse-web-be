@@ -61,10 +61,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     @Override
     public List<CourseResponse> getAllCourses() {
-        return courseRepository.findAllByIsDeletedFalseAndIsPublishedTrue()
-                .stream()
-                .map(CourseResponse::fromEntity)
-                .collect(Collectors.toList());
+        return courseRepository.selectAllCourses();
     }
 
     @Override

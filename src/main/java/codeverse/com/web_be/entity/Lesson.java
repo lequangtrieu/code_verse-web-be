@@ -39,6 +39,9 @@ public class Lesson {
     @Column(name = "default_code")
     private String defaultCode;
 
+    @Column(name = "duration", columnDefinition = "integer default 10")
+    private Integer duration;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

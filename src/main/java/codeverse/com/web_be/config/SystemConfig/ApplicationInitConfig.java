@@ -33,6 +33,7 @@ public class ApplicationInitConfig {
                         .password(passwordEncoder.encode("admin"))
                         .isVerified(true)
                         .role(UserRole.ADMIN)
+                        .name("ADMIN")
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
                         .build();

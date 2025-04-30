@@ -405,7 +405,7 @@ public class AuthenticationService {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        if (user.getPassword() != null && user.getPassword().startsWith("GOOGLE_")) {
+        if (user.getPassword() != null && user.getPassword().startsWith("GOOGLE_CODEVERSE")) {
             throw new AppException(ErrorCode.CHANGE_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE);
         }
 

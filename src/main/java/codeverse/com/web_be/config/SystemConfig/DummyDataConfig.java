@@ -83,6 +83,7 @@ public class DummyDataConfig {
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(0))
                             .price(new BigDecimal("99.99"))
+                            .discount(new BigDecimal("10.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
                             .build(),
@@ -93,6 +94,7 @@ public class DummyDataConfig {
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
                             .price(new BigDecimal("79.99"))
+                            .discount(new BigDecimal("15.00"))
                             .isPublished(true)
                             .instructor(instructors.get(1))
                             .build(),
@@ -103,6 +105,7 @@ public class DummyDataConfig {
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(2))
                             .price(new BigDecimal("89.99"))
+                            .discount(new BigDecimal("0.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
                             .build(),
@@ -112,7 +115,8 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
-                            .price(new BigDecimal("129.99"))
+                            .price(new BigDecimal("0.00"))
+                            .discount(new BigDecimal("0.00"))
                             .isPublished(true)
                             .instructor(instructors.get(1))
                             .build(),
@@ -123,6 +127,7 @@ public class DummyDataConfig {
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
                             .price(new BigDecimal("149.99"))
+                            .discount(new BigDecimal("50.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
                             .build()
@@ -171,30 +176,35 @@ public class DummyDataConfig {
                             .title("What is Web Development?")
                             .orderIndex(1)
                             .defaultCode("// Welcome to web development!")
+                            .duration(10)
                             .build(),
                     Lesson.builder()
                             .materialSection(materialSections.get(0))
                             .title("Web Development Tools")
                             .orderIndex(2)
                             .defaultCode("// Let's set up your development environment")
+                            .duration(10)
                             .build(),
                     Lesson.builder()
                             .materialSection(materialSections.get(0))
                             .title("Understanding the Web")
                             .orderIndex(3)
                             .defaultCode("// How the web works")
+                            .duration(10)
                             .build(),
                     Lesson.builder()
                             .materialSection(materialSections.get(0))
                             .title("Your First Web Page")
                             .orderIndex(4)
                             .defaultCode("<!DOCTYPE html>\n<html>\n<head>\n<title>My First Page</title>\n</head>\n<body>\n</body>\n</html>")
+                            .duration(10)
                             .build(),
                     Lesson.builder()
                             .materialSection(materialSections.get(0))
                             .title("Web Development Best Practices")
                             .orderIndex(5)
                             .defaultCode("// Follow these best practices")
+                            .duration(10)
                             .build()
             );
             lessonRepository.saveAll(lessons);

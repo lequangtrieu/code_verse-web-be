@@ -23,6 +23,9 @@ public enum ErrorCode {
     INVALID_TOKEN(1014, "Invalid Google ID token", HttpStatus.UNAUTHORIZED),
     EMAIL_REGISTERED_WITH_PASSWORD(1015, "This email is already registered with a password. Please login with your password.", HttpStatus.BAD_REQUEST),
     RESET_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE(1016, "Password reset is not supported for Google accounts.", HttpStatus.BAD_REQUEST),
+    CHANGE_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE(1017, "Password change is not supported for Google accounts.", HttpStatus.BAD_REQUEST),
+    OLD_PASSWORD_INCORRECT(1018, "Old password is incorrect.", HttpStatus.BAD_REQUEST),
+    PASSWORD_SAME_AS_OLD(1019, "New password must be different from the current password.", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

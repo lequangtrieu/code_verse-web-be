@@ -142,4 +142,16 @@ public class AuthenticationController {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder().build();
     }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticateChangePassword(
+            @RequestBody ChangePasswordRequest request) {
+        AuthenticationResponse response = authenticationService.authenticateChangePassword(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<AuthenticationResponse>builder()
+                        .result(response)
+                        .build()
+        );
+    }
 }

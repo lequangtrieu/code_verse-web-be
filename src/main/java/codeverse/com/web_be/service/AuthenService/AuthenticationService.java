@@ -401,4 +401,40 @@ public class AuthenticationService {
         return signedJWT;
     }
 
+    public AuthenticationResponse  authenticateChangePassword(ChangePasswordRequest request) {
+        var user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (user.getPassword() != null && user.getPassword().startsWith("GOOGLE_")) {
+            throw new AppException(ErrorCode.CHANGE_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE);
+        }
+
+        PasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        if (!encoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.OLD_PASSWORD_INCORRECT);
+        }
+
+        String newPassword = request.getNewPassword();
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new AppException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        if (encoder.matches(newPassword, user.getPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_SAME_AS_OLD);
+        }
+
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        var token = generateToken(user, false);
+        var refreshToken = generateToken(user, true);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .username(user.getUsername())
+                .authenticated(true)
+                .build();
+    }
+
 }

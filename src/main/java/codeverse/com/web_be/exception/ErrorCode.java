@@ -26,6 +26,7 @@ public enum ErrorCode {
     CHANGE_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE(1017, "Password change is not supported for Google accounts.", HttpStatus.BAD_REQUEST),
     OLD_PASSWORD_INCORRECT(1018, "Old password is incorrect.", HttpStatus.BAD_REQUEST),
     PASSWORD_SAME_AS_OLD(1019, "New password must be different from the current password.", HttpStatus.BAD_REQUEST),
+    FREE_COURSE_IN_CART(1020, "Your cart contains a free course, which does not require payment.", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

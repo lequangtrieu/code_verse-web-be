@@ -3,6 +3,8 @@ package codeverse.com.web_be.service.CartService;
 import codeverse.com.web_be.dto.response.CheckoutResponse.CheckoutResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.OrderStatus;
+import codeverse.com.web_be.exception.AppException;
+import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,13 @@ public class CartServiceImpl implements ICartService {
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        BigDecimal discountedPrice = course.getPrice()
+                .multiply(BigDecimal.valueOf(1).subtract(course.getDiscount().divide(BigDecimal.valueOf(100))));
+
+        if (discountedPrice.compareTo(BigDecimal.ZERO) == 0) {
+            return "This course is free and doesn't need to be added to cart";
+        }
 
         List<Order> paidOrders = orderRepository.findByUserAndStatus(user, OrderStatus.PAID);
         boolean alreadyPurchased = paidOrders.stream()
@@ -119,24 +128,41 @@ public class CartServiceImpl implements ICartService {
 
     public CheckoutResponse checkoutWithPayOS(String username, List<Long> selectedCartItemIds) {
         if (selectedCartItemIds == null || selectedCartItemIds.isEmpty()) {
-            throw new RuntimeException("No items selected for checkout.");
+            throw new AppException(ErrorCode.ILLEGAL_ARGS);
         }
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("No active cart"));
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ENTITY));
 
         List<CartItem> selectedItems = cart.getCartItems().stream()
                 .filter(item -> selectedCartItemIds.contains(item.getId()))
                 .collect(Collectors.toList());
 
+        if (selectedItems.isEmpty()) {
+            throw new AppException(ErrorCode.ILLEGAL_ARGS);
+        }
 
+        boolean hasFreeCourse = selectedItems.stream()
+                .map(CartItem::getCourse)
+                .anyMatch(course -> course.getPrice()
+                        .multiply(BigDecimal.valueOf(1)
+                                .subtract(course.getDiscount().divide(BigDecimal.valueOf(100))))
+                        .compareTo(BigDecimal.ZERO) == 0);
+
+        if (hasFreeCourse) {
+            throw new AppException(ErrorCode.FREE_COURSE_IN_CART);
+        }
 
         BigDecimal total = selectedItems.stream()
-                .map(CartItem::getCourse)
-                .map(Course::getPrice)
+                .map(item -> {
+                    Course course = item.getCourse();
+                    return course.getPrice().multiply(
+                            BigDecimal.ONE.subtract(course.getDiscount().divide(BigDecimal.valueOf(100)))
+                    );
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Order order = Order.builder()
@@ -145,14 +171,18 @@ public class CartServiceImpl implements ICartService {
                 .status(OrderStatus.PENDING)
                 .orderDate(LocalDateTime.now())
                 .build();
-
         orderRepository.save(order);
 
         for (CartItem cartItem : selectedItems) {
+            Course course = cartItem.getCourse();
+            BigDecimal discountedPrice = course.getPrice().multiply(
+                    BigDecimal.ONE.subtract(course.getDiscount().divide(BigDecimal.valueOf(100)))
+            );
+
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
-                    .course(cartItem.getCourse())
-                    .priceAtPurchase(cartItem.getCourse().getPrice())
+                    .course(course)
+                    .priceAtPurchase(discountedPrice)
                     .build();
 
             orderItemRepository.save(orderItem);
@@ -176,7 +206,7 @@ public class CartServiceImpl implements ICartService {
                     .build();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Payment failed: " + e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 

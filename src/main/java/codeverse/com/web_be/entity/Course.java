@@ -44,7 +44,7 @@ public class Course {
     @Column(columnDefinition = "decimal(10,2)")
     private BigDecimal price;
 
-    @Column(columnDefinition = "decimal(5,2) check (discount >= 0 and discount <= 95)")
+    @Column(columnDefinition = "decimal(5,2) check (discount >= 0 and discount <= 100)")
     private BigDecimal discount;
 
     @Column(name = "is_published", columnDefinition = "tinyint(1) default 0")

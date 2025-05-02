@@ -13,6 +13,7 @@ import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.CartRepository;
 import codeverse.com.web_be.repository.InvalidatedTokenRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.EmailService.EmailServiceSender;
 import codeverse.com.web_be.service.GoogleService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -20,7 +21,6 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -51,8 +50,8 @@ public class AuthenticationService {
     UserRepository userRepository;
     CartRepository cartRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
-    @Autowired
-    private JavaMailSender emailSender;
+
+    private final EmailServiceSender emailService;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -198,30 +197,9 @@ public class AuthenticationService {
         String newPassword = generateRandomPassword(10);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(newPassword));
-
         userRepository.save(user);
 
-        String subject = "Your Password Has Been Reset";
-        String htmlContent = """
-        <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
-          <h2 style="color: #333; text-align: center;">Password Reset Successful</h2>
-          <p style="font-size: 16px; color: #555;">Your new password is:</p>
-          <div style="text-align: center; font-size: 18px; font-weight: bold; background: #f4f4f4; padding: 10px; border-radius: 5px; margin: 10px 0;">
-            %s
-          </div>
-          <p style="font-size: 14px; color: #777;">Please log in and change your password for security reasons.</p>
-          <hr style="border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 Our Service. All rights reserved.</p>
-        </div>
-    """.formatted(newPassword);
-
-        MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(user.getUsername());
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
-
-        emailSender.send(message);
+        emailService.sendResetPasswordEmail(user.getUsername(), newPassword);
     }
 
     public AuthenticationResponse authenticateSignup(SignUpRequest request) throws MessagingException {
@@ -241,35 +219,8 @@ public class AuthenticationService {
                 .build();
 
         userRepository.save(newUser);
-        Cart cart = Cart.builder()
-                .user(newUser)
-                .build();
-        cartRepository.save(cart);
-        String subject = "Verify Your Email - Welcome to Our Service";
-        String verificationLink = "http://localhost:8080/codeVerse/auth/verify-email/" + verificationToken;
-                String htmlContent = """
-            <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
-              <h2 style="color: #333; text-align: center;">Welcome to Our Service!</h2>
-              <p style="font-size: 16px; color: #555;">Thank you for signing up. Please verify your email address by clicking the button below:</p>
-              <div style="text-align: center; margin: 20px 0;">
-                <a href="%s"
-                   style="background-color: #007bff; color: #fff; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
-                   Verify Your Email
-                </a>
-              </div>
-              <p style="font-size: 14px; color: #777;">If you didn’t create an account, you can safely ignore this email.</p>
-              <hr style="border: none; border-top: 1px solid #ddd;">
-              <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 Our Service. All rights reserved.</p>
-            </div>
-        """.formatted(verificationLink);
-
-        MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(request.getUsername());
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
-
-        emailSender.send(message);
+        cartRepository.save(Cart.builder().user(newUser).build());
+        emailService.sendVerificationEmail(newUser.getUsername(), verificationToken);
 
         String token = generateToken(newUser, false);
 

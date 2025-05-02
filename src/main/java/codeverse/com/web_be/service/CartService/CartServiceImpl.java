@@ -6,6 +6,7 @@ import codeverse.com.web_be.enums.OrderStatus;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.*;
+import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,17 +27,16 @@ public class CartServiceImpl implements ICartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PayOS payOS;
+    private final FunctionHelper functionHelper;
 
     @Override
     @Transactional
     public String addToCart(String username, Long courseId) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = functionHelper.getActiveUserByUsername(username);
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
@@ -86,15 +86,15 @@ public class CartServiceImpl implements ICartService {
 
     @Override
     @Transactional
-    public void removeCartItem(Long cartItemId) {
+    public void removeCartItem(Long cartItemId, String username) {
+        functionHelper.getActiveUserByUsername(username);
         cartItemRepository.deleteById(cartItemId);
     }
 
     @Override
     @Transactional
     public void clearCart(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = functionHelper.getActiveUserByUsername(username);
 
         Cart cart = cartRepository.findByUser(user)
                 .orElse(null);
@@ -108,8 +108,7 @@ public class CartServiceImpl implements ICartService {
 
     @Override
     public List<CartItem> getCartDetails(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = functionHelper.getActiveUserByUsername(username);
 
         return cartRepository.findByUser(user)
                 .map(Cart::getCartItems)
@@ -118,8 +117,7 @@ public class CartServiceImpl implements ICartService {
 
     @Override
     public int countCartItems(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = functionHelper.getActiveUserByUsername(username);
 
         return cartRepository.findByUser(user)
                 .map(cart -> cart.getCartItems().size())
@@ -131,8 +129,7 @@ public class CartServiceImpl implements ICartService {
             throw new AppException(ErrorCode.ILLEGAL_ARGS);
         }
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = functionHelper.getActiveUserByUsername(username);
 
         Cart cart = cartRepository.findByUser(user)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ENTITY));
@@ -236,7 +233,5 @@ public class CartServiceImpl implements ICartService {
         orderItemRepository.deleteAllByOrder(order);
         orderRepository.delete(order);
     }
-
-
 
 }

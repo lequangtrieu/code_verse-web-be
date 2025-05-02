@@ -86,6 +86,48 @@ public class CartServiceImpl implements ICartService {
 
     @Override
     @Transactional
+    public Void addToCartFree(String username, Long courseId) {
+        User user = functionHelper.getActiveUserByUsername(username);
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ENTITY));
+
+        BigDecimal discountedPrice = course.getPrice()
+                .multiply(BigDecimal.ONE.subtract(course.getDiscount().divide(BigDecimal.valueOf(100))));
+
+        if (discountedPrice.compareTo(BigDecimal.ZERO) > 0) {
+            throw new AppException(ErrorCode.COURSE_NOT_FREE);
+        }
+
+        List<Order> paidOrders = orderRepository.findByUserAndStatus(user, OrderStatus.PAID);
+        boolean alreadyPurchased = paidOrders.stream()
+                .flatMap(order -> order.getOrderItems().stream())
+                .anyMatch(orderItem -> orderItem.getCourse().getId().equals(course.getId()));
+
+        if (alreadyPurchased) {
+            throw new AppException(ErrorCode.COURSE_ALREADY_OWNED);
+        }
+
+        Order order = Order.builder()
+                .user(user)
+                .totalAmount(BigDecimal.ZERO)
+                .status(OrderStatus.PAID)
+                .orderDate(LocalDateTime.now())
+                .build();
+        orderRepository.save(order);
+
+        OrderItem orderItem = OrderItem.builder()
+                .order(order)
+                .course(course)
+                .priceAtPurchase(BigDecimal.ZERO)
+                .build();
+        orderItemRepository.save(orderItem);
+
+        return null;
+    }
+
+    @Override
+    @Transactional
     public void removeCartItem(Long cartItemId, String username) {
         functionHelper.getActiveUserByUsername(username);
         cartItemRepository.deleteById(cartItemId);

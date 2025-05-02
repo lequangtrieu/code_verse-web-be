@@ -27,6 +27,8 @@ public enum ErrorCode {
     OLD_PASSWORD_INCORRECT(1018, "Old password is incorrect.", HttpStatus.BAD_REQUEST),
     PASSWORD_SAME_AS_OLD(1019, "New password must be different from the current password.", HttpStatus.BAD_REQUEST),
     FREE_COURSE_IN_CART(1020, "Your cart contains a free course, which does not require payment.", HttpStatus.BAD_REQUEST),
+    COURSE_NOT_FREE(1021, "This course is not free and cannot be added via free method.", HttpStatus.BAD_REQUEST),
+    COURSE_ALREADY_OWNED(1022, "You already own this course.", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

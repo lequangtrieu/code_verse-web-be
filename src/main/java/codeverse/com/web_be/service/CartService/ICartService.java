@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface ICartService {
     String addToCart(String username, Long courseId);
+    Void addToCartFree(String username, Long courseId);
     void removeCartItem(Long cartItemId, String username);
     void clearCart(String username);
     List<CartItem> getCartDetails(String username);

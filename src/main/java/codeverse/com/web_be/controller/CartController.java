@@ -40,6 +40,12 @@ public class CartController {
         );
     }
 
+    @PostMapping("/addFree")
+    public Void addToCartFree(@RequestBody AddToCartRequest request) {
+        cartService.addToCartFree(request.getUsername(), request.getCourseId());
+        return null;
+    }
+
     @GetMapping("/details")
     public ResponseEntity<ApiResponse<List<CartItem>>> getCartDetails(@RequestParam String username) {
         List<CartItem> cartDetails = cartService.getCartDetails(username);

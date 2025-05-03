@@ -257,7 +257,8 @@ public class CartServiceImpl implements ICartService {
     }
 
     @Transactional
-    public void updateOrderStatusToPaid(Long orderId) {
+    public void updateOrderStatusToPaid(Long orderId, String username) {
+        User user = functionHelper.getActiveUserByUsername(username);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -273,6 +274,12 @@ public class CartServiceImpl implements ICartService {
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
         cartItemRepository.deleteByCartIdAndCourseIds(cart.getId(), purchasedCourseIds);
+        List<Course> purchasedCourses = courseRepository.findAllById(purchasedCourseIds);
+        try {
+            emailServiceSender.sendPaidCoursesConfirmationEmail(user, purchasedCourses);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     @Transactional

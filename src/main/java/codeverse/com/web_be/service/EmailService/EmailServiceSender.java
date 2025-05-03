@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -92,6 +93,44 @@ public class EmailServiceSender {
             <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Happy learning!</p>
         </div>
     """, user.getUsername(), course.getTitle());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+        helper.setTo(user.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
+    @Async
+    public void sendPaidCoursesConfirmationEmail(User user, List<Course> courses) throws MessagingException {
+        String subject = "🎉 Your Purchase Was Successful - Welcome to New Courses!";
+
+        StringBuilder courseListHtml = new StringBuilder();
+        for (Course course : courses) {
+            courseListHtml.append(String.format(
+                    "<li style='margin-bottom: 8px; font-size: 16px; color: #007bff;'>%s</li>",
+                    course.getTitle()
+            ));
+        }
+
+        String htmlContent = String.format("""
+        <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
+            <h2 style="color: #2e6da4; text-align: center;">Hello %s,</h2>
+            <p style="font-size: 16px; color: #333;">Thank you for your purchase! You’ve successfully enrolled in the following course(s):</p>
+            <ul style="padding-left: 20px;">%s</ul>
+            <p style="font-size: 16px; color: #555;">We hope you enjoy your learning journey. To start learning, just log in and go to "My Courses".</p>
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="http://localhost:3000/"
+                   style="background-color: #4da6ff; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;">
+                   Go to My Courses
+                </a>
+            </div>
+            <p style="font-size: 14px; color: #777;">If you have any questions, feel free to reach out to our support team anytime.</p>
+            <hr style="border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Happy learning!</p>
+        </div>
+    """, user.getName(), courseListHtml.toString());
 
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());

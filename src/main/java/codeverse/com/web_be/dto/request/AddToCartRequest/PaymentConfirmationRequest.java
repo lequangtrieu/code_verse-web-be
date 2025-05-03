@@ -6,4 +6,5 @@ import lombok.Data;
 public class PaymentConfirmationRequest {
     private String status;
     private Long orderId;
+    private String username;
 }

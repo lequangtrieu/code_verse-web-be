@@ -6,6 +6,7 @@ import codeverse.com.web_be.dto.response.CheckoutResponse.CheckoutResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.CartItem;
 import codeverse.com.web_be.service.CartService.CartServiceImpl;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

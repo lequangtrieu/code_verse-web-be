@@ -1,5 +1,7 @@
 package codeverse.com.web_be.service.EmailService;
 
+import codeverse.com.web_be.entity.Course;
+import codeverse.com.web_be.entity.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +9,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +68,36 @@ public class EmailServiceSender {
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
 
+        emailSender.send(message);
+    }
+
+    @Async
+    public void sendFreeCourseConfirmationEmail(User user, Course course) throws MessagingException {
+        String subject = "🎉 You’ve Successfully Enrolled in a Free Course!";
+        String htmlContent = String.format("""
+        <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
+            <h2 style="color: #1677ff; text-align: center;">Hello %s</h2>
+            <p style="font-size: 16px; color: #333;">Congratulations! You’ve successfully enrolled in the free course:</p>
+            <h3 style="color: #007bff; text-align: center;">%s</h3>
+            <p style="font-size: 16px; color: #555;">We’re excited to have you start learning with us. This is your chance to explore, grow, and become better at your craft.</p>
+            <p style="font-size: 16px; color: #555;">To access the course, simply login to your account and navigate to "My Courses".</p>
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="http://localhost:3000/"
+                   style="background-color: #4da6ff; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;">
+                   Go to My Courses
+                </a>
+            </div>
+            <p style="font-size: 14px; color: #777;">If you have any questions or feedback, feel free to reach out to our support team.</p>
+            <hr style="border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Happy learning!</p>
+        </div>
+    """, user.getUsername(), course.getTitle());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+        helper.setTo(user.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
         emailSender.send(message);
     }
 }

@@ -6,7 +6,9 @@ import codeverse.com.web_be.enums.OrderStatus;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.*;
+import codeverse.com.web_be.service.EmailService.EmailServiceSender;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,7 @@ public class CartServiceImpl implements ICartService {
     private final OrderItemRepository orderItemRepository;
     private final PayOS payOS;
     private final FunctionHelper functionHelper;
+    private final EmailServiceSender emailServiceSender;
 
     @Override
     @Transactional
@@ -122,7 +125,11 @@ public class CartServiceImpl implements ICartService {
                 .priceAtPurchase(BigDecimal.ZERO)
                 .build();
         orderItemRepository.save(orderItem);
-
+        try {
+            emailServiceSender.sendFreeCourseConfirmationEmail(user, course);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
         return null;
     }
 

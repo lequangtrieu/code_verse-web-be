@@ -47,4 +47,10 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(courseMapper.courseToCourseResponse(courseCreated));
     }
+
+    @GetMapping("user/{userId}")
+    public ResponseEntity<List<CourseResponse>> getCoursesByLearner(@PathVariable Long userId) {
+        List<CourseResponse> courses = courseService.getCoursesByLearnerId(userId);
+        return ResponseEntity.ok(courses);
+    }
 }

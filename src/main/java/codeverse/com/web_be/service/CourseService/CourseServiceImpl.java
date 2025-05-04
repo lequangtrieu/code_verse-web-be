@@ -28,18 +28,20 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final ExerciseTaskRepository exerciseTaskRepository;
     private final FirebaseStorageService firebaseStorageService;
     private final CourseMapper courseMapper;
+    private final ProgressTrackingRepository progressTrackingRepository;
 
-
-    public CourseServiceImpl(CourseRepository courseRepository,
-                             CategoryRepository categoryRepository,
-                             UserRepository userRepository,
-                             MaterialSectionRepository materialSectionRepository,
-                             LessonRepository lessonRepository,
-                             TheoryRepository theoryRepository,
-                             ExerciseRepository exerciseRepository,
-                             ExerciseTaskRepository exerciseTaskRepository,
-                             FirebaseStorageService firebaseStorageService,
-                             CourseMapper courseMapper
+    public CourseServiceImpl(
+            CourseRepository courseRepository,
+            CategoryRepository categoryRepository,
+            UserRepository userRepository,
+            MaterialSectionRepository materialSectionRepository,
+            LessonRepository lessonRepository,
+            TheoryRepository theoryRepository,
+            ExerciseRepository exerciseRepository,
+            ExerciseTaskRepository exerciseTaskRepository,
+            FirebaseStorageService firebaseStorageService,
+            CourseMapper courseMapper,
+            ProgressTrackingRepository progressTrackingRepository
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -52,6 +54,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.exerciseTaskRepository = exerciseTaskRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.courseMapper = courseMapper;
+        this.progressTrackingRepository = progressTrackingRepository;
     }
 
     @Override
@@ -59,6 +62,18 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.findByInstructorId(instructorId);
     }
 
+    @Override
+    public List<CourseResponse> getCoursesByLearnerId(Long userId) {
+        List<Course> courses = progressTrackingRepository.findByUserId(userId)
+                .stream()
+                .map(ProgressTracking::getCourse)
+                .distinct()
+                .collect(Collectors.toList());
+
+        return courses.stream()
+                .map(courseMapper::courseToCourseResponse)
+                .collect(Collectors.toList());
+    }
     @Override
     public List<CourseResponse> getAllCourses() {
         return courseRepository.selectAllCourses();

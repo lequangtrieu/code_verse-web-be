@@ -11,7 +11,10 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LessonFullCreateRequest {
-    private String title;
+    private String title = "";
+    private Integer orderIndex;
+    private String defaultCode;
+    private Integer duration;
 
     private TheoryFullCreateRequest theory;
     private ExerciseFullCreateRequest exercise;

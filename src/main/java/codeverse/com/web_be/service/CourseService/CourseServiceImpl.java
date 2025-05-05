@@ -1,14 +1,16 @@
 package codeverse.com.web_be.service.CourseService;
 
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
-import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskCreateRequest;
+import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskFullCreateRequest;
 import codeverse.com.web_be.dto.request.LessonRequest.LessonFullCreateRequest;
 import codeverse.com.web_be.dto.request.MaterialSectionRequest.MaterialSectionFullCreateRequest;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.mapper.*;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
+import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 
@@ -20,7 +22,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
+    private final FunctionHelper functionHelper;
     private final MaterialSectionRepository materialSectionRepository;
     private final LessonRepository lessonRepository;
     private final TheoryRepository theoryRepository;
@@ -32,7 +34,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     public CourseServiceImpl(CourseRepository courseRepository,
                              CategoryRepository categoryRepository,
-                             UserRepository userRepository,
+                             FunctionHelper functionHelper,
                              MaterialSectionRepository materialSectionRepository,
                              LessonRepository lessonRepository,
                              TheoryRepository theoryRepository,
@@ -44,7 +46,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         super(courseRepository);
         this.courseRepository = courseRepository;
         this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
+        this.functionHelper = functionHelper;
         this.materialSectionRepository = materialSectionRepository;
         this.lessonRepository = lessonRepository;
         this.theoryRepository = theoryRepository;
@@ -64,12 +66,12 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.selectAllCourses();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Course createFullCourse(CourseCreateRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        User instructor = userRepository.findById(request.getInstructorId())
-                .orElseThrow(() -> new IllegalArgumentException("Instructor not found"));
+        User instructor = functionHelper.getActiveUserByUsername(request.getInstructor());
 
         String thumbnailUrl = null;
         if(request.getImageFile() != null && !request.getImageFile().isEmpty()) {
@@ -80,43 +82,57 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         course.setThumbnailUrl(thumbnailUrl);
         course = courseRepository.save(course);
 
-        for (MaterialSectionFullCreateRequest moduleRequest : request.getModules()) {
-            MaterialSection section = new MaterialSection();
-            section.setCourse(course);
-            section.setTitle(moduleRequest.getTitle());
-            materialSectionRepository.save(section);
+        if(request.getModules() != null && !request.getModules().isEmpty()) {
+            for (MaterialSectionFullCreateRequest moduleRequest : request.getModules()) {
+                MaterialSection section = new MaterialSection();
+                section.setCourse(course);
+                section.setTitle(moduleRequest.getTitle());
+                section.setOrderIndex(moduleRequest.getOrderIndex());
+                section.setPreviewable(moduleRequest.isPreviewable());
+                materialSectionRepository.save(section);
 
-            for (LessonFullCreateRequest lessonRequest : moduleRequest.getLessons()) {
-                Lesson lesson = new Lesson();
-                lesson.setMaterialSection(section);
-                lesson.setTitle(lessonRequest.getTitle());
-                lesson = lessonRepository.save(lesson);
+                if(moduleRequest.getLessons() != null && !moduleRequest.getLessons().isEmpty()) {
+                    for (LessonFullCreateRequest lessonRequest : moduleRequest.getLessons()) {
+                        Lesson lesson = new Lesson();
+                        lesson.setMaterialSection(section);
+                        lesson.setTitle(lessonRequest.getTitle());
+                        lesson.setOrderIndex(lessonRequest.getOrderIndex());
+                        lesson.setDuration(lessonRequest.getDuration());
+                        lesson.setDefaultCode(lessonRequest.getDefaultCode());
+                        lesson = lessonRepository.save(lesson);
 
-                if (lessonRequest.getTheory() != null) {
-                    Theory theory = new Theory();
-                    theory.setLesson(lesson);
-                    theory.setTitle(lessonRequest.getTheory().getTitle());
-                    theory.setContent(lessonRequest.getTheory().getContent());
-                    theoryRepository.save(theory);
-                }
+                        if (lessonRequest.getTheory() != null) {
+                            Theory theory = new Theory();
+                            theory.setLesson(lesson);
+                            theory.setTitle(lessonRequest.getTheory().getTitle());
+                            theory.setContent(lessonRequest.getTheory().getContent());
+                            theoryRepository.save(theory);
+                        }
 
-                if (lessonRequest.getExercise() != null) {
-                    Exercise exercise = new Exercise();
-                    exercise.setLesson(lesson);
-                    exercise.setTitle(lessonRequest.getExercise().getTitle());
-                    exercise.setExpReward(lessonRequest.getExercise().getExpReward());
-                    exercise.setInstruction(lessonRequest.getExercise().getInstruction());
-                    exercise = exerciseRepository.save(exercise);
+                        if (lessonRequest.getExercise() != null) {
+                            Exercise exercise = new Exercise();
+                            exercise.setLesson(lesson);
+                            exercise.setTitle(lessonRequest.getExercise().getTitle());
+                            exercise.setExpReward(lessonRequest.getExercise().getExpReward());
+                            exercise.setInstruction(lessonRequest.getExercise().getInstruction());
+                            exercise = exerciseRepository.save(exercise);
 
-                    for (ExerciseTaskCreateRequest taskRequest : lessonRequest.getExercise().getTasks()) {
-                        ExerciseTask task = new ExerciseTask();
-                        task.setExercise(exercise);
-                        task.setDescription(taskRequest.getDescription());
-                        exerciseTaskRepository.save(task);
+                            if(lessonRequest.getExercise().getTasks() != null && !lessonRequest.getExercise().getTasks().isEmpty()) {
+                                for (ExerciseTaskFullCreateRequest taskRequest : lessonRequest.getExercise().getTasks()) {
+                                    ExerciseTask task = new ExerciseTask();
+                                    task.setExercise(exercise);
+                                    task.setDescription(taskRequest.getDescription());
+                                    exerciseTaskRepository.save(task);
+                                }
+                            }
+
+                        }
                     }
                 }
+
             }
         }
-        return null;
+
+        return course;
     }
 }

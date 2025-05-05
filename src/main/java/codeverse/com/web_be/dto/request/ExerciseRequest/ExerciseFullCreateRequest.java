@@ -11,9 +11,9 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExerciseFullCreateRequest {
-    private String title;
+    private String title = "";
     private String instruction;
     private Integer expReward;
 
-    private List<ExerciseTaskCreateRequest> tasks;
+    private List<ExerciseTaskFullCreateRequest> tasks;
 }

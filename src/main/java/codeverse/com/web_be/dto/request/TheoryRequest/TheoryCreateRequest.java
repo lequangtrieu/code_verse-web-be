@@ -8,7 +8,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TheoryFullCreateRequest {
-    private String title = "";
+public class TheoryCreateRequest {
+    private Long lessonId;
+    private String title;
     private String content;
 }

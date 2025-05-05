@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implements ICourseService {
@@ -30,6 +29,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final ExerciseTaskRepository exerciseTaskRepository;
     private final FirebaseStorageService firebaseStorageService;
     private final CourseMapper courseMapper;
+    private final ProgressTrackingRepository progressTrackingRepository;
 
 
     public CourseServiceImpl(CourseRepository courseRepository,
@@ -41,7 +41,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              ExerciseRepository exerciseRepository,
                              ExerciseTaskRepository exerciseTaskRepository,
                              FirebaseStorageService firebaseStorageService,
-                             CourseMapper courseMapper
+                             CourseMapper courseMapper,
+                             ProgressTrackingRepository progressTrackingRepository
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -54,11 +55,53 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.exerciseTaskRepository = exerciseTaskRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.courseMapper = courseMapper;
+        this.progressTrackingRepository = progressTrackingRepository;
     }
 
     @Override
     public List<Course> findByInstructorId(Long instructorId) {
         return courseRepository.findByInstructorId(instructorId);
+    }
+
+    @Override
+    public List<CourseResponse> getCoursesByLearnerId(Long userId) {
+        List<Course> courses = progressTrackingRepository.findByUserId(userId)
+                .stream()
+                .map(ProgressTracking::getCourse)
+                .distinct()
+                .toList();
+
+        return courses.stream()
+                .map(courseMapper::courseToCourseResponse)
+                .toList();
+    }
+
+    @Override
+    public List<CourseResponse> getInProgressCoursesByLearnerId(Long userId) {
+        List<Course> inProgressCourses = progressTrackingRepository.findByUserId(userId)
+                .stream()
+                .filter(p -> p.getCompletionPercentage() != null && p.getCompletionPercentage() < 100)
+                .map(ProgressTracking::getCourse)
+                .distinct()
+                .toList();
+
+        return inProgressCourses.stream()
+                .map(courseMapper::courseToCourseResponse)
+                .toList();
+    }
+
+    @Override
+    public List<CourseResponse> getCompletedCoursesByLearnerId(Long userId) {
+        List<Course> completedCourses = progressTrackingRepository.findByUserId(userId)
+                .stream()
+                .filter(p -> p.getCompletionPercentage() != null && p.getCompletionPercentage() >= 100)
+                .map(ProgressTracking::getCourse)
+                .distinct()
+                .toList();
+
+        return completedCourses.stream()
+                .map(courseMapper::courseToCourseResponse)
+                .toList();
     }
 
     @Override

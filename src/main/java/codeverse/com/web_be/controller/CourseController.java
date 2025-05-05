@@ -78,4 +78,21 @@ public class CourseController {
                 .code(HttpStatus.CREATED.value())
                 .build();
     }
+
+    @GetMapping("user/{userId}")
+    public ResponseEntity<List<CourseResponse>> getCoursesByLearner(@PathVariable Long userId) {
+        List<CourseResponse> courses = courseService.getCoursesByLearnerId(userId);
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/user/{userId}/in-progress")
+    public ResponseEntity<List<CourseResponse>> getInProgressCourses(@PathVariable Long userId) {
+        return ResponseEntity.ok(courseService.getInProgressCoursesByLearnerId(userId));
+    }
+
+    @GetMapping("/user/{userId}/completed")
+    public ResponseEntity<List<CourseResponse>> getCompletedCourses(@PathVariable Long userId) {
+        return ResponseEntity.ok(courseService.getCompletedCoursesByLearnerId(userId));
+    }
+
 }

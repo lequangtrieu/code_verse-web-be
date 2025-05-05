@@ -18,11 +18,12 @@ public class CourseCreateRequest {
     private String title;
     private String description;
     private Long categoryId;
-    private Long instructorId;
+    private String instructor;
     private MultipartFile imageFile;
     private CourseLevel level;
     @Builder.Default
     private BigDecimal price = BigDecimal.ZERO;
+    private Boolean isPublished = false;
 
     private List<MaterialSectionFullCreateRequest> modules;
 }

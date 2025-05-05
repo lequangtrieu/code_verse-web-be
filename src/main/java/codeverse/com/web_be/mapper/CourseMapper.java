@@ -1,6 +1,7 @@
 package codeverse.com.web_be.mapper;
 
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.entity.Category;
 import codeverse.com.web_be.entity.Course;
@@ -22,4 +23,9 @@ public interface CourseMapper {
     @Mapping(target = "category", source = "category.name")
     @Mapping(target = "instructor", source = "instructor.name")
     CourseResponse courseToCourseResponse(Course course);
+
+    @Mapping(target = "category", source = "category.name")
+    @Mapping(target = "instructor", source = "instructor.name")
+    @Mapping(target = "modules", ignore = true)
+    CourseForUpdateResponse  courseToCourseForUpdateResponse(Course course);
 }

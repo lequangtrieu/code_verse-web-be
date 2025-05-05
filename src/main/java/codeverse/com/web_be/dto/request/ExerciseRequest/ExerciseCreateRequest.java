@@ -8,7 +8,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ExerciseTaskCreateRequest {
-    private Long exerciseId;
-    private String description;
+public class ExerciseCreateRequest {
+    private Long lessonId;
+    private String title;
+    private String instruction;
+    private Integer expReward;
 }

@@ -12,4 +12,7 @@ public interface ICourseService extends IGenericService<Course, Long> {
     List<CourseResponse> getAllCourses();
     Course createFullCourse(CourseCreateRequest request);
     List<CourseResponse> getCoursesByLearnerId(Long userId);
+    List<CourseResponse> getInProgressCoursesByLearnerId(Long userId);
+    List<CourseResponse> getCompletedCoursesByLearnerId(Long userId);
+
 }

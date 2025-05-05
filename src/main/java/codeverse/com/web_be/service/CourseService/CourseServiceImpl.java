@@ -74,6 +74,35 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 .map(courseMapper::courseToCourseResponse)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<CourseResponse> getInProgressCoursesByLearnerId(Long userId) {
+        List<Course> inProgressCourses = progressTrackingRepository.findByUserId(userId)
+                .stream()
+                .filter(p -> p.getCompletionPercentage() != null && p.getCompletionPercentage() < 100)
+                .map(ProgressTracking::getCourse)
+                .distinct()
+                .collect(Collectors.toList());
+
+        return inProgressCourses.stream()
+                .map(courseMapper::courseToCourseResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CourseResponse> getCompletedCoursesByLearnerId(Long userId) {
+        List<Course> completedCourses = progressTrackingRepository.findByUserId(userId)
+                .stream()
+                .filter(p -> p.getCompletionPercentage() != null && p.getCompletionPercentage() >= 100)
+                .map(ProgressTracking::getCourse)
+                .distinct()
+                .collect(Collectors.toList());
+
+        return completedCourses.stream()
+                .map(courseMapper::courseToCourseResponse)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<CourseResponse> getAllCourses() {
         return courseRepository.selectAllCourses();

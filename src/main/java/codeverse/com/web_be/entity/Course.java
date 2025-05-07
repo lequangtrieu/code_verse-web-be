@@ -1,5 +1,6 @@
 package codeverse.com.web_be.entity;
 
+import codeverse.com.web_be.enums.CodeLanguage;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,9 @@ public class Course {
     @Enumerated(EnumType.STRING)
     private CourseLevel level;
 
+    @Enumerated(EnumType.STRING)
+    private CodeLanguage language;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
@@ -45,7 +49,8 @@ public class Course {
     private BigDecimal price;
 
     @Column(columnDefinition = "decimal(5,2) check (discount >= 0 and discount <= 100)")
-    private BigDecimal discount;
+    @Builder.Default
+    private BigDecimal discount = new BigDecimal(0);
 
     @Column(name = "is_published", columnDefinition = "tinyint(1) default 0")
     @Builder.Default

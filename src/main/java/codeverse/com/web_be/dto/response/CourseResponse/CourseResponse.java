@@ -26,11 +26,11 @@ public class CourseResponse {
     private int totalStudents;
     private boolean isTrending; // chỗ này có thể viết trong where
     private Long totalLessons;
-    private Integer totalDurations;
+    private Long totalDurations;
 
     public CourseResponse(Long id, String title, String description, String thumbnailUrl, 
                          String level, String category, BigDecimal price, BigDecimal discount, String instructor,
-                         Long totalLessons, Float rating, Integer ratingCount, Integer totalStudents, Boolean isTrending, Integer totalDurations) {
+                         Long totalLessons, Float rating, Integer ratingCount, Integer totalStudents, Boolean isTrending, Long totalDurations) {
         this.id = id;
         this.title = title;
         this.description = description;

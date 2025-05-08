@@ -3,6 +3,7 @@ package codeverse.com.web_be.config.SystemConfig;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.CourseLevel;
 import codeverse.com.web_be.enums.DiscountType;
+import codeverse.com.web_be.enums.LessonProgressStatus;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.repository.*;
 import lombok.AccessLevel;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -32,9 +34,13 @@ public class DummyDataConfig {
     TheoryRepository theoryRepository;
     ExerciseRepository exerciseRepository;
     PasswordEncoder passwordEncoder;
+    ProgressTrackingRepository progressTrackingRepository;
+    CourseRatingRepository courseRatingRepository;
+    LessonProgressRepository lessonProgressRepository;
     String password = "pass";
     String thumbnailUrl1 = "https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/images%2Fa53129ba-4965-4353-8bd2-6e917bdc9d3a_tutien.png?alt=media";
     String thumbnailUrl2 = "https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/images%2F5ec60b9c-00a0-4f6e-a8d5-5d217f286e4b_tutien2.png?alt=media";
+
     private static final boolean DUMMY_DATA = false;
 
     @Bean
@@ -134,8 +140,9 @@ public class DummyDataConfig {
             );
             courseRepository.saveAll(courses);
 
-            // Tạo material sections cho khóa học đầu tiên
+            // Tạo material sections cho tất cả khóa học
             List<MaterialSection> materialSections = List.of(
+                    // Web Development Course
                     MaterialSection.builder()
                             .course(courses.get(0))
                             .title("Introduction to Web Development")
@@ -165,113 +172,174 @@ public class DummyDataConfig {
                             .title("Backend Development with Node.js")
                             .orderIndex(5)
                             .previewable(false)
+                            .build(),
+
+                    // iOS Development Course
+                    MaterialSection.builder()
+                            .course(courses.get(1))
+                            .title("Introduction to iOS Development")
+                            .orderIndex(1)
+                            .previewable(true)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(1))
+                            .title("Swift Fundamentals")
+                            .orderIndex(2)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(1))
+                            .title("UIKit Basics")
+                            .orderIndex(3)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(1))
+                            .title("SwiftUI Introduction")
+                            .orderIndex(4)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(1))
+                            .title("iOS App Architecture")
+                            .orderIndex(5)
+                            .previewable(false)
+                            .build(),
+
+                    // Data Science Course
+                    MaterialSection.builder()
+                            .course(courses.get(2))
+                            .title("Introduction to Data Science")
+                            .orderIndex(1)
+                            .previewable(true)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(2))
+                            .title("Python for Data Science")
+                            .orderIndex(2)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(2))
+                            .title("NumPy and Pandas")
+                            .orderIndex(3)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(2))
+                            .title("Data Visualization")
+                            .orderIndex(4)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(2))
+                            .title("Data Analysis Projects")
+                            .orderIndex(5)
+                            .previewable(false)
+                            .build(),
+
+                    // Machine Learning Course
+                    MaterialSection.builder()
+                            .course(courses.get(3))
+                            .title("Introduction to Machine Learning")
+                            .orderIndex(1)
+                            .previewable(true)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(3))
+                            .title("Supervised Learning")
+                            .orderIndex(2)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(3))
+                            .title("Unsupervised Learning")
+                            .orderIndex(3)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(3))
+                            .title("Deep Learning Basics")
+                            .orderIndex(4)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(3))
+                            .title("ML Project Implementation")
+                            .orderIndex(5)
+                            .previewable(false)
+                            .build(),
+
+                    // AWS Course
+                    MaterialSection.builder()
+                            .course(courses.get(4))
+                            .title("Introduction to AWS")
+                            .orderIndex(1)
+                            .previewable(true)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(4))
+                            .title("EC2 and VPC")
+                            .orderIndex(2)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(4))
+                            .title("S3 and Storage Services")
+                            .orderIndex(3)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(4))
+                            .title("Database Services")
+                            .orderIndex(4)
+                            .previewable(false)
+                            .build(),
+                    MaterialSection.builder()
+                            .course(courses.get(4))
+                            .title("Security and Compliance")
+                            .orderIndex(5)
+                            .previewable(false)
                             .build()
             );
             materialSectionRepository.saveAll(materialSections);
 
-            // Tạo lessons cho material section đầu tiên
-            List<Lesson> lessons = List.of(
-                    Lesson.builder()
-                            .materialSection(materialSections.get(0))
-                            .title("What is Web Development?")
-                            .orderIndex(1)
-                            .defaultCode("// Welcome to web development!")
+            // Tạo lessons cho tất cả material sections
+            List<Lesson> lessons = new ArrayList<>();
+            for (MaterialSection section : materialSections) {
+                for (int i = 1; i <= 5; i++) {
+                    lessons.add(Lesson.builder()
+                            .materialSection(section)
+                            .title(section.getTitle() + " - Lesson " + i)
+                            .orderIndex(i)
+                            .defaultCode("// Default code for " + section.getTitle() + " - Lesson " + i)
                             .duration(10)
-                            .build(),
-                    Lesson.builder()
-                            .materialSection(materialSections.get(0))
-                            .title("Web Development Tools")
-                            .orderIndex(2)
-                            .defaultCode("// Let's set up your development environment")
-                            .duration(10)
-                            .build(),
-                    Lesson.builder()
-                            .materialSection(materialSections.get(0))
-                            .title("Understanding the Web")
-                            .orderIndex(3)
-                            .defaultCode("// How the web works")
-                            .duration(10)
-                            .build(),
-                    Lesson.builder()
-                            .materialSection(materialSections.get(0))
-                            .title("Your First Web Page")
-                            .orderIndex(4)
-                            .defaultCode("<!DOCTYPE html>\n<html>\n<head>\n<title>My First Page</title>\n</head>\n<body>\n</body>\n</html>")
-                            .duration(10)
-                            .build(),
-                    Lesson.builder()
-                            .materialSection(materialSections.get(0))
-                            .title("Web Development Best Practices")
-                            .orderIndex(5)
-                            .defaultCode("// Follow these best practices")
-                            .duration(10)
-                            .build()
-            );
+                            .build());
+                }
+            }
             lessonRepository.saveAll(lessons);
 
-            // Tạo theories cho lessons
-            List<Theory> theories = List.of(
-                    Theory.builder()
-                            .lesson(lessons.get(0))
-                            .title("Introduction to Web Development")
-                            .content("Web development is the work involved in developing a website for the Internet...")
-                            .build(),
-                    Theory.builder()
-                            .lesson(lessons.get(1))
-                            .title("Essential Development Tools")
-                            .content("To start web development, you'll need some essential tools...")
-                            .build(),
-                    Theory.builder()
-                            .lesson(lessons.get(2))
-                            .title("How the Web Works")
-                            .content("The web is a complex system of interconnected computers...")
-                            .build(),
-                    Theory.builder()
-                            .lesson(lessons.get(3))
-                            .title("HTML Basics")
-                            .content("HTML is the standard markup language for creating web pages...")
-                            .build(),
-                    Theory.builder()
-                            .lesson(lessons.get(4))
-                            .title("Best Practices in Web Development")
-                            .content("Following best practices ensures your code is maintainable...")
-                            .build()
-            );
+            // Tạo theories cho tất cả lessons
+            List<Theory> theories = new ArrayList<>();
+            for (Lesson lesson : lessons) {
+                theories.add(Theory.builder()
+                        .lesson(lesson)
+                        .title(lesson.getTitle() + " - Theory")
+                        .content("This is the theory content for " + lesson.getTitle() + ". Learn about the concepts and principles...")
+                        .build());
+            }
             theoryRepository.saveAll(theories);
 
-            // Tạo exercises cho lessons
-            List<Exercise> exercises = List.of(
-                    Exercise.builder()
-                            .lesson(lessons.get(0))
-                            .title("Web Development Quiz")
-                            .expReward(100)
-                            .instruction("Test your knowledge about web development basics")
-                            .build(),
-                    Exercise.builder()
-                            .lesson(lessons.get(1))
-                            .title("Tool Setup Challenge")
-                            .expReward(150)
-                            .instruction("Set up your development environment")
-                            .build(),
-                    Exercise.builder()
-                            .lesson(lessons.get(2))
-                            .title("Web Architecture Exercise")
-                            .expReward(200)
-                            .instruction("Draw the architecture of a simple web application")
-                            .build(),
-                    Exercise.builder()
-                            .lesson(lessons.get(3))
-                            .title("HTML Practice")
-                            .expReward(250)
-                            .instruction("Create a simple HTML page with basic elements")
-                            .build(),
-                    Exercise.builder()
-                            .lesson(lessons.get(4))
-                            .title("Code Review Exercise")
-                            .expReward(300)
-                            .instruction("Review and improve a given code snippet")
-                            .build()
-            );
+            // Tạo exercises cho tất cả lessons
+            List<Exercise> exercises = new ArrayList<>();
+            for (Lesson lesson : lessons) {
+                exercises.add(Exercise.builder()
+                        .lesson(lesson)
+                        .title(lesson.getTitle() + " - Exercise")
+                        .expReward(100 * lesson.getOrderIndex())
+                        .instruction("Complete the exercise for " + lesson.getTitle() + ". Practice what you've learned...")
+                        .build());
+            }
             exerciseRepository.saveAll(exercises);
 
             // Tạo vouchers
@@ -302,6 +370,58 @@ public class DummyDataConfig {
                             .build()
             );
             voucherRepository.saveAll(vouchers);
+
+            // Tạo progress tracking
+            List<ProgressTracking> progressTrackings = new ArrayList<>();
+            for (Course course : courses) {
+                for (User instructor : instructors) {
+                    progressTrackings.add(ProgressTracking.builder()
+                            .user(instructor)
+                            .course(course)
+                            .completionPercentage((float) (Math.random() * 100))
+                            .lastAccessed(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+                            .build());
+                }
+            }
+            progressTrackingRepository.saveAll(progressTrackings);
+
+            // Tạo course ratings
+            List<CourseRating> courseRatings = new ArrayList<>();
+            for (Course course : courses) {
+                for (User instructor : instructors) {
+                    courseRatings.add(CourseRating.builder()
+                            .user(instructor)
+                            .course(course)
+                            .rating((int) (Math.random() * 3) + 3) // Rating từ 3-5
+                            .comment("Great course! " + course.getTitle() + " is very informative and well-structured.")
+                            .build());
+                }
+            }
+            courseRatingRepository.saveAll(courseRatings);
+
+            // Tạo lesson progress
+            List<LessonProgress> lessonProgresses = new ArrayList<>();
+            for (Lesson lesson : lessons) {
+                for (User instructor : instructors) {
+                    LessonProgressStatus status = Math.random() > 0.5 ? 
+                            LessonProgressStatus.COMPLETED : LessonProgressStatus.IN_PROGRESS;
+                    
+                    LocalDateTime startedAt = LocalDateTime.now().minusDays((long) (Math.random() * 10));
+                    LocalDateTime completedAt = status == LessonProgressStatus.COMPLETED ? 
+                            startedAt.plusHours((long) (Math.random() * 24)) : null;
+                    
+                    lessonProgresses.add(LessonProgress.builder()
+                            .user(instructor)
+                            .lesson(lesson)
+                            .status(status)
+                            .expGained(status == LessonProgressStatus.COMPLETED ? 
+                                    (int) (Math.random() * 100) + 50 : 0)
+                            .startedAt(startedAt)
+                            .completedAt(completedAt)
+                            .build());
+                }
+            }
+            lessonProgressRepository.saveAll(lessonProgresses);
 
             log.info("Dummy data has been initialized successfully");
         };

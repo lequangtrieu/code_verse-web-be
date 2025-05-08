@@ -49,11 +49,12 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CourseResponse> getCourseById(@PathVariable Long id) {
-        return courseService.findById(id)
-                .map(courseMapper::courseToCourseResponse)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ApiResponse<CourseResponse> getCourseById(@PathVariable Long id) {
+        return ApiResponse.<CourseResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Get Course Success")
+                .result(courseService.getCourseById(id))
+                .build();
     }
 
     @GetMapping("/admin/{courseId}")

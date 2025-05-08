@@ -95,4 +95,9 @@ public class CourseController {
         return ResponseEntity.ok(courseService.getCompletedCoursesByLearnerId(userId));
     }
 
+    @GetMapping("/user/{userId}/suggested")
+    public ResponseEntity<List<CourseResponse>> getSuggestedCourses(@PathVariable Long userId) {
+        return ResponseEntity.ok(courseService.getSuggestedCoursesByLearnerId(userId));
+    }
+
 }

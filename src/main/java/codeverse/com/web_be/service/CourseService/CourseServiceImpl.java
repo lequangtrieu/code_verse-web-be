@@ -197,4 +197,9 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
         return course;
     }
+
+    @Override
+    public CourseResponse getCourseById(Long courseId) {
+        return courseRepository.selectCourseById(courseId);
+    }
 }

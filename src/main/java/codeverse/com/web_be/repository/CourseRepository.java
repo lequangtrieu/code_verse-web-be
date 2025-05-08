@@ -17,7 +17,10 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "c.id, c.title, c.description, c.thumbnailUrl, CAST(c.level AS string), cat.name as category, c.price, c.discount, " +
             "u.name, " +
             "(SELECT COUNT(l) FROM Lesson l JOIN l.materialSection ms WHERE ms.course = c) as totalLessons, " +
-            "4.7f as rating, 38 as ratingCount, null as totalStudents, null as isTrending, " +
+            "(SELECT COALESCE(ROUND(AVG(cr.rating), 1), 0) FROM CourseRating cr WHERE cr.course = c) as rating, " +
+            "(SELECT COUNT(cr) FROM CourseRating cr WHERE cr.course = c) as ratingCount, " +
+            "(SELECT COUNT(DISTINCT pt.user) FROM ProgressTracking pt WHERE pt.course = c) as totalStudents, " +
+            "false as isTrending, " +
             "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.materialSection ms WHERE ms.course = c) as totalDurations) " +
             "FROM Course c " +
             "LEFT JOIN c.category cat " +

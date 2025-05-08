@@ -373,6 +373,12 @@ public class DummyDataConfig {
 
             // Tạo progress tracking
             List<ProgressTracking> progressTrackings = new ArrayList<>();
+            progressTrackings.add(ProgressTracking.builder()
+                    .user(instructors.get(0))
+                    .course(courses.get(0))
+                    .completionPercentage(100f)
+                    .lastAccessed(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+                    .build());
             for (Course course : courses) {
                 for (User instructor : instructors) {
                     progressTrackings.add(ProgressTracking.builder()
@@ -392,7 +398,7 @@ public class DummyDataConfig {
                     courseRatings.add(CourseRating.builder()
                             .user(instructor)
                             .course(course)
-                            .rating((int) (Math.random() * 3) + 3) // Rating từ 3-5
+                            .rating(Math.round((1.0f + (float) (Math.random() * 4.0f)) * 10.0f) / 10.0f) // Rating từ 1.0-5.0 với 1 số thập phân
                             .comment("Great course! " + course.getTitle() + " is very informative and well-structured.")
                             .build());
                 }

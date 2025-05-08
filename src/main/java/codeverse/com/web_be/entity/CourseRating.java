@@ -29,7 +29,7 @@ public class CourseRating {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    private Integer rating;
+    private Float rating;
 
     @Column(columnDefinition = "TEXT")
     private String comment;

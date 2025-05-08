@@ -21,16 +21,16 @@ public class CourseResponse {
     private String instructor;
     private BigDecimal price;
     private BigDecimal discount;
-    private float rating;
-    private int ratingCount;
-    private int totalStudents;
-    private boolean isTrending; // chỗ này có thể viết trong where
+    private Double rating;
+    private Long ratingCount;
+    private Long totalStudents;
+    private Boolean isTrending;
     private Long totalLessons;
     private Long totalDurations;
 
     public CourseResponse(Long id, String title, String description, String thumbnailUrl, 
                          String level, String category, BigDecimal price, BigDecimal discount, String instructor,
-                         Long totalLessons, Float rating, Integer ratingCount, Integer totalStudents, Boolean isTrending, Long totalDurations) {
+                         Long totalLessons, Double rating, Long ratingCount, Long totalStudents, Boolean isTrending, Long totalDurations) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -44,7 +44,7 @@ public class CourseResponse {
         this.rating = rating != null ? rating : 0;
         this.ratingCount = ratingCount != null ? ratingCount : 0;
         this.totalStudents = totalStudents != null ? totalStudents : 0;
-        this.isTrending = isTrending != null && isTrending;
+        this.isTrending = isTrending != null ? isTrending : false;
         this.totalDurations = totalDurations != null ? totalDurations : 0;
     }
 }

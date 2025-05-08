@@ -40,36 +40,62 @@ public class CodeExecutionController {
     }
 
     private String runJava(String code, String input) throws IOException, InterruptedException {
-        String className = "Main";
+        if (code == null || code.isEmpty()) {
+            throw new RuntimeException("Java code is empty.");
+        }
+
+        boolean hasInput = (input != null && !input.trim().isEmpty());
+        if (hasInput) {
+            input = input.replace(",", " ");
+        }
+
+        String className = code.split("class ")[1].split(" ")[0].trim();
         Path tempDir = Files.createTempDirectory("java-code");
         Path javaFile = tempDir.resolve(className + ".java");
-        Path inputFile = tempDir.resolve("input.txt");
+        String modifiedCode = "import java.io.File;\nimport java.io.FileNotFoundException;\n" +
+                code.replace("Scanner sc = new Scanner(System.in);",
+                        "Scanner sc = new Scanner(" + (hasInput ? "new File(\"input.txt\")" : "System.in") + ");");
+        if (!modifiedCode.contains("throws FileNotFoundException")) {
+            modifiedCode = modifiedCode.replace("public static void main(String[] args) {",
+                    "public static void main(String[] args) throws FileNotFoundException {");
+        }
 
-        Files.writeString(javaFile, code);
-        Files.writeString(inputFile, input);
+        Files.writeString(javaFile, modifiedCode);
+
+        if (hasInput) {
+            Path inputFile = tempDir.resolve("input.txt");
+            Files.writeString(inputFile, input);
+        }
 
         Process compile = new ProcessBuilder("javac", javaFile.toString())
                 .directory(tempDir.toFile())
                 .redirectErrorStream(true)
                 .start();
-
         String compileOutput = new String(compile.getInputStream().readAllBytes());
         int compileCode = compile.waitFor();
+
         if (compileCode != 0) {
             throw new RuntimeException("Compile error:\n" + compileOutput);
         }
 
-        Process run = new ProcessBuilder("java", "-cp", tempDir.toString(), className)
+        ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", tempDir.toString(), className)
                 .directory(tempDir.toFile())
-                .redirectInput(inputFile.toFile())
-                .redirectErrorStream(true)
-                .start();
+                .redirectErrorStream(true);
 
+        if (hasInput) {
+            Path inputFile = tempDir.resolve("input.txt");
+            runBuilder.redirectInput(inputFile.toFile());
+        }
+
+        Process run = runBuilder.start();
         String output = new String(run.getInputStream().readAllBytes());
         int runCode = run.waitFor();
-
         Files.deleteIfExists(javaFile);
-        Files.deleteIfExists(inputFile);
+
+        if (hasInput) {
+            Files.deleteIfExists(tempDir.resolve("input.txt"));
+        }
+
         Files.deleteIfExists(tempDir.resolve(className + ".class"));
         Files.deleteIfExists(tempDir);
 
@@ -79,6 +105,9 @@ public class CodeExecutionController {
 
         return output.trim();
     }
+
+
+
 
     private String runJavascript(String code, String input) throws IOException, InterruptedException {
         Path file = Files.createTempFile("usercode-", ".js");

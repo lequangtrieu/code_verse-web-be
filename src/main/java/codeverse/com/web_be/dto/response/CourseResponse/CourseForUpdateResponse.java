@@ -15,8 +15,11 @@ public class CourseForUpdateResponse {
     private String description;
     private String thumbnailUrl;
     private String level;
+    private String language;
     private String category;
+    private Long categoryId;
     private String instructor;
+    private Long instructorId;
     private BigDecimal price;
     private boolean published;
     private boolean deleted;

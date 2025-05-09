@@ -8,8 +8,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TheoryCreateRequest {
-    private Long lessonId;
+public class TheoryUpdateRequest {
+    private Long id;
     private String title = "";
     private String content;
 }

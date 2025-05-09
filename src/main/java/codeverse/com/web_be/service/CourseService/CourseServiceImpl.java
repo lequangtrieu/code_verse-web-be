@@ -105,6 +105,25 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     }
 
     @Override
+    public List<CourseResponse> getSuggestedCoursesByLearnerId(Long userId) {
+        List<Course> allCourses = courseRepository.findAll();
+
+        List<Course> completedOrInProgressCourses = progressTrackingRepository.findByUserId(userId)
+                .stream()
+                .map(ProgressTracking::getCourse)
+                .distinct()
+                .toList();
+
+        List<Course> suggestedCourses = allCourses.stream()
+                .filter(course -> !completedOrInProgressCourses.contains(course))
+                .toList();
+
+        return suggestedCourses.stream()
+                .map(courseMapper::courseToCourseResponse)
+                .toList();
+    }
+
+    @Override
     public List<CourseResponse> getAllCourses() {
         return courseRepository.selectAllCourses();
     }

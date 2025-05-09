@@ -5,6 +5,7 @@ import codeverse.com.web_be.entity.MaterialSection;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Console;
 import java.util.List;
 
 @Data
@@ -15,6 +16,8 @@ import java.util.List;
 public class MaterialSectionForUpdateResponse {
     private Long id;
     private String title;
+    private Integer orderIndex;
+    private boolean previewable = false;
 
     private List<LessonWithinMaterialResponse> lessons;
 
@@ -24,6 +27,8 @@ public class MaterialSectionForUpdateResponse {
         return MaterialSectionForUpdateResponse.builder()
                 .id(materialSection.getId())
                 .title(materialSection.getTitle())
+                .orderIndex(materialSection.getOrderIndex())
+                .previewable(materialSection.isPreviewable())
                 .build();
     }
 }

@@ -38,6 +38,8 @@ public class MaterialSectionServiceImpl extends GenericServiceImpl<MaterialSecti
                     return MaterialSectionForUpdateResponse.builder()
                             .id(section.getId())
                             .title(section.getTitle())
+                            .orderIndex(section.getOrderIndex())
+                            .previewable(section.isPreviewable())
                             .lessons(lessons.stream()
                                     .map(LessonWithinMaterialResponse::fromEntity)
                                     .toList())

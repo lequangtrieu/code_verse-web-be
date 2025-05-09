@@ -26,7 +26,7 @@ public class TheoryController {
 
     @PostMapping
     public ApiResponse<TheoryResponse> createTheory(@RequestBody TheoryCreateRequest request){
-        Theory theory = theoryMapper.TheoryCreateRequestToTheory(request);
+        Theory theory = theoryMapper.theoryCreateRequestToTheory(request);
         Lesson lesson = lessonService.findById(request.getLessonId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
         theory.setLesson(lesson);

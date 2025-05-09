@@ -14,6 +14,8 @@ import lombok.experimental.FieldDefaults;
 public class LessonWithinMaterialResponse {
     private Long id;
     private String title;
+    private Integer orderIndex;
+    private Integer duration;
 
     private ExerciseWithinLessonResponse exercise;
     private TheoryWithinLessonResponse theory;
@@ -24,6 +26,8 @@ public class LessonWithinMaterialResponse {
         return LessonWithinMaterialResponse.builder()
                 .id(lesson.getId())
                 .title(lesson.getTitle())
+                .orderIndex(lesson.getOrderIndex())
+                .duration(lesson.getDuration())
                 .exercise(ExerciseWithinLessonResponse.fromEntity(lesson.getExercise()))
                 .theory(TheoryWithinLessonResponse.fromEntity(lesson.getTheory()))
                 .build();

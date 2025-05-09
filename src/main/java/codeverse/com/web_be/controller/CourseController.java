@@ -1,6 +1,8 @@
 package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
+import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
+import codeverse.com.web_be.dto.request.MaterialSectionRequest.MaterialSectionUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionForUpdateResponse;
@@ -39,12 +41,30 @@ public class CourseController {
     }
 
     @GetMapping("/admin")
-    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesAdmin() {
+    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesAdmin(@RequestParam String username) {
         return ApiResponse.<List<CourseForUpdateResponse>>builder()
-                .result(courseService.findAll().stream()
+                .result(courseService.findByInstructorUsername(username).stream()
                         .map(courseMapper::courseToCourseForUpdateResponse)
                         .collect(Collectors.toList()))
                 .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<CourseResponse> updateCourse(@PathVariable Long id, @ModelAttribute CourseUpdateRequest request) {
+        Course updatedCourse = courseService.updateCourse(id, request);
+        return ApiResponse.<CourseResponse>builder()
+                .result(courseMapper.courseToCourseResponse(updatedCourse))
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @PutMapping("/{courseId}/materials")
+    public ApiResponse<Void> updateCourseMaterials(@PathVariable Long courseId, @RequestBody List<MaterialSectionUpdateRequest> requestList) {
+        courseService.updateCourseMaterials(courseId, requestList);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Update succeed")
                 .build();
     }
 

@@ -105,49 +105,18 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     @Override
     public List<CourseResponse> getInProgressCoursesByLearnerId(Long userId) {
-        List<Course> inProgressCourses = progressTrackingRepository.findByUserId(userId)
-                .stream()
-                .filter(p -> p.getCompletionPercentage() != null && p.getCompletionPercentage() < 100)
-                .map(ProgressTracking::getCourse)
-                .distinct()
-                .toList();
-
-        return inProgressCourses.stream()
-                .map(courseMapper::courseToCourseResponse)
-                .toList();
+        return courseRepository.findInProgressCourseResponsesByUserId(userId);
     }
 
     @Override
     public List<CourseResponse> getCompletedCoursesByLearnerId(Long userId) {
-        List<Course> completedCourses = progressTrackingRepository.findByUserId(userId)
-                .stream()
-                .filter(p -> p.getCompletionPercentage() != null && p.getCompletionPercentage() >= 100)
-                .map(ProgressTracking::getCourse)
-                .distinct()
-                .toList();
-
-        return completedCourses.stream()
-                .map(courseMapper::courseToCourseResponse)
-                .toList();
+        return courseRepository.findCompletedCourseResponsesByUserId(userId);
     }
+
 
     @Override
     public List<CourseResponse> getSuggestedCoursesByLearnerId(Long userId) {
-        List<Course> allCourses = courseRepository.findAll();
-
-        List<Course> completedOrInProgressCourses = progressTrackingRepository.findByUserId(userId)
-                .stream()
-                .map(ProgressTracking::getCourse)
-                .distinct()
-                .toList();
-
-        List<Course> suggestedCourses = allCourses.stream()
-                .filter(course -> !completedOrInProgressCourses.contains(course))
-                .toList();
-
-        return suggestedCourses.stream()
-                .map(courseMapper::courseToCourseResponse)
-                .toList();
+        return courseRepository.findSuggestedCourseResponsesByUserId(userId);
     }
 
     @Override

@@ -12,6 +12,5 @@ public class LessonCreateRequest {
     private Long materialSectionId;
     private String title;
     private Integer orderIndex;
-    private String defaultCode;
     private Integer duration;
 }

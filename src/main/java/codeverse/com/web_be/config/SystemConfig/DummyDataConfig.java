@@ -70,6 +70,15 @@ public class DummyDataConfig {
             // Tạo instructors
             List<User> instructors = List.of(
                     User.builder()
+                            .username("admin@gmail.com")
+                            .password(passwordEncoder.encode("admin"))
+                            .isVerified(true)
+                            .role(UserRole.ADMIN)
+                            .name("ADMIN")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build(),
+                    User.builder()
                             .username("tientnm@gmail.com")
                             .password(passwordEncoder.encode(password))
                             .name("Từ Nguyễn Minh Tiên")
@@ -122,7 +131,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("79.99"))
                             .discount(new BigDecimal("15.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Data Science Fundamentals")
@@ -144,7 +153,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("0.00"))
                             .discount(new BigDecimal("0.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("AWS Certified Solutions Architect")
@@ -178,7 +187,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("100.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Python for Data Analysis")
@@ -200,7 +209,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("100000"))
                             .discount(new BigDecimal("30.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("DevOps with Docker and Kubernetes")
@@ -222,7 +231,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("65000"))
                             .discount(new BigDecimal("45.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Full Stack Development with MERN")
@@ -244,7 +253,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("95000"))
                             .discount(new BigDecimal("10.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Blockchain Development")
@@ -266,7 +275,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("70000"))
                             .discount(new BigDecimal("40.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build()
             );
             courseRepository.saveAll(courses);
@@ -743,7 +752,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("15.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Natural Language Processing")
@@ -765,7 +774,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("30.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Vue.js Frontend Development")
@@ -787,7 +796,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("40.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Data Engineering with Python")
@@ -809,7 +818,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("45.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Google Cloud Platform")
@@ -831,7 +840,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("70000"))
                             .discount(new BigDecimal("20.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Cross-Platform Mobile Development")
@@ -853,7 +862,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("30.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Reinforcement Learning")
@@ -875,7 +884,7 @@ public class DummyDataConfig {
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("40.00"))
                             .isPublished(true)
-                            .instructor(instructors.get(1))
+                            .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
                             .title("Full Stack Development with Django")

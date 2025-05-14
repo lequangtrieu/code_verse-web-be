@@ -4,9 +4,8 @@ import codeverse.com.web_be.dto.request.AddToCartRequest.AddToCartRequest;
 import codeverse.com.web_be.dto.request.AddToCartRequest.PaymentConfirmationRequest;
 import codeverse.com.web_be.dto.response.CheckoutResponse.CheckoutResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
-import codeverse.com.web_be.entity.CartItem;
+import codeverse.com.web_be.entity.Cart;
 import codeverse.com.web_be.service.CartService.CartServiceImpl;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,10 +47,10 @@ public class CartController {
     }
 
     @GetMapping("/details")
-    public ResponseEntity<ApiResponse<List<CartItem>>> getCartDetails(@RequestParam String username) {
-        List<CartItem> cartDetails = cartService.getCartDetails(username);
+    public ResponseEntity<ApiResponse<List<Cart>>> getCartDetails(@RequestParam String username) {
+        List<Cart> cartDetails = cartService.getCartDetails(username);
         return ResponseEntity.ok(
-                ApiResponse.<List<CartItem>>builder()
+                ApiResponse.<List<Cart>>builder()
                         .message("Cart details fetched successfully")
                         .result(cartDetails)
                         .build()
@@ -82,7 +81,7 @@ public class CartController {
 
     @PostMapping("/checkout")
     public ResponseEntity<ApiResponse<CheckoutResponse>> checkout(@RequestBody AddToCartRequest request) {
-        CheckoutResponse response  = cartService.checkoutWithPayOS(request.getUsername(), request.getSelectedCartItemId());
+        CheckoutResponse response = cartService.checkoutWithPayOS(request.getUsername(), request.getSelectedCartItemId());
         return ResponseEntity.ok(
                 ApiResponse.<CheckoutResponse>builder()
                         .result(response)

@@ -18,17 +18,13 @@ import vn.payos.type.PaymentData;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CartServiceImpl implements ICartService {
 
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
     private final CourseRepository courseRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -58,32 +54,20 @@ public class CartServiceImpl implements ICartService {
 
         if (alreadyPurchased) {
             return "You already own this course";
-
         }
 
-
-            Cart cart = cartRepository.findByUser(user)
-                .orElseGet(() -> cartRepository.save(
-                        Cart.builder()
-                                .user(user)
-                                .cartItems(new ArrayList<>())
-                                .build()
-                ));
-
-        boolean alreadyInCart = cart.getCartItems().stream()
-                .anyMatch(item -> item.getCourse().getId().equals(course.getId()));
+        boolean alreadyInCart = cartRepository.existsByUserAndCourse(user, course);
 
         if (alreadyInCart) {
             return "Course already in cart";
         }
 
-
-        CartItem cartItem = CartItem.builder()
-                .cart(cart)
+        Cart cartEntry = Cart.builder()
+                .user(user)
                 .course(course)
                 .build();
 
-        cartItemRepository.save(cartItem);
+        cartRepository.save(cartEntry);
         return "Added to cart successfully";
     }
 
@@ -111,6 +95,8 @@ public class CartServiceImpl implements ICartService {
             throw new AppException(ErrorCode.COURSE_ALREADY_OWNED);
         }
 
+        cartRepository.deleteByUserAndCourse(user, course);
+
         Order order = Order.builder()
                 .user(user)
                 .totalAmount(BigDecimal.ZERO)
@@ -137,65 +123,57 @@ public class CartServiceImpl implements ICartService {
     @Transactional
     public void removeCartItem(Long cartItemId, String username) {
         functionHelper.getActiveUserByUsername(username);
-        cartItemRepository.deleteById(cartItemId);
+        cartRepository.deleteById(cartItemId);
     }
 
     @Override
     @Transactional
     public void clearCart(String username) {
         User user = functionHelper.getActiveUserByUsername(username);
-
-        Cart cart = cartRepository.findByUser(user)
-                .orElse(null);
-
-        if (cart != null && cart.getCartItems() != null && !cart.getCartItems().isEmpty()) {
-            cartItemRepository.deleteAll(cart.getCartItems());
-            cart.getCartItems().clear();
-            cartRepository.save(cart);
-        }
+        cartRepository.deleteByUser(user);
     }
 
     @Override
-    public List<CartItem> getCartDetails(String username) {
+    public List<Cart> getCartDetails(String username) {
         User user = functionHelper.getActiveUserByUsername(username);
 
-        return cartRepository.findByUser(user)
-                .map(Cart::getCartItems)
-                .orElse(Collections.emptyList());
+        return cartRepository.findAllByUser(user);
     }
 
     @Override
     public int countCartItems(String username) {
         User user = functionHelper.getActiveUserByUsername(username);
 
-        return cartRepository.findByUser(user)
-                .map(cart -> cart.getCartItems().size())
-                .orElse(0);
+        return cartRepository.countByUser(user);
     }
 
-    public CheckoutResponse checkoutWithPayOS(String username, List<Long> selectedCartItemIds) {
-        if (selectedCartItemIds == null || selectedCartItemIds.isEmpty()) {
+    public CheckoutResponse checkoutWithPayOS(String username, List<Long> selectedCartIds) {
+        if (selectedCartIds == null || selectedCartIds.isEmpty()) {
             throw new AppException(ErrorCode.ILLEGAL_ARGS);
         }
 
         User user = functionHelper.getActiveUserByUsername(username);
 
-        Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ENTITY));
-
-        List<CartItem> selectedItems = cart.getCartItems().stream()
-                .filter(item -> selectedCartItemIds.contains(item.getId()))
-                .collect(Collectors.toList());
+        List<Cart> selectedItems = cartRepository.findAllById(selectedCartIds);
 
         if (selectedItems.isEmpty()) {
             throw new AppException(ErrorCode.ILLEGAL_ARGS);
         }
 
+        if (selectedItems.size() != selectedCartIds.size()) {
+            throw new AppException(ErrorCode.NOT_EXISTED_ENTITY);
+        }
+
+        boolean unauthorized = selectedItems.stream().anyMatch(cart -> !cart.getUser().getId().equals(user.getId()));
+
+        if (unauthorized) {
+            throw new AppException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
         boolean hasFreeCourse = selectedItems.stream()
-                .map(CartItem::getCourse)
+                .map(Cart::getCourse)
                 .anyMatch(course -> course.getPrice()
-                        .multiply(BigDecimal.valueOf(1)
-                                .subtract(course.getDiscount().divide(BigDecimal.valueOf(100))))
+                        .multiply(BigDecimal.ONE.subtract(course.getDiscount().divide(BigDecimal.valueOf(100))))
                         .compareTo(BigDecimal.ZERO) == 0);
 
         if (hasFreeCourse) {
@@ -219,8 +197,8 @@ public class CartServiceImpl implements ICartService {
                 .build();
         orderRepository.save(order);
 
-        for (CartItem cartItem : selectedItems) {
-            Course course = cartItem.getCourse();
+        for (Cart cart : selectedItems) {
+            Course course = cart.getCourse();
             BigDecimal discountedPrice = course.getPrice().multiply(
                     BigDecimal.ONE.subtract(course.getDiscount().divide(BigDecimal.valueOf(100)))
             );
@@ -270,10 +248,7 @@ public class CartServiceImpl implements ICartService {
                 .map(orderItem -> orderItem.getCourse().getId())
                 .toList();
 
-        Cart cart = cartRepository.findByUser(order.getUser())
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-
-        cartItemRepository.deleteByCartIdAndCourseIds(cart.getId(), purchasedCourseIds);
+        cartRepository.deleteByUserAndCourseIdIn(user, purchasedCourseIds);
         List<Course> purchasedCourses = courseRepository.findAllById(purchasedCourseIds);
         try {
             emailServiceSender.sendPaidCoursesConfirmationEmail(user, purchasedCourses);

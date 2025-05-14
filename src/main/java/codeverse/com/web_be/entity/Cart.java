@@ -1,10 +1,11 @@
 package codeverse.com.web_be.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cart")
@@ -17,11 +18,21 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"carts", "hibernateLazyInitializer", "handler"})
     private User user;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> cartItems;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category", "instructor"})
+    private Course course;
 
+    @Column(name = "added_at")
+    private LocalDateTime addedAt;
+
+    @PrePersist
+    protected void onAdd() {
+        this.addedAt = LocalDateTime.now();
+    }
 }

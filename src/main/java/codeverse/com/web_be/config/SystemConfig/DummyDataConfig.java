@@ -44,8 +44,8 @@ public class DummyDataConfig {
     SubmissionRepository submissionRepository;
 
     String password = "pass";
-    String thumbnailUrl1 = "https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/images%2Fa53129ba-4965-4353-8bd2-6e917bdc9d3a_tutien.png?alt=media";
-    String thumbnailUrl2 = "https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/images%2F5ec60b9c-00a0-4f6e-a8d5-5d217f286e4b_tutien2.png?alt=media";
+    String thumbnailUrl1 = "https://vtiacademy.edu.vn/upload/images/artboard-1-copy-7-100.jpg";
+    String thumbnailUrl2 = "https://letdiv.com/wp-content/uploads/2024/04/khoa-hoc-react.png";
 
     private static final boolean DUMMY_DATA = false;
 

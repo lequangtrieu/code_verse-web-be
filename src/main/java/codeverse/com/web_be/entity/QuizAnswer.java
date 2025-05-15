@@ -1,6 +1,5 @@
 package codeverse.com.web_be.entity;
 
-import codeverse.com.web_be.enums.LessonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,38 +9,30 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "lesson")
+@Table(name = "quiz_answer")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Lesson {
+public class QuizAnswer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "material_id", nullable = false)
-    private MaterialSection materialSection;
+    @JoinColumn(name = "question_id", nullable = false)
+    private QuizQuestion question;
 
     @Column(nullable = false)
-    private String title;
+    private String answer;
+
+    @Column(name = "is_correct", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
+    private boolean isCorrect = false;
 
     @Column(name = "order_index")
     private Integer orderIndex;
-
-    @OneToOne(mappedBy = "lesson", cascade = CascadeType.ALL)
-    private Theory theory;
-
-    @OneToOne(mappedBy = "lesson", cascade = CascadeType.ALL)
-    private Exercise exercise;
-
-    @Column(name = "duration", columnDefinition = "integer default 10")
-    private Integer duration;
-
-    @Enumerated(EnumType.STRING)
-    private LessonType lessonType;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

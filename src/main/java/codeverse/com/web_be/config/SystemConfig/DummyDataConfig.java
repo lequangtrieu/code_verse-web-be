@@ -36,7 +36,7 @@ public class DummyDataConfig {
     TheoryRepository theoryRepository;
     ExerciseRepository exerciseRepository;
     PasswordEncoder passwordEncoder;
-    ProgressTrackingRepository progressTrackingRepository;
+    CourseEnrollmentRepository courseEnrollmentRepository;
     CourseRatingRepository courseRatingRepository;
     LessonProgressRepository lessonProgressRepository;
     ExerciseTaskRepository exerciseTaskRepository;
@@ -44,6 +44,7 @@ public class DummyDataConfig {
     SubmissionRepository submissionRepository;
 
     String password = "pass";
+    String adminPassword = "admin";
     String thumbnailUrl1 = "https://vtiacademy.edu.vn/upload/images/artboard-1-copy-7-100.jpg";
     String thumbnailUrl2 = "https://letdiv.com/wp-content/uploads/2024/04/khoa-hoc-react.png";
 
@@ -71,7 +72,7 @@ public class DummyDataConfig {
             List<User> instructors = List.of(
                     User.builder()
                             .username("admin@gmail.com")
-                            .password(passwordEncoder.encode("admin"))
+                            .password(passwordEncoder.encode(adminPassword))
                             .isVerified(true)
                             .role(UserRole.ADMIN)
                             .name("ADMIN")
@@ -484,7 +485,6 @@ public class DummyDataConfig {
                             .materialSection(section)
                             .title(section.getTitle() + " - " + lessonTypes[i])
                             .orderIndex(i + 1)
-                            .defaultCode("// Default code for " + section.getTitle() + " - " + lessonTypes[i])
                             .duration(10)
                             .build());
                 }
@@ -497,7 +497,6 @@ public class DummyDataConfig {
                             .materialSection(section)
                             .title(section.getTitle() + " - " + lessonTypes[i])
                             .orderIndex(i + 1)
-                            .defaultCode("// Default code for " + section.getTitle() + " - " + lessonTypes[i])
                             .duration(10)
                             .build());
                 }
@@ -673,24 +672,24 @@ public class DummyDataConfig {
             voucherRepository.saveAll(vouchers);
 
             // Tạo progress tracking
-            List<ProgressTracking> progressTrackings = new ArrayList<>();
-            progressTrackings.add(ProgressTracking.builder()
-                    .user(instructors.get(0))
+            List<CourseEnrollment> courseEnrollments = new ArrayList<>();
+            courseEnrollments.add(CourseEnrollment.builder()
+                    .user(instructors.get(2))
                     .course(courses.get(0))
                     .completionPercentage(100f)
-                    .lastAccessed(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+                    .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
                     .build());
             for (Course course : courses) {
                 for (User instructor : instructors) {
-                    progressTrackings.add(ProgressTracking.builder()
+                    courseEnrollments.add(CourseEnrollment.builder()
                             .user(instructor)
                             .course(course)
                             .completionPercentage((float) (Math.random() * 100))
-                            .lastAccessed(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+                            .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
                             .build());
                 }
             }
-            progressTrackingRepository.saveAll(progressTrackings);
+            courseEnrollmentRepository.saveAll(courseEnrollments);
 
             // Tạo course ratings
             List<CourseRating> courseRatings = new ArrayList<>();
@@ -938,7 +937,6 @@ public class DummyDataConfig {
                             .materialSection(section)
                             .title(section.getTitle() + " - " + additionalLessonTypes[i])
                             .orderIndex(i + 1)
-                            .defaultCode("// Default code for " + section.getTitle() + " - " + additionalLessonTypes[i])
                             .duration(10)
                             .build());
                 }
@@ -1085,18 +1083,18 @@ public class DummyDataConfig {
             submissionRepository.saveAll(additionalSubmissions);
 
             // Tạo progress tracking cho khóa học mới
-            List<ProgressTracking> additionalProgressTrackings = new ArrayList<>();
+            List<CourseEnrollment> additionalCourseEnrollments = new ArrayList<>();
             for (Course course : additionalCourses) {
                 for (User instructor : instructors) {
-                    additionalProgressTrackings.add(ProgressTracking.builder()
+                    additionalCourseEnrollments.add(CourseEnrollment.builder()
                             .user(instructor)
                             .course(course)
                             .completionPercentage((float) (Math.random() * 100))
-                            .lastAccessed(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+                            .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
                             .build());
                 }
             }
-            progressTrackingRepository.saveAll(additionalProgressTrackings);
+            courseEnrollmentRepository.saveAll(additionalCourseEnrollments);
 
             // Tạo course ratings cho khóa học mới
             List<CourseRating> additionalCourseRatings = new ArrayList<>();

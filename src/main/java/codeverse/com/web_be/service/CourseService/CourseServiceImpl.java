@@ -40,7 +40,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final ExerciseMapper exerciseMapper;
     private final ExerciseTaskMapper exerciseTaskMapper;
     private final TheoryMapper theoryMapper;
-    private final ProgressTrackingRepository progressTrackingRepository;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
 
 
     public CourseServiceImpl(CourseRepository courseRepository,
@@ -58,7 +58,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              ExerciseMapper exerciseMapper,
                              ExerciseTaskMapper exerciseTaskMapper,
                              TheoryMapper theoryMapper,
-                             ProgressTrackingRepository progressTrackingRepository
+                             CourseEnrollmentRepository courseEnrollmentRepository
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -76,7 +76,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.exerciseMapper = exerciseMapper;
         this.exerciseTaskMapper = exerciseTaskMapper;
         this.theoryMapper = theoryMapper;
-        this.progressTrackingRepository = progressTrackingRepository;
+        this.courseEnrollmentRepository = courseEnrollmentRepository;
     }
 
     @Override
@@ -92,9 +92,9 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     @Override
     public List<CourseResponse> getCoursesByLearnerId(Long userId) {
-        List<Course> courses = progressTrackingRepository.findByUserId(userId)
+        List<Course> courses = courseEnrollmentRepository.findByUserId(userId)
                 .stream()
-                .map(ProgressTracking::getCourse)
+                .map(CourseEnrollment::getCourse)
                 .distinct()
                 .toList();
 
@@ -156,7 +156,6 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                         lesson.setTitle(lessonRequest.getTitle());
                         lesson.setOrderIndex(lessonRequest.getOrderIndex());
                         lesson.setDuration(lessonRequest.getDuration());
-                        lesson.setDefaultCode(lessonRequest.getDefaultCode());
                         lesson = lessonRepository.save(lesson);
 
                         if (lessonRequest.getTheory() != null) {

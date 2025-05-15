@@ -1,5 +1,6 @@
 package codeverse.com.web_be.entity;
 
+import codeverse.com.web_be.enums.QuizType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,30 +10,30 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "progress_tracking")
+@Table(name = "quiz_question")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProgressTracking {
+public class QuizQuestion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(nullable = false)
+    private String question;
 
-    @Column(name = "completion_percentage")
-    private Float completionPercentage;
+    @Column(name = "order_index")
+    private Integer orderIndex;
 
-    @Column(name = "last_accessed")
-    private LocalDateTime lastAccessed;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private QuizType quizType = QuizType.SINGLE;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

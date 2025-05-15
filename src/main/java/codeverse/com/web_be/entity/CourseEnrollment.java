@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bookmark_course")
+@Table(name = "course_enrollment")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookmarkCourse {
+public class CourseEnrollment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,11 +28,29 @@ public class BookmarkCourse {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+    @Column(name = "completion_percentage")
+    private Float completionPercentage;
+
+    @Column(name = "total_exp_gained")
+    private Integer totalExpGained;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 } 

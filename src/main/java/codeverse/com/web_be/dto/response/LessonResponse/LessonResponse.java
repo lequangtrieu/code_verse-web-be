@@ -30,7 +30,6 @@ public class LessonResponse {
                 .orderIndex(lesson.getOrderIndex())
                 .theory(lesson.getTheory() == null ? null : lesson.getTheory().getTitle())
                 .exercise(lesson.getExercise() == null ? null : lesson.getExercise().getTitle())
-                .defaultCode(lesson.getDefaultCode())
                 .createdAt(lesson.getCreatedAt())
                 .updatedAt(lesson.getUpdatedAt())
                 .build();

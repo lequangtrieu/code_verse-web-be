@@ -107,13 +107,11 @@ public class CodeExecutionController {
     }
 
 
-
-
     private String runJavascript(String code, String input) throws IOException, InterruptedException {
         Path file = Files.createTempFile("usercode-", ".js");
-        String fullCode = code + "\nconsole.log(run(" + input + "));";
+        String escapedInput = "\"" + input.replace("\"", "\\\"") + "\"";
+        String fullCode = code + "\nrun(" + escapedInput + ");";
         Files.writeString(file, fullCode);
-
         ProcessBuilder pb = new ProcessBuilder("node", file.toAbsolutePath().toString());
         pb.redirectErrorStream(true);
         Process process = pb.start();

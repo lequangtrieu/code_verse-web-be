@@ -1,11 +1,10 @@
 package codeverse.com.web_be.dto.response.MaterialSectionResponse;
 
 import codeverse.com.web_be.dto.response.LessonResponse.LessonWithinMaterialResponse;
-import codeverse.com.web_be.entity.MaterialSection;
+import codeverse.com.web_be.entity.CourseModule;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Console;
 import java.util.List;
 
 @Data
@@ -21,14 +20,14 @@ public class MaterialSectionForUpdateResponse {
 
     private List<LessonWithinMaterialResponse> lessons;
 
-    public static MaterialSectionForUpdateResponse fromEntity(MaterialSection materialSection) {
-        if (materialSection == null) return null;
+    public static MaterialSectionForUpdateResponse fromEntity(CourseModule courseModule) {
+        if (courseModule == null) return null;
 
         return MaterialSectionForUpdateResponse.builder()
-                .id(materialSection.getId())
-                .title(materialSection.getTitle())
-                .orderIndex(materialSection.getOrderIndex())
-                .previewable(materialSection.isPreviewable())
+                .id(courseModule.getId())
+                .title(courseModule.getTitle())
+                .orderIndex(courseModule.getOrderIndex())
+                .previewable(courseModule.isPreviewable())
                 .build();
     }
 }

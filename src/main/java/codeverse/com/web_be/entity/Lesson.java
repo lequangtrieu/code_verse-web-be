@@ -23,7 +23,7 @@ public class Lesson {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "material_id", nullable = false)
-    private MaterialSection materialSection;
+    private CourseModule courseModule;
 
     @Column(nullable = false)
     private String title;

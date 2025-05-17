@@ -1,12 +1,12 @@
-package codeverse.com.web_be.service.MaterialSectionService;
+package codeverse.com.web_be.service.CourseModuleService;
 
 import codeverse.com.web_be.dto.response.LessonResponse.LessonWithinMaterialResponse;
 import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionForUpdateResponse;
 import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionResponse;
+import codeverse.com.web_be.entity.CourseModule;
 import codeverse.com.web_be.entity.Lesson;
-import codeverse.com.web_be.entity.MaterialSection;
 import codeverse.com.web_be.repository.LessonRepository;
-import codeverse.com.web_be.repository.MaterialSectionRepository;
+import codeverse.com.web_be.repository.CourseModuleRepository;
 import codeverse.com.web_be.service.GenericServiceImpl;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,22 +15,22 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class MaterialSectionServiceImpl extends GenericServiceImpl<MaterialSection, Long> implements IMaterialSectionService{
+public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Long> implements ICourseModuleService {
 
-    private final MaterialSectionRepository materialSectionRepository;
+    private final CourseModuleRepository courseModuleRepository;
     private final LessonRepository lessonRepository;
 
-    protected MaterialSectionServiceImpl(MaterialSectionRepository materialSectionRepository,
-                                         LessonRepository lessonRepository) {
-        super(materialSectionRepository);
-        this.materialSectionRepository = materialSectionRepository;
+    protected CourseModuleServiceImpl(CourseModuleRepository courseModuleRepository,
+                                      LessonRepository lessonRepository) {
+        super(courseModuleRepository);
+        this.courseModuleRepository = courseModuleRepository;
         this.lessonRepository = lessonRepository;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @Override
     public List<MaterialSectionForUpdateResponse> getMaterialSectionListByCourseId(Long courseId) {
-        List<MaterialSection> sections = materialSectionRepository.findByCourseId(courseId);
+        List<CourseModule> sections = courseModuleRepository.findByCourseId(courseId);
         return sections.stream()
                 .map(section -> {
                     List<Lesson> lessons = lessonRepository.findByMaterialSectionId(section.getId());
@@ -50,8 +50,8 @@ public class MaterialSectionServiceImpl extends GenericServiceImpl<MaterialSecti
 
     @Override
     public MaterialSectionResponse getById(Long id) {
-        MaterialSection materialSection = materialSectionRepository.findById(id)
+        CourseModule courseModule = courseModuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material section not found"));
-        return MaterialSectionResponse.fromEntity(materialSection);
+        return MaterialSectionResponse.fromEntity(courseModule);
     }
 }

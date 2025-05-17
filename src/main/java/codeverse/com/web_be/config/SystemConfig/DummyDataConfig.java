@@ -2,7 +2,6 @@ package codeverse.com.web_be.config.SystemConfig;
 
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.CourseLevel;
-import codeverse.com.web_be.enums.DiscountType;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import codeverse.com.web_be.enums.SubmissionStatus;
 import codeverse.com.web_be.enums.TestCasePriority;
@@ -30,8 +29,7 @@ public class DummyDataConfig {
     UserRepository userRepository;
     CategoryRepository categoryRepository;
     CourseRepository courseRepository;
-    VoucherRepository voucherRepository;
-    MaterialSectionRepository materialSectionRepository;
+    CourseModuleRepository courseModuleRepository;
     LessonRepository lessonRepository;
     TheoryRepository theoryRepository;
     ExerciseRepository exerciseRepository;
@@ -282,33 +280,33 @@ public class DummyDataConfig {
             courseRepository.saveAll(courses);
 
             // Tạo material sections cho tất cả khóa học
-            List<MaterialSection> materialSections = List.of(
+            List<CourseModule> courseModules = List.of(
                     // Web Development Course
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(0))
                             .title("Introduction to Web Development")
                             .orderIndex(1)
                             .previewable(true)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(0))
                             .title("HTML & CSS Fundamentals")
                             .orderIndex(2)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(0))
                             .title("JavaScript Basics")
                             .orderIndex(3)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(0))
                             .title("React.js Introduction")
                             .orderIndex(4)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(0))
                             .title("Backend Development with Node.js")
                             .orderIndex(5)
@@ -316,31 +314,31 @@ public class DummyDataConfig {
                             .build(),
 
                     // iOS Development Course
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(1))
                             .title("Introduction to iOS Development")
                             .orderIndex(1)
                             .previewable(true)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(1))
                             .title("Swift Fundamentals")
                             .orderIndex(2)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(1))
                             .title("UIKit Basics")
                             .orderIndex(3)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(1))
                             .title("SwiftUI Introduction")
                             .orderIndex(4)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(1))
                             .title("iOS App Architecture")
                             .orderIndex(5)
@@ -348,31 +346,31 @@ public class DummyDataConfig {
                             .build(),
 
                     // Data Science Course
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(2))
                             .title("Introduction to Data Science")
                             .orderIndex(1)
                             .previewable(true)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(2))
                             .title("Python for Data Science")
                             .orderIndex(2)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(2))
                             .title("NumPy and Pandas")
                             .orderIndex(3)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(2))
                             .title("Data Visualization")
                             .orderIndex(4)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(2))
                             .title("Data Analysis Projects")
                             .orderIndex(5)
@@ -380,31 +378,31 @@ public class DummyDataConfig {
                             .build(),
 
                     // Machine Learning Course
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(3))
                             .title("Introduction to Machine Learning")
                             .orderIndex(1)
                             .previewable(true)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(3))
                             .title("Supervised Learning")
                             .orderIndex(2)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(3))
                             .title("Unsupervised Learning")
                             .orderIndex(3)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(3))
                             .title("Deep Learning Basics")
                             .orderIndex(4)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(3))
                             .title("ML Project Implementation")
                             .orderIndex(5)
@@ -412,41 +410,41 @@ public class DummyDataConfig {
                             .build(),
 
                     // AWS Course
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(4))
                             .title("Introduction to AWS")
                             .orderIndex(1)
                             .previewable(true)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(4))
                             .title("EC2 and VPC")
                             .orderIndex(2)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(4))
                             .title("S3 and Storage Services")
                             .orderIndex(3)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(4))
                             .title("Database Services")
                             .orderIndex(4)
                             .previewable(false)
                             .build(),
-                    MaterialSection.builder()
+                    CourseModule.builder()
                             .course(courses.get(4))
                             .title("Security and Compliance")
                             .orderIndex(5)
                             .previewable(false)
                             .build()
             );
-            materialSectionRepository.saveAll(materialSections);
+            courseModuleRepository.saveAll(courseModules);
 
             // Tạo material sections cho 10 khóa học mới
-            List<MaterialSection> newMaterialSections = new ArrayList<>();
+            List<CourseModule> newCourseModules = new ArrayList<>();
             String[] sectionTitles = {
                 "Introduction and Setup",
                 "Core Concepts",
@@ -458,7 +456,7 @@ public class DummyDataConfig {
             for (int i = 5; i < courses.size(); i++) {
                 Course course = courses.get(i);
                 for (int j = 0; j < 5; j++) {
-                    newMaterialSections.add(MaterialSection.builder()
+                    newCourseModules.add(CourseModule.builder()
                             .course(course)
                             .title(course.getTitle() + " - " + sectionTitles[j])
                             .orderIndex(j + 1)
@@ -466,7 +464,7 @@ public class DummyDataConfig {
                             .build());
                 }
             }
-            materialSectionRepository.saveAll(newMaterialSections);
+            courseModuleRepository.saveAll(newCourseModules);
 
             // Tạo lessons cho tất cả material sections
             List<Lesson> lessons = new ArrayList<>();
@@ -479,10 +477,10 @@ public class DummyDataConfig {
             };
 
             // Tạo lessons cho material sections cũ
-            for (MaterialSection section : materialSections) {
+            for (CourseModule section : courseModules) {
                 for (int i = 0; i < 5; i++) {
                     lessons.add(Lesson.builder()
-                            .materialSection(section)
+                            .courseModule(section)
                             .title(section.getTitle() + " - " + lessonTypes[i])
                             .orderIndex(i + 1)
                             .duration(10)
@@ -491,10 +489,10 @@ public class DummyDataConfig {
             }
 
             // Tạo lessons cho material sections mới
-            for (MaterialSection section : newMaterialSections) {
+            for (CourseModule section : newCourseModules) {
                 for (int i = 0; i < 5; i++) {
                     lessons.add(Lesson.builder()
-                            .materialSection(section)
+                            .courseModule(section)
                             .title(section.getTitle() + " - " + lessonTypes[i])
                             .orderIndex(i + 1)
                             .duration(10)
@@ -641,35 +639,6 @@ public class DummyDataConfig {
                 }
             }
             submissionRepository.saveAll(submissions);
-
-            // Tạo vouchers
-            List<Voucher> vouchers = List.of(
-                    Voucher.builder()
-                            .code("WELCOME10")
-                            .description("Welcome discount 10%")
-                            .discountType(DiscountType.PERCENT)
-                            .discountValue(new BigDecimal("10"))
-                            .minOrderAmount(new BigDecimal("50"))
-                            .maxDiscountValue(new BigDecimal("20"))
-                            .startDate(LocalDateTime.now())
-                            .endDate(LocalDateTime.now().plusMonths(1))
-                            .usageLimit(100)
-                            .isActive(true)
-                            .build(),
-                    Voucher.builder()
-                            .code("SUMMER20")
-                            .description("Summer special 20% off")
-                            .discountType(DiscountType.PERCENT)
-                            .discountValue(new BigDecimal("20"))
-                            .minOrderAmount(new BigDecimal("100"))
-                            .maxDiscountValue(new BigDecimal("50"))
-                            .startDate(LocalDateTime.now())
-                            .endDate(LocalDateTime.now().plusMonths(2))
-                            .usageLimit(50)
-                            .isActive(true)
-                            .build()
-            );
-            voucherRepository.saveAll(vouchers);
 
             // Tạo progress tracking
             List<CourseEnrollment> courseEnrollments = new ArrayList<>();
@@ -900,7 +869,7 @@ public class DummyDataConfig {
             courseRepository.saveAll(additionalCourses);
 
             // Tạo material sections cho 15 khóa học mới
-            List<MaterialSection> additionalMaterialSections = new ArrayList<>();
+            List<CourseModule> additionalCourseModules = new ArrayList<>();
             String[] additionalSectionTitles = {
                 "Introduction and Setup",
                 "Core Concepts",
@@ -911,7 +880,7 @@ public class DummyDataConfig {
 
             for (Course course : additionalCourses) {
                 for (int j = 0; j < 5; j++) {
-                    additionalMaterialSections.add(MaterialSection.builder()
+                    additionalCourseModules.add(CourseModule.builder()
                             .course(course)
                             .title(course.getTitle() + " - " + additionalSectionTitles[j])
                             .orderIndex(j + 1)
@@ -919,7 +888,7 @@ public class DummyDataConfig {
                             .build());
                 }
             }
-            materialSectionRepository.saveAll(additionalMaterialSections);
+            courseModuleRepository.saveAll(additionalCourseModules);
 
             // Tạo lessons cho material sections mới
             List<Lesson> additionalLessons = new ArrayList<>();
@@ -931,10 +900,10 @@ public class DummyDataConfig {
                 "Project Work"
             };
 
-            for (MaterialSection section : additionalMaterialSections) {
+            for (CourseModule section : additionalCourseModules) {
                 for (int i = 0; i < 5; i++) {
                     additionalLessons.add(Lesson.builder()
-                            .materialSection(section)
+                            .courseModule(section)
                             .title(section.getTitle() + " - " + additionalLessonTypes[i])
                             .orderIndex(i + 1)
                             .duration(10)

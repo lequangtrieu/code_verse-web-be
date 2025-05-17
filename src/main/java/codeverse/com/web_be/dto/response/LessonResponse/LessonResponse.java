@@ -25,7 +25,7 @@ public class LessonResponse {
     public static LessonResponse fromEntity(Lesson lesson) {
         return LessonResponse.builder()
                 .id(lesson.getId())
-                .materialSection(lesson.getMaterialSection().getTitle())
+                .materialSection(lesson.getCourseModule().getTitle())
                 .title(lesson.getTitle())
                 .orderIndex(lesson.getOrderIndex())
                 .theory(lesson.getTheory() == null ? null : lesson.getTheory().getTitle())

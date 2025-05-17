@@ -28,7 +28,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
     private final FunctionHelper functionHelper;
-    private final MaterialSectionRepository materialSectionRepository;
+    private final CourseModuleRepository courseModuleRepository;
     private final LessonRepository lessonRepository;
     private final TheoryRepository theoryRepository;
     private final ExerciseRepository exerciseRepository;
@@ -46,7 +46,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     public CourseServiceImpl(CourseRepository courseRepository,
                              CategoryRepository categoryRepository,
                              FunctionHelper functionHelper,
-                             MaterialSectionRepository materialSectionRepository,
+                             CourseModuleRepository courseModuleRepository,
                              LessonRepository lessonRepository,
                              TheoryRepository theoryRepository,
                              ExerciseRepository exerciseRepository,
@@ -64,7 +64,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.courseRepository = courseRepository;
         this.categoryRepository = categoryRepository;
         this.functionHelper = functionHelper;
-        this.materialSectionRepository = materialSectionRepository;
+        this.courseModuleRepository = courseModuleRepository;
         this.lessonRepository = lessonRepository;
         this.theoryRepository = theoryRepository;
         this.exerciseRepository = exerciseRepository;
@@ -142,17 +142,17 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
         if(request.getModules() != null && !request.getModules().isEmpty()) {
             for (MaterialSectionFullCreateRequest moduleRequest : request.getModules()) {
-                MaterialSection section = new MaterialSection();
+                CourseModule section = new CourseModule();
                 section.setCourse(course);
                 section.setTitle(moduleRequest.getTitle());
                 section.setOrderIndex(moduleRequest.getOrderIndex());
                 section.setPreviewable(moduleRequest.isPreviewable());
-                materialSectionRepository.save(section);
+                courseModuleRepository.save(section);
 
                 if(moduleRequest.getLessons() != null && !moduleRequest.getLessons().isEmpty()) {
                     for (LessonFullCreateRequest lessonRequest : moduleRequest.getLessons()) {
                         Lesson lesson = new Lesson();
-                        lesson.setMaterialSection(section);
+                        lesson.setCourseModule(section);
                         lesson.setTitle(lessonRequest.getTitle());
                         lesson.setOrderIndex(lessonRequest.getOrderIndex());
                         lesson.setDuration(lessonRequest.getDuration());
@@ -226,41 +226,41 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        Map<Long, MaterialSection> existingSections = materialSectionRepository.findByCourseId(courseId).stream()
-                .collect(Collectors.toMap(MaterialSection::getId, s -> s));
+        Map<Long, CourseModule> existingSections = courseModuleRepository.findByCourseId(courseId).stream()
+                .collect(Collectors.toMap(CourseModule::getId, s -> s));
 
-        List<MaterialSection> updatedSections = new ArrayList<>();
+        List<CourseModule> updatedSections = new ArrayList<>();
 
         if (materials == null || materials.isEmpty()) {
-            List<MaterialSection> existingMaterials = materialSectionRepository.findByCourseId(courseId);
-            for (MaterialSection materialSection : existingMaterials) {
-                List<Lesson> existingLessons = lessonRepository.findByMaterialSectionId(materialSection.getId());
+            List<CourseModule> existingMaterials = courseModuleRepository.findByCourseId(courseId);
+            for (CourseModule courseModule : existingMaterials) {
+                List<Lesson> existingLessons = lessonRepository.findByMaterialSectionId(courseModule.getId());
                 lessonRepository.deleteAll(existingLessons);
             }
-            materialSectionRepository.deleteAll(existingSections.values());
+            courseModuleRepository.deleteAll(existingSections.values());
         } else {
             if(materials.stream().allMatch(s -> s.getId() == null)){
-                List<MaterialSection> existingMaterials = materialSectionRepository.findByCourseId(courseId);
-                for (MaterialSection materialSection : existingMaterials) {
-                    List<Lesson> existingLessons = lessonRepository.findByMaterialSectionId(materialSection.getId());
+                List<CourseModule> existingMaterials = courseModuleRepository.findByCourseId(courseId);
+                for (CourseModule courseModule : existingMaterials) {
+                    List<Lesson> existingLessons = lessonRepository.findByMaterialSectionId(courseModule.getId());
                     lessonRepository.deleteAll(existingLessons);
                 }
-                materialSectionRepository.deleteAll(existingSections.values());
+                courseModuleRepository.deleteAll(existingSections.values());
             }
             for (MaterialSectionUpdateRequest sectionReq : materials) {
-                MaterialSection section;
+                CourseModule section;
                 boolean isNewSection = (sectionReq.getId() == null || !existingSections.containsKey(sectionReq.getId()));
 
                 if (isNewSection) {
-                    section = new MaterialSection();
+                    section = new CourseModule();
                     materialSectionMapper.updateMaterialSectionFromRequest(sectionReq, section);
                     section.setCourse(course);
-                    section = materialSectionRepository.save(section);
+                    section = courseModuleRepository.save(section);
                 } else {
                     section = existingSections.remove(sectionReq.getId());
                     materialSectionMapper.updateMaterialSectionFromRequest(sectionReq, section);
                     section.setCourse(course);
-                    section = materialSectionRepository.save(section);
+                    section = courseModuleRepository.save(section);
                 }
 
                 Map<Long, Lesson> existingLessons = (section.getId() != null)
@@ -281,12 +281,12 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                         if (isNewLesson) {
                             lesson = new Lesson();
                             lessonMapper.updateLessonFromRequest(lessonReq, lesson);
-                            lesson.setMaterialSection(section);
+                            lesson.setCourseModule(section);
                             lesson = lessonRepository.save(lesson);
                         } else {
                             lesson = existingLessons.remove(lessonReq.getId());
                             lessonMapper.updateLessonFromRequest(lessonReq, lesson);
-                            lesson.setMaterialSection(section);
+                            lesson.setCourseModule(section);
                             lesson = lessonRepository.save(lesson);
                         }
 
@@ -366,11 +366,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 updatedSections.add(section);
             }
 
-            materialSectionRepository.saveAll(updatedSections);
+            courseModuleRepository.saveAll(updatedSections);
         }
 
         if (!existingSections.isEmpty()) {
-            materialSectionRepository.deleteAll(existingSections.values());
+            courseModuleRepository.deleteAll(existingSections.values());
         }
     }
 }

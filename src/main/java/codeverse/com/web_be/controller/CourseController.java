@@ -10,7 +10,7 @@ import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.service.CourseService.ICourseService;
-import codeverse.com.web_be.service.MaterialSectionService.IMaterialSectionService;
+import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseController {
     private final ICourseService courseService;
-    private final IMaterialSectionService materialSectionService;
+    private final ICourseModuleService materialSectionService;
     private final CourseMapper courseMapper;
 
     @GetMapping

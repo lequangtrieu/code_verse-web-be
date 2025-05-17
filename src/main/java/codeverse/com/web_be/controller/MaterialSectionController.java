@@ -5,10 +5,10 @@ import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSection
 import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
-import codeverse.com.web_be.entity.MaterialSection;
+import codeverse.com.web_be.entity.CourseModule;
 import codeverse.com.web_be.mapper.MaterialSectionMapper;
 import codeverse.com.web_be.service.CourseService.ICourseService;
-import codeverse.com.web_be.service.MaterialSectionService.IMaterialSectionService;
+import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/material")
 @RequiredArgsConstructor
 public class MaterialSectionController {
-    private final IMaterialSectionService materialSectionService;
+    private final ICourseModuleService materialSectionService;
     private final ICourseService courseService;
     private final MaterialSectionMapper materialSectionMapper;
 
@@ -35,13 +35,13 @@ public class MaterialSectionController {
 
     @PostMapping
     public ApiResponse<MaterialSectionResponse> createMaterialSection(@RequestBody MaterialSectionCreateRequest request){
-        MaterialSection materialSection = materialSectionMapper.materialSectionCreateRequestToMaterialSection(request);
+        CourseModule courseModule = materialSectionMapper.materialSectionCreateRequestToMaterialSection(request);
         Course course = courseService.findById(request.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
-        materialSection.setCourse(course);
-        MaterialSection createdMaterialSection = materialSectionService.save(materialSection);
+        courseModule.setCourse(course);
+        CourseModule createdCourseModule = materialSectionService.save(courseModule);
         return ApiResponse.<MaterialSectionResponse>builder()
-                .result(MaterialSectionResponse.fromEntity(createdMaterialSection))
+                .result(MaterialSectionResponse.fromEntity(createdCourseModule))
                 .code(HttpStatus.CREATED.value())
                 .build();
     }

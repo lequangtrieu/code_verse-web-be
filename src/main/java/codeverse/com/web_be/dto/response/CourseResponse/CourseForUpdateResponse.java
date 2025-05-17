@@ -1,6 +1,6 @@
 package codeverse.com.web_be.dto.response.CourseResponse;
 
-import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,5 +24,5 @@ public class CourseForUpdateResponse {
     private boolean published;
     private boolean deleted;
 
-    private List<MaterialSectionForUpdateResponse> modules;
+    private List<CourseModuleForUpdateResponse> modules;
 }

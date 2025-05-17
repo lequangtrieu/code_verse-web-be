@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class LessonController {
     private final LessonMapper lessonMapper;
     private final ILessonService lessonService;
-    private final ICourseModuleService materialSectionService;
+    private final ICourseModuleService courseModuleService;
 
     @PostMapping
     public ApiResponse<LessonResponse> createLesson(@RequestBody LessonCreateRequest request){
         Lesson lesson = lessonMapper.lessonCreateRequestToLesson(request);
-        CourseModule courseModule = materialSectionService.findById((request.getMaterialSectionId()))
+        CourseModule courseModule = courseModuleService.findById((request.getCourseModuleId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Material section not found"));
         lesson.setCourseModule(courseModule);
         Lesson createdLesson = lessonService.save(lesson);

@@ -3,7 +3,6 @@ package codeverse.com.web_be.config.SystemConfig;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.CourseLevel;
 import codeverse.com.web_be.enums.LessonProgressStatus;
-import codeverse.com.web_be.enums.SubmissionStatus;
 import codeverse.com.web_be.enums.TestCasePriority;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.repository.*;
@@ -39,14 +38,13 @@ public class DummyDataConfig {
     LessonProgressRepository lessonProgressRepository;
     ExerciseTaskRepository exerciseTaskRepository;
     TestCaseRepository testCaseRepository;
-    SubmissionRepository submissionRepository;
 
     String password = "pass";
     String adminPassword = "admin";
     String thumbnailUrl1 = "https://vtiacademy.edu.vn/upload/images/artboard-1-copy-7-100.jpg";
     String thumbnailUrl2 = "https://letdiv.com/wp-content/uploads/2024/04/khoa-hoc-react.png";
 
-    private static final boolean DUMMY_DATA = false;
+    private static final boolean DUMMY_DATA = true;
 
     @Bean
     ApplicationRunner initDummyData() {
@@ -528,7 +526,6 @@ public class DummyDataConfig {
             List<ExerciseTask> exerciseTasks = new ArrayList<>();
             for (Exercise exercise : exercises) {
                 exerciseTasks.add(ExerciseTask.builder()
-                        .exercise(exercise)
                         .description("Task 1: Implement the basic functionality for " + exercise.getTitle() + "\n" +
                                 "Requirements:\n" +
                                 "1. Create a function that handles the main logic\n" +
@@ -537,7 +534,6 @@ public class DummyDataConfig {
                                 "4. Write unit tests")
                         .build());
                 exerciseTasks.add(ExerciseTask.builder()
-                        .exercise(exercise)
                         .description("Task 2: Optimize the solution for " + exercise.getTitle() + "\n" +
                                 "Requirements:\n" +
                                 "1. Improve time complexity\n" +
@@ -553,30 +549,26 @@ public class DummyDataConfig {
             for (Exercise exercise : exercises) {
                 // Public test cases
                 testCases.add(TestCase.builder()
-                        .exercise(exercise)
                         .input("test input 1")
                         .expectedOutput("expected output 1")
                         .priority(TestCasePriority.REQUIRED)
                         .isPublic(true)
                         .build());
                 testCases.add(TestCase.builder()
-                        .exercise(exercise)
                         .input("test input 2")
                         .expectedOutput("expected output 2")
                         .priority(TestCasePriority.REQUIRED)
                         .isPublic(true)
                         .build());
-                
+
                 // Private test cases
                 testCases.add(TestCase.builder()
-                        .exercise(exercise)
                         .input("private test input 1")
                         .expectedOutput("private expected output 1")
                         .priority(TestCasePriority.REQUIRED)
                         .isPublic(false)
                         .build());
                 testCases.add(TestCase.builder()
-                        .exercise(exercise)
                         .input("private test input 2")
                         .expectedOutput("private expected output 2")
                         .priority(TestCasePriority.REQUIRED)
@@ -584,61 +576,6 @@ public class DummyDataConfig {
                         .build());
             }
             testCaseRepository.saveAll(testCases);
-
-            // Tạo submissions cho exercises
-            List<Submission> submissions = new ArrayList<>();
-            for (Exercise exercise : exercises) {
-                for (User instructor : instructors) {
-                    // Successful submission
-                    submissions.add(Submission.builder()
-                            .exercise(exercise)
-                            .learner(instructor)
-                            .code("// Solution for " + exercise.getTitle() + "\n" +
-                                    "function solution(input) {\n" +
-                                    "    // Implementation\n" +
-                                    "    return result;\n" +
-                                    "}")
-                            .executionTime((float) (Math.random() * 1000))
-                            .memoryUsage((float) (Math.random() * 100))
-                            .status(SubmissionStatus.PASSED)
-                            .passRate(1.0f)
-                            .testCaseCount(4)
-                            .build());
-
-                    // Failed submission
-                    submissions.add(Submission.builder()
-                            .exercise(exercise)
-                            .learner(instructor)
-                            .code("// Failed solution for " + exercise.getTitle() + "\n" +
-                                    "function solution(input) {\n" +
-                                    "    // Incorrect implementation\n" +
-                                    "    return wrongResult;\n" +
-                                    "}")
-                            .executionTime((float) (Math.random() * 1000))
-                            .memoryUsage((float) (Math.random() * 100))
-                            .status(SubmissionStatus.FAILED)
-                            .passRate(0.5f)
-                            .testCaseCount(4)
-                            .build());
-
-                    // Time limit exceeded submission
-                    submissions.add(Submission.builder()
-                            .exercise(exercise)
-                            .learner(instructor)
-                            .code("// Time limit exceeded solution for " + exercise.getTitle() + "\n" +
-                                    "function solution(input) {\n" +
-                                    "    // Inefficient implementation\n" +
-                                    "    while(true) { /* infinite loop */ }\n" +
-                                    "}")
-                            .executionTime(2000.0f)
-                            .memoryUsage((float) (Math.random() * 100))
-                            .status(SubmissionStatus.PENDING)
-                            .passRate(0.0f)
-                            .testCaseCount(4)
-                            .build());
-                }
-            }
-            submissionRepository.saveAll(submissions);
 
             // Tạo progress tracking
             List<CourseEnrollment> courseEnrollments = new ArrayList<>();
@@ -678,18 +615,18 @@ public class DummyDataConfig {
             List<LessonProgress> lessonProgresses = new ArrayList<>();
             for (Lesson lesson : lessons) {
                 for (User instructor : instructors) {
-                    LessonProgressStatus status = Math.random() > 0.5 ? 
-                            LessonProgressStatus.COMPLETED : LessonProgressStatus.IN_PROGRESS;
-                    
+                    LessonProgressStatus status = Math.random() > 0.5 ?
+                            LessonProgressStatus.PASSED : LessonProgressStatus.PENDING;
+
                     LocalDateTime startedAt = LocalDateTime.now().minusDays((long) (Math.random() * 10));
-                    LocalDateTime completedAt = status == LessonProgressStatus.COMPLETED ? 
+                    LocalDateTime completedAt = status == LessonProgressStatus.PASSED ?
                             startedAt.plusHours((long) (Math.random() * 24)) : null;
-                    
+
                     lessonProgresses.add(LessonProgress.builder()
                             .user(instructor)
                             .lesson(lesson)
                             .status(status)
-                            .expGained(status == LessonProgressStatus.COMPLETED ? 
+                            .expGained(status == LessonProgressStatus.PASSED ?
                                     (int) (Math.random() * 100) + 50 : 0)
                             .startedAt(startedAt)
                             .completedAt(completedAt)
@@ -868,243 +805,8 @@ public class DummyDataConfig {
             );
             courseRepository.saveAll(additionalCourses);
 
-            // Tạo material sections cho 15 khóa học mới
-            List<CourseModule> additionalCourseModules = new ArrayList<>();
-            String[] additionalSectionTitles = {
-                "Introduction and Setup",
-                "Core Concepts",
-                "Advanced Topics",
-                "Practical Projects",
-                "Best Practices and Optimization"
-            };
-
-            for (Course course : additionalCourses) {
-                for (int j = 0; j < 5; j++) {
-                    additionalCourseModules.add(CourseModule.builder()
-                            .course(course)
-                            .title(course.getTitle() + " - " + additionalSectionTitles[j])
-                            .orderIndex(j + 1)
-                            .previewable(j == 0)
-                            .build());
-                }
-            }
-            courseModuleRepository.saveAll(additionalCourseModules);
-
-            // Tạo lessons cho material sections mới
-            List<Lesson> additionalLessons = new ArrayList<>();
-            String[] additionalLessonTypes = {
-                "Overview and Introduction",
-                "Basic Concepts",
-                "Hands-on Practice",
-                "Advanced Techniques",
-                "Project Work"
-            };
-
-            for (CourseModule section : additionalCourseModules) {
-                for (int i = 0; i < 5; i++) {
-                    additionalLessons.add(Lesson.builder()
-                            .courseModule(section)
-                            .title(section.getTitle() + " - " + additionalLessonTypes[i])
-                            .orderIndex(i + 1)
-                            .duration(10)
-                            .build());
-                }
-            }
-            lessonRepository.saveAll(additionalLessons);
-
-            // Tạo theories cho lessons mới
-            List<Theory> additionalTheories = new ArrayList<>();
-            for (Lesson lesson : additionalLessons) {
-                additionalTheories.add(Theory.builder()
-                        .lesson(lesson)
-                        .title(lesson.getTitle() + " - Theory")
-                        .content("This is the theory content for " + lesson.getTitle() + ". Learn about the concepts and principles...")
-                        .build());
-            }
-            theoryRepository.saveAll(additionalTheories);
-
-            // Tạo exercises cho lessons mới
-            List<Exercise> additionalExercises = new ArrayList<>();
-            for (Lesson lesson : additionalLessons) {
-                additionalExercises.add(Exercise.builder()
-                        .lesson(lesson)
-                        .title(lesson.getTitle() + " - Exercise")
-                        .expReward(100 * lesson.getOrderIndex())
-                        .instruction("Complete the exercise for " + lesson.getTitle() + ". Practice what you've learned...")
-                        .build());
-            }
-            exerciseRepository.saveAll(additionalExercises);
-
-            // Tạo exercise tasks cho exercises mới
-            List<ExerciseTask> additionalExerciseTasks = new ArrayList<>();
-            for (Exercise exercise : additionalExercises) {
-                additionalExerciseTasks.add(ExerciseTask.builder()
-                        .exercise(exercise)
-                        .description("Task 1: Implement the basic functionality for " + exercise.getTitle() + "\n" +
-                                "Requirements:\n" +
-                                "1. Create a function that handles the main logic\n" +
-                                "2. Implement error handling\n" +
-                                "3. Add input validation\n" +
-                                "4. Write unit tests")
-                        .build());
-                additionalExerciseTasks.add(ExerciseTask.builder()
-                        .exercise(exercise)
-                        .description("Task 2: Optimize the solution for " + exercise.getTitle() + "\n" +
-                                "Requirements:\n" +
-                                "1. Improve time complexity\n" +
-                                "2. Reduce memory usage\n" +
-                                "3. Add comments and documentation\n" +
-                                "4. Handle edge cases")
-                        .build());
-            }
-            exerciseTaskRepository.saveAll(additionalExerciseTasks);
-
-            // Tạo test cases cho exercises mới
-            List<TestCase> additionalTestCases = new ArrayList<>();
-            for (Exercise exercise : additionalExercises) {
-                // Public test cases
-                additionalTestCases.add(TestCase.builder()
-                        .exercise(exercise)
-                        .input("test input 1")
-                        .expectedOutput("expected output 1")
-                        .priority(TestCasePriority.REQUIRED)
-                        .isPublic(true)
-                        .build());
-                additionalTestCases.add(TestCase.builder()
-                        .exercise(exercise)
-                        .input("test input 2")
-                        .expectedOutput("expected output 2")
-                        .priority(TestCasePriority.REQUIRED)
-                        .isPublic(true)
-                        .build());
-                
-                // Private test cases
-                additionalTestCases.add(TestCase.builder()
-                        .exercise(exercise)
-                        .input("private test input 1")
-                        .expectedOutput("private expected output 1")
-                        .priority(TestCasePriority.REQUIRED)
-                        .isPublic(false)
-                        .build());
-                additionalTestCases.add(TestCase.builder()
-                        .exercise(exercise)
-                        .input("private test input 2")
-                        .expectedOutput("private expected output 2")
-                        .priority(TestCasePriority.REQUIRED)
-                        .isPublic(false)
-                        .build());
-            }
-            testCaseRepository.saveAll(additionalTestCases);
-
-            // Tạo submissions cho exercises mới
-            List<Submission> additionalSubmissions = new ArrayList<>();
-            for (Exercise exercise : additionalExercises) {
-                for (User instructor : instructors) {
-                    // Successful submission
-                    additionalSubmissions.add(Submission.builder()
-                            .exercise(exercise)
-                            .learner(instructor)
-                            .code("// Solution for " + exercise.getTitle() + "\n" +
-                                    "function solution(input) {\n" +
-                                    "    // Implementation\n" +
-                                    "    return result;\n" +
-                                    "}")
-                            .executionTime((float) (Math.random() * 1000))
-                            .memoryUsage((float) (Math.random() * 100))
-                            .status(SubmissionStatus.PASSED)
-                            .passRate(1.0f)
-                            .testCaseCount(4)
-                            .build());
-
-                    // Failed submission
-                    additionalSubmissions.add(Submission.builder()
-                            .exercise(exercise)
-                            .learner(instructor)
-                            .code("// Failed solution for " + exercise.getTitle() + "\n" +
-                                    "function solution(input) {\n" +
-                                    "    // Incorrect implementation\n" +
-                                    "    return wrongResult;\n" +
-                                    "}")
-                            .executionTime((float) (Math.random() * 1000))
-                            .memoryUsage((float) (Math.random() * 100))
-                            .status(SubmissionStatus.FAILED)
-                            .passRate(0.5f)
-                            .testCaseCount(4)
-                            .build());
-
-                    // Time limit exceeded submission
-                    additionalSubmissions.add(Submission.builder()
-                            .exercise(exercise)
-                            .learner(instructor)
-                            .code("// Time limit exceeded solution for " + exercise.getTitle() + "\n" +
-                                    "function solution(input) {\n" +
-                                    "    // Inefficient implementation\n" +
-                                    "    while(true) { /* infinite loop */ }\n" +
-                                    "}")
-                            .executionTime(2000.0f)
-                            .memoryUsage((float) (Math.random() * 100))
-                            .status(SubmissionStatus.PENDING)
-                            .passRate(0.0f)
-                            .testCaseCount(4)
-                            .build());
-                }
-            }
-            submissionRepository.saveAll(additionalSubmissions);
-
-            // Tạo progress tracking cho khóa học mới
-            List<CourseEnrollment> additionalCourseEnrollments = new ArrayList<>();
-            for (Course course : additionalCourses) {
-                for (User instructor : instructors) {
-                    additionalCourseEnrollments.add(CourseEnrollment.builder()
-                            .user(instructor)
-                            .course(course)
-                            .completionPercentage((float) (Math.random() * 100))
-                            .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
-                            .build());
-                }
-            }
-            courseEnrollmentRepository.saveAll(additionalCourseEnrollments);
-
-            // Tạo course ratings cho khóa học mới
-            List<CourseRating> additionalCourseRatings = new ArrayList<>();
-            for (Course course : additionalCourses) {
-                for (User instructor : instructors) {
-                    additionalCourseRatings.add(CourseRating.builder()
-                            .user(instructor)
-                            .course(course)
-                            .rating(Math.round((1.0f + (float) (Math.random() * 4.0f)) * 10.0f) / 10.0f)
-                            .comment("Great course! " + course.getTitle() + " is very informative and well-structured.")
-                            .build());
-                }
-            }
-            courseRatingRepository.saveAll(additionalCourseRatings);
-
-            // Tạo lesson progress cho lessons mới
-            List<LessonProgress> additionalLessonProgresses = new ArrayList<>();
-            for (Lesson lesson : additionalLessons) {
-                for (User instructor : instructors) {
-                    LessonProgressStatus status = Math.random() > 0.5 ? 
-                            LessonProgressStatus.COMPLETED : LessonProgressStatus.IN_PROGRESS;
-                    
-                    LocalDateTime startedAt = LocalDateTime.now().minusDays((long) (Math.random() * 10));
-                    LocalDateTime completedAt = status == LessonProgressStatus.COMPLETED ? 
-                            startedAt.plusHours((long) (Math.random() * 24)) : null;
-                    
-                    additionalLessonProgresses.add(LessonProgress.builder()
-                            .user(instructor)
-                            .lesson(lesson)
-                            .status(status)
-                            .expGained(status == LessonProgressStatus.COMPLETED ? 
-                                    (int) (Math.random() * 100) + 50 : 0)
-                            .startedAt(startedAt)
-                            .completedAt(completedAt)
-                            .build());
-                }
-            }
-            lessonProgressRepository.saveAll(additionalLessonProgresses);
-
             log.info("Dummy data has been initialized successfully");
             log.info("Additional dummy data has been initialized successfully");
         };
     }
-} 
+}

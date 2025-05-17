@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LessonResponse {
     private Long id;
-    private String materialSection;
+    private String courseModule;
     private String title;
     private Integer orderIndex;
     private String theory;
@@ -25,7 +25,7 @@ public class LessonResponse {
     public static LessonResponse fromEntity(Lesson lesson) {
         return LessonResponse.builder()
                 .id(lesson.getId())
-                .materialSection(lesson.getCourseModule().getTitle())
+                .courseModule(lesson.getCourseModule().getTitle())
                 .title(lesson.getTitle())
                 .orderIndex(lesson.getOrderIndex())
                 .theory(lesson.getTheory() == null ? null : lesson.getTheory().getTitle())

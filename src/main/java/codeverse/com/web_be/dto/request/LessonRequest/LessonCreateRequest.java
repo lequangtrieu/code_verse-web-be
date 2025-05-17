@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LessonCreateRequest {
-    private Long materialSectionId;
+    private Long courseModuleId;
     private String title;
     private Integer orderIndex;
     private Integer duration;

@@ -1,8 +1,8 @@
 package codeverse.com.web_be.service.CourseModuleService;
 
 import codeverse.com.web_be.dto.response.LessonResponse.LessonWithinMaterialResponse;
-import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionForUpdateResponse;
-import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionResponse;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.entity.CourseModule;
 import codeverse.com.web_be.entity.Lesson;
 import codeverse.com.web_be.repository.LessonRepository;
@@ -29,13 +29,13 @@ public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Lo
 
     @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public List<MaterialSectionForUpdateResponse> getMaterialSectionListByCourseId(Long courseId) {
+    public List<CourseModuleForUpdateResponse> getCourseModuleListByCourseId(Long courseId) {
         List<CourseModule> sections = courseModuleRepository.findByCourseId(courseId);
         return sections.stream()
                 .map(section -> {
-                    List<Lesson> lessons = lessonRepository.findByMaterialSectionId(section.getId());
+                    List<Lesson> lessons = lessonRepository.findByCourseModuleId(section.getId());
 
-                    return MaterialSectionForUpdateResponse.builder()
+                    return CourseModuleForUpdateResponse.builder()
                             .id(section.getId())
                             .title(section.getTitle())
                             .orderIndex(section.getOrderIndex())
@@ -49,9 +49,9 @@ public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Lo
     }
 
     @Override
-    public MaterialSectionResponse getById(Long id) {
+    public CourseModuleResponse getById(Long id) {
         CourseModule courseModule = courseModuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material section not found"));
-        return MaterialSectionResponse.fromEntity(courseModule);
+        return CourseModuleResponse.fromEntity(courseModule);
     }
 }

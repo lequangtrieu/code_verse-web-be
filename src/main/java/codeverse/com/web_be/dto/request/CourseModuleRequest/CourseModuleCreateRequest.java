@@ -1,4 +1,4 @@
-package codeverse.com.web_be.dto.request.MaterialSectionRequest;
+package codeverse.com.web_be.dto.request.CourseModuleRequest;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MaterialSectionCreateRequest {
+public class CourseModuleCreateRequest {
     private Long courseId;
     private String title;
     private Integer orderIndex;

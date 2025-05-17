@@ -43,6 +43,9 @@ public class Lesson {
     @Enumerated(EnumType.STRING)
     private LessonType lessonType;
 
+    @Column(name = "exp_reward")
+    private Integer expReward;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

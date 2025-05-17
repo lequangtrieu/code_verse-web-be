@@ -1,4 +1,4 @@
-package codeverse.com.web_be.dto.response.MaterialSectionResponse;
+package codeverse.com.web_be.dto.response.CourseModuleResponse;
 
 import codeverse.com.web_be.entity.CourseModule;
 import lombok.*;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MaterialSectionResponse {
+public class CourseModuleResponse {
     private Long id;
     private String course;
     private String title;
@@ -20,8 +20,8 @@ public class MaterialSectionResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static MaterialSectionResponse fromEntity(CourseModule courseModule) {
-        return MaterialSectionResponse.builder()
+    public static CourseModuleResponse fromEntity(CourseModule courseModule) {
+        return CourseModuleResponse.builder()
                 .id(courseModule.getId())
                 .course(courseModule.getCourse().getTitle())
                 .title(courseModule.getTitle())

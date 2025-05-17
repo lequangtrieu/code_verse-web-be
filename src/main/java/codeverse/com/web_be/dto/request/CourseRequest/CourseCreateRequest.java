@@ -1,6 +1,6 @@
 package codeverse.com.web_be.dto.request.CourseRequest;
 
-import codeverse.com.web_be.dto.request.MaterialSectionRequest.MaterialSectionFullCreateRequest;
+import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleFullCreateRequest;
 import codeverse.com.web_be.enums.CodeLanguage;
 import codeverse.com.web_be.enums.CourseLevel;
 import lombok.*;
@@ -28,5 +28,5 @@ public class CourseCreateRequest {
     @Builder.Default
     private Boolean isPublished = false;
 
-    private List<MaterialSectionFullCreateRequest> modules;
+    private List<CourseModuleFullCreateRequest> modules;
 }

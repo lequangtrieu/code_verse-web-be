@@ -1,4 +1,4 @@
-package codeverse.com.web_be.dto.response.MaterialSectionResponse;
+package codeverse.com.web_be.dto.response.CourseModuleResponse;
 
 import codeverse.com.web_be.dto.response.LessonResponse.LessonWithinMaterialResponse;
 import codeverse.com.web_be.entity.CourseModule;
@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MaterialSectionForUpdateResponse {
+public class CourseModuleForUpdateResponse {
     private Long id;
     private String title;
     private Integer orderIndex;
@@ -20,10 +20,10 @@ public class MaterialSectionForUpdateResponse {
 
     private List<LessonWithinMaterialResponse> lessons;
 
-    public static MaterialSectionForUpdateResponse fromEntity(CourseModule courseModule) {
+    public static CourseModuleForUpdateResponse fromEntity(CourseModule courseModule) {
         if (courseModule == null) return null;
 
-        return MaterialSectionForUpdateResponse.builder()
+        return CourseModuleForUpdateResponse.builder()
                 .id(courseModule.getId())
                 .title(courseModule.getTitle())
                 .orderIndex(courseModule.getOrderIndex())

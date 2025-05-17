@@ -17,8 +17,8 @@ public class TestCase {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exercise_task_id", nullable = false)
-    private ExerciseTask exerciseTask;
+    @JoinColumn(name = "exercise_id", nullable = false)
+    private Exercise exercise;
 
     @Column(columnDefinition = "TEXT")
     private String input;

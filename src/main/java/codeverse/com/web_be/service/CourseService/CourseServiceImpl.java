@@ -6,8 +6,8 @@ import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskFullCreateRe
 import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskUpdateRequest;
 import codeverse.com.web_be.dto.request.LessonRequest.LessonFullCreateRequest;
 import codeverse.com.web_be.dto.request.LessonRequest.LessonUpdateRequest;
-import codeverse.com.web_be.dto.request.MaterialSectionRequest.MaterialSectionFullCreateRequest;
-import codeverse.com.web_be.dto.request.MaterialSectionRequest.MaterialSectionUpdateRequest;
+import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleFullCreateRequest;
+import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.mapper.*;
 import codeverse.com.web_be.repository.*;
@@ -35,7 +35,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final ExerciseTaskRepository exerciseTaskRepository;
     private final FirebaseStorageService firebaseStorageService;
     private final CourseMapper courseMapper;
-    private final MaterialSectionMapper materialSectionMapper;
+    private final CourseModuleMapper courseModuleMapper;
     private final LessonMapper lessonMapper;
     private final ExerciseMapper exerciseMapper;
     private final ExerciseTaskMapper exerciseTaskMapper;
@@ -53,7 +53,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              ExerciseTaskRepository exerciseTaskRepository,
                              FirebaseStorageService firebaseStorageService,
                              CourseMapper courseMapper,
-                             MaterialSectionMapper materialSectionMapper,
+                             CourseModuleMapper courseModuleMapper,
                              LessonMapper lessonMapper,
                              ExerciseMapper exerciseMapper,
                              ExerciseTaskMapper exerciseTaskMapper,
@@ -71,7 +71,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.exerciseTaskRepository = exerciseTaskRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.courseMapper = courseMapper;
-        this.materialSectionMapper = materialSectionMapper;
+        this.courseModuleMapper = courseModuleMapper;
         this.lessonMapper = lessonMapper;
         this.exerciseMapper = exerciseMapper;
         this.exerciseTaskMapper = exerciseTaskMapper;
@@ -141,7 +141,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         course = courseRepository.save(course);
 
         if(request.getModules() != null && !request.getModules().isEmpty()) {
-            for (MaterialSectionFullCreateRequest moduleRequest : request.getModules()) {
+            for (CourseModuleFullCreateRequest moduleRequest : request.getModules()) {
                 CourseModule section = new CourseModule();
                 section.setCourse(course);
                 section.setTitle(moduleRequest.getTitle());
@@ -222,7 +222,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     @PreAuthorize("hasRole('ADMIN')")
     @Override
-    public void updateCourseMaterials(Long courseId, List<MaterialSectionUpdateRequest> materials) {
+    public void updateCourseMaterials(Long courseId, List<CourseModuleUpdateRequest> materials) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
@@ -234,7 +234,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         if (materials == null || materials.isEmpty()) {
             List<CourseModule> existingMaterials = courseModuleRepository.findByCourseId(courseId);
             for (CourseModule courseModule : existingMaterials) {
-                List<Lesson> existingLessons = lessonRepository.findByMaterialSectionId(courseModule.getId());
+                List<Lesson> existingLessons = lessonRepository.findByCourseModuleId(courseModule.getId());
                 lessonRepository.deleteAll(existingLessons);
             }
             courseModuleRepository.deleteAll(existingSections.values());
@@ -242,29 +242,29 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             if(materials.stream().allMatch(s -> s.getId() == null)){
                 List<CourseModule> existingMaterials = courseModuleRepository.findByCourseId(courseId);
                 for (CourseModule courseModule : existingMaterials) {
-                    List<Lesson> existingLessons = lessonRepository.findByMaterialSectionId(courseModule.getId());
+                    List<Lesson> existingLessons = lessonRepository.findByCourseModuleId(courseModule.getId());
                     lessonRepository.deleteAll(existingLessons);
                 }
                 courseModuleRepository.deleteAll(existingSections.values());
             }
-            for (MaterialSectionUpdateRequest sectionReq : materials) {
+            for (CourseModuleUpdateRequest sectionReq : materials) {
                 CourseModule section;
                 boolean isNewSection = (sectionReq.getId() == null || !existingSections.containsKey(sectionReq.getId()));
 
                 if (isNewSection) {
                     section = new CourseModule();
-                    materialSectionMapper.updateMaterialSectionFromRequest(sectionReq, section);
+                    courseModuleMapper.updateCourseModuleFromRequest(sectionReq, section);
                     section.setCourse(course);
                     section = courseModuleRepository.save(section);
                 } else {
                     section = existingSections.remove(sectionReq.getId());
-                    materialSectionMapper.updateMaterialSectionFromRequest(sectionReq, section);
+                    courseModuleMapper.updateCourseModuleFromRequest(sectionReq, section);
                     section.setCourse(course);
                     section = courseModuleRepository.save(section);
                 }
 
                 Map<Long, Lesson> existingLessons = (section.getId() != null)
-                        ? lessonRepository.findByMaterialSectionId(section.getId()).stream()
+                        ? lessonRepository.findByCourseModuleId(section.getId()).stream()
                         .collect(Collectors.toMap(Lesson::getId, l -> l))
                         : new HashMap<>();
 

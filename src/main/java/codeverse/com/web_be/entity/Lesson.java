@@ -23,7 +23,7 @@ public class Lesson {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "material_id", nullable = false)
-    private MaterialSection materialSection;
+    private CourseModule courseModule;
 
     @Column(nullable = false)
     private String title;
@@ -42,6 +42,9 @@ public class Lesson {
 
     @Enumerated(EnumType.STRING)
     private LessonType lessonType;
+
+    @Column(name = "exp_reward")
+    private Integer expReward;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

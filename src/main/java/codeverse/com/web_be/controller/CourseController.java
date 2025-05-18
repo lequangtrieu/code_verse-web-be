@@ -2,15 +2,15 @@ package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
-import codeverse.com.web_be.dto.request.MaterialSectionRequest.MaterialSectionUpdateRequest;
+import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
-import codeverse.com.web_be.dto.response.MaterialSectionResponse.MaterialSectionForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.service.CourseService.ICourseService;
-import codeverse.com.web_be.service.MaterialSectionService.IMaterialSectionService;
+import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseController {
     private final ICourseService courseService;
-    private final IMaterialSectionService materialSectionService;
+    private final ICourseModuleService courseModuleService;
     private final CourseMapper courseMapper;
 
     @GetMapping
@@ -60,7 +60,7 @@ public class CourseController {
     }
 
     @PutMapping("/{courseId}/materials")
-    public ApiResponse<Void> updateCourseMaterials(@PathVariable Long courseId, @RequestBody List<MaterialSectionUpdateRequest> requestList) {
+    public ApiResponse<Void> updateCourseMaterials(@PathVariable Long courseId, @RequestBody List<CourseModuleUpdateRequest> requestList) {
         courseService.updateCourseMaterials(courseId, requestList);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
@@ -82,7 +82,7 @@ public class CourseController {
         Course course = courseService.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
         CourseForUpdateResponse response = courseMapper.courseToCourseForUpdateResponse(course);
-        List<MaterialSectionForUpdateResponse> materials = materialSectionService.getMaterialSectionListByCourseId(courseId);
+        List<CourseModuleForUpdateResponse> materials = courseModuleService.getCourseModuleListByCourseId(courseId);
         response.setModules(materials);
         return ApiResponse.<CourseForUpdateResponse>builder()
                 .result(response)

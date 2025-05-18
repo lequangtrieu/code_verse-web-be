@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "material_section")
+@Table(name = "course_module")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaterialSection {
+public class CourseModule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,10 +29,6 @@ public class MaterialSection {
 
     @Column(name = "order_index")
     private Integer orderIndex;
-
-    @Column(columnDefinition = "tinyint(1) default 0")
-    @Builder.Default
-    private boolean previewable = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

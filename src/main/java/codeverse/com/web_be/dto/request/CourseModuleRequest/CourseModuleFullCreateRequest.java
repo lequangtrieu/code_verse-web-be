@@ -1,4 +1,4 @@
-package codeverse.com.web_be.dto.request.MaterialSectionRequest;
+package codeverse.com.web_be.dto.request.CourseModuleRequest;
 
 import codeverse.com.web_be.dto.request.LessonRequest.LessonFullCreateRequest;
 import lombok.*;
@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MaterialSectionFullCreateRequest {
+public class CourseModuleFullCreateRequest {
     private String title = "";
     private Integer orderIndex;
     private boolean previewable = false;

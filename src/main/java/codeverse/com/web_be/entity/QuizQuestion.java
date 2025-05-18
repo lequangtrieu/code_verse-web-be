@@ -28,9 +28,6 @@ public class QuizQuestion {
     @Column(nullable = false)
     private String question;
 
-    @Column(name = "order_index")
-    private Integer orderIndex;
-
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private QuizType quizType = QuizType.SINGLE;

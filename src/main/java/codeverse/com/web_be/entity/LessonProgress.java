@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class LessonProgress {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,6 +27,12 @@ public class LessonProgress {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id", nullable = false)
     private Lesson lesson;
+
+    @OneToOne(mappedBy = "lessonProgress", cascade = CascadeType.ALL)
+    private CodeSubmission codeSubmission;
+
+    @OneToOne(mappedBy = "lessonProgress", cascade = CascadeType.ALL)
+    private QuizSubmission quizSubmission;
 
     @Enumerated(EnumType.STRING)
     private LessonProgressStatus status;

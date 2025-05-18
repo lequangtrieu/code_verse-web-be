@@ -12,7 +12,7 @@ import java.util.Objects;
 @Mapper(componentModel = "spring")
 public interface LessonMapper {
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "materialSection", ignore = true)
+    @Mapping(target = "courseModule", ignore = true)
     @Mapping(target = "theory", ignore = true)
     @Mapping(target = "exercise", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -20,14 +20,14 @@ public interface LessonMapper {
     Lesson lessonCreateRequestToLesson(LessonCreateRequest request);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "materialSection", ignore = true)
+    @Mapping(target = "courseModule", ignore = true)
     @Mapping(target = "theory", ignore = true)
     @Mapping(target = "exercise", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Lesson lessonUpdateRequestToLesson(LessonUpdateRequest request);
 
-    @Mapping(target = "materialSection", ignore = true)
+    @Mapping(target = "courseModule", ignore = true)
     @Mapping(target = "theory", ignore = true)
     @Mapping(target = "exercise", ignore = true)
     default void updateLessonFromRequest(LessonUpdateRequest request, @MappingTarget Lesson lesson){

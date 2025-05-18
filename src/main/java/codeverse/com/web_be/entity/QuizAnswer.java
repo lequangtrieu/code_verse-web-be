@@ -31,9 +31,6 @@ public class QuizAnswer {
     @Builder.Default
     private boolean isCorrect = false;
 
-    @Column(name = "order_index")
-    private Integer orderIndex;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

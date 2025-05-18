@@ -31,8 +31,8 @@ public interface CourseModuleMapper {
         if (!Objects.equals(courseModule.getTitle(), request.getTitle())){
             courseModule.setTitle(request.getTitle());
         }
-        if (!Objects.equals(courseModule.isPreviewable(), request.isPreviewable())){
-            courseModule.setPreviewable(request.isPreviewable());
-        }
+//        if (!Objects.equals(courseModule.isPreviewable(), request.isPreviewable())){
+//            courseModule.setPreviewable(request.isPreviewable());
+//        }
     }
 }

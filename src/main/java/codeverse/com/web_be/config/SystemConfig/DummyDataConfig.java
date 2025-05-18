@@ -44,7 +44,7 @@ public class DummyDataConfig {
     String thumbnailUrl1 = "https://vtiacademy.edu.vn/upload/images/artboard-1-copy-7-100.jpg";
     String thumbnailUrl2 = "https://letdiv.com/wp-content/uploads/2024/04/khoa-hoc-react.png";
 
-    private static final boolean DUMMY_DATA = true;
+    private static final boolean DUMMY_DATA = false;
 
     @Bean
     ApplicationRunner initDummyData() {
@@ -79,7 +79,7 @@ public class DummyDataConfig {
                             .username("tientnm@gmail.com")
                             .password(passwordEncoder.encode(password))
                             .name("Từ Nguyễn Minh Tiên")
-                            .role(UserRole.LEARNER)
+                            .role(UserRole.INSTRUCTOR)
                             .isVerified(true)
                             .build(),
                     User.builder()
@@ -87,7 +87,7 @@ public class DummyDataConfig {
                             .password(passwordEncoder.encode(password))
                             .name("Lê Quang Triêu")
                             .isVerified(true)
-                            .role(UserRole.LEARNER)
+                            .role(UserRole.INSTRUCTOR)
                             .build(),
                     User.builder()
                             .username("dolv@gmail.com")
@@ -114,7 +114,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(0))
-                            .price(new BigDecimal("99.99"))
+                            .price(new BigDecimal("99000"))
                             .discount(new BigDecimal("10.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
@@ -125,7 +125,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
-                            .price(new BigDecimal("79.99"))
+                            .price(new BigDecimal("79000"))
                             .discount(new BigDecimal("15.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
@@ -136,7 +136,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(2))
-                            .price(new BigDecimal("89.99"))
+                            .price(new BigDecimal("89000"))
                             .discount(new BigDecimal("0.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
@@ -147,7 +147,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
-                            .price(new BigDecimal("0.00"))
+                            .price(new BigDecimal("0"))
                             .discount(new BigDecimal("0.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
@@ -158,7 +158,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
-                            .price(new BigDecimal("149.99"))
+                            .price(new BigDecimal("149000"))
                             .discount(new BigDecimal("50.00"))
                             .isPublished(true)
                             .instructor(instructors.get(0))
@@ -284,31 +284,26 @@ public class DummyDataConfig {
                             .course(courses.get(0))
                             .title("Introduction to Web Development")
                             .orderIndex(1)
-                            .previewable(true)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(0))
                             .title("HTML & CSS Fundamentals")
                             .orderIndex(2)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(0))
                             .title("JavaScript Basics")
                             .orderIndex(3)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(0))
                             .title("React.js Introduction")
                             .orderIndex(4)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(0))
                             .title("Backend Development with Node.js")
                             .orderIndex(5)
-                            .previewable(false)
                             .build(),
 
                     // iOS Development Course
@@ -316,31 +311,26 @@ public class DummyDataConfig {
                             .course(courses.get(1))
                             .title("Introduction to iOS Development")
                             .orderIndex(1)
-                            .previewable(true)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(1))
                             .title("Swift Fundamentals")
                             .orderIndex(2)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(1))
                             .title("UIKit Basics")
                             .orderIndex(3)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(1))
                             .title("SwiftUI Introduction")
                             .orderIndex(4)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(1))
                             .title("iOS App Architecture")
                             .orderIndex(5)
-                            .previewable(false)
                             .build(),
 
                     // Data Science Course
@@ -348,31 +338,26 @@ public class DummyDataConfig {
                             .course(courses.get(2))
                             .title("Introduction to Data Science")
                             .orderIndex(1)
-                            .previewable(true)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(2))
                             .title("Python for Data Science")
                             .orderIndex(2)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(2))
                             .title("NumPy and Pandas")
                             .orderIndex(3)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(2))
                             .title("Data Visualization")
                             .orderIndex(4)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(2))
                             .title("Data Analysis Projects")
                             .orderIndex(5)
-                            .previewable(false)
                             .build(),
 
                     // Machine Learning Course
@@ -380,31 +365,26 @@ public class DummyDataConfig {
                             .course(courses.get(3))
                             .title("Introduction to Machine Learning")
                             .orderIndex(1)
-                            .previewable(true)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(3))
                             .title("Supervised Learning")
                             .orderIndex(2)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(3))
                             .title("Unsupervised Learning")
                             .orderIndex(3)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(3))
                             .title("Deep Learning Basics")
                             .orderIndex(4)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(3))
                             .title("ML Project Implementation")
                             .orderIndex(5)
-                            .previewable(false)
                             .build(),
 
                     // AWS Course
@@ -412,31 +392,26 @@ public class DummyDataConfig {
                             .course(courses.get(4))
                             .title("Introduction to AWS")
                             .orderIndex(1)
-                            .previewable(true)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(4))
                             .title("EC2 and VPC")
                             .orderIndex(2)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(4))
                             .title("S3 and Storage Services")
                             .orderIndex(3)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(4))
                             .title("Database Services")
                             .orderIndex(4)
-                            .previewable(false)
                             .build(),
                     CourseModule.builder()
                             .course(courses.get(4))
                             .title("Security and Compliance")
                             .orderIndex(5)
-                            .previewable(false)
                             .build()
             );
             courseModuleRepository.saveAll(courseModules);
@@ -444,11 +419,11 @@ public class DummyDataConfig {
             // Tạo material sections cho 10 khóa học mới
             List<CourseModule> newCourseModules = new ArrayList<>();
             String[] sectionTitles = {
-                "Introduction and Setup",
-                "Core Concepts",
-                "Advanced Topics",
-                "Practical Projects",
-                "Best Practices and Optimization"
+                    "Introduction and Setup",
+                    "Core Concepts",
+                    "Advanced Topics",
+                    "Practical Projects",
+                    "Best Practices and Optimization"
             };
 
             for (int i = 5; i < courses.size(); i++) {
@@ -458,7 +433,6 @@ public class DummyDataConfig {
                             .course(course)
                             .title(course.getTitle() + " - " + sectionTitles[j])
                             .orderIndex(j + 1)
-                            .previewable(j == 0) // Chỉ section đầu tiên là previewable
                             .build());
                 }
             }
@@ -467,11 +441,11 @@ public class DummyDataConfig {
             // Tạo lessons cho tất cả material sections
             List<Lesson> lessons = new ArrayList<>();
             String[] lessonTypes = {
-                "Overview and Introduction",
-                "Basic Concepts",
-                "Hands-on Practice",
-                "Advanced Techniques",
-                "Project Work"
+                    "Overview and Introduction",
+                    "Basic Concepts",
+                    "Hands-on Practice",
+                    "Advanced Techniques",
+                    "Project Work"
             };
 
             // Tạo lessons cho material sections cũ
@@ -526,6 +500,7 @@ public class DummyDataConfig {
             List<ExerciseTask> exerciseTasks = new ArrayList<>();
             for (Exercise exercise : exercises) {
                 exerciseTasks.add(ExerciseTask.builder()
+                        .exercise(exercise)
                         .description("Task 1: Implement the basic functionality for " + exercise.getTitle() + "\n" +
                                 "Requirements:\n" +
                                 "1. Create a function that handles the main logic\n" +
@@ -534,6 +509,7 @@ public class DummyDataConfig {
                                 "4. Write unit tests")
                         .build());
                 exerciseTasks.add(ExerciseTask.builder()
+                        .exercise(exercise)
                         .description("Task 2: Optimize the solution for " + exercise.getTitle() + "\n" +
                                 "Requirements:\n" +
                                 "1. Improve time complexity\n" +
@@ -549,12 +525,14 @@ public class DummyDataConfig {
             for (Exercise exercise : exercises) {
                 // Public test cases
                 testCases.add(TestCase.builder()
+                        .exercise(exercise)
                         .input("test input 1")
                         .expectedOutput("expected output 1")
                         .priority(TestCasePriority.REQUIRED)
                         .isPublic(true)
                         .build());
                 testCases.add(TestCase.builder()
+                        .exercise(exercise)
                         .input("test input 2")
                         .expectedOutput("expected output 2")
                         .priority(TestCasePriority.REQUIRED)
@@ -563,12 +541,14 @@ public class DummyDataConfig {
 
                 // Private test cases
                 testCases.add(TestCase.builder()
+                        .exercise(exercise)
                         .input("private test input 1")
                         .expectedOutput("private expected output 1")
                         .priority(TestCasePriority.REQUIRED)
                         .isPublic(false)
                         .build());
                 testCases.add(TestCase.builder()
+                        .exercise(exercise)
                         .input("private test input 2")
                         .expectedOutput("private expected output 2")
                         .priority(TestCasePriority.REQUIRED)

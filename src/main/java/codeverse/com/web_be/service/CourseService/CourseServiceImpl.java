@@ -146,7 +146,6 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 section.setCourse(course);
                 section.setTitle(moduleRequest.getTitle());
                 section.setOrderIndex(moduleRequest.getOrderIndex());
-                section.setPreviewable(moduleRequest.isPreviewable());
                 courseModuleRepository.save(section);
 
                 if(moduleRequest.getLessons() != null && !moduleRequest.getLessons().isEmpty()) {

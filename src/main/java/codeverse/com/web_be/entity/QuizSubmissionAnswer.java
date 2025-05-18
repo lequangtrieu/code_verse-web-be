@@ -1,13 +1,10 @@
 package codeverse.com.web_be.entity;
 
-import codeverse.com.web_be.enums.LessonProgressStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "quiz_submission_answer")
@@ -21,8 +18,12 @@ public class QuizSubmissionAnswer {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_progress_id", nullable = false)
-    private LessonProgress lessonProgress;
+    @JoinColumn(name = "quiz_question_id", nullable = false)
+    private QuizQuestion quizQuestion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "quiz_answer_id", nullable = false)
+    private QuizAnswer quizAnswer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_submission_id", nullable = false)

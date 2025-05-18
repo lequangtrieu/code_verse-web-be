@@ -31,6 +31,9 @@ public class LessonProgress {
     @OneToOne(mappedBy = "lessonProgress", cascade = CascadeType.ALL)
     private CodeSubmission codeSubmission;
 
+    @OneToOne(mappedBy = "lessonProgress", cascade = CascadeType.ALL)
+    private QuizSubmission quizSubmission;
+
     @Enumerated(EnumType.STRING)
     private LessonProgressStatus status;
 

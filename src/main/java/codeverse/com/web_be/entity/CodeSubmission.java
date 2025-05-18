@@ -17,7 +17,7 @@ public class CodeSubmission {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_progress_id", nullable = false)
+    @JoinColumn(name = "lesson_progress_id")
     private LessonProgress lessonProgress;
 
     @Column(columnDefinition = "TEXT")

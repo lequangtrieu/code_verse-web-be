@@ -26,7 +26,6 @@ public class CourseModuleResponse {
                 .course(courseModule.getCourse().getTitle())
                 .title(courseModule.getTitle())
                 .orderIndex(courseModule.getOrderIndex())
-                .previewable(courseModule.isPreviewable())
                 .createdAt(courseModule.getCreatedAt())
                 .updatedAt(courseModule.getUpdatedAt())
                 .build();

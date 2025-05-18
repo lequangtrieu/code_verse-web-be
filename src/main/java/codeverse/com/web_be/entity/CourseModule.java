@@ -30,10 +30,6 @@ public class CourseModule {
     @Column(name = "order_index")
     private Integer orderIndex;
 
-    @Column(columnDefinition = "tinyint(1) default 0")
-    @Builder.Default
-    private boolean previewable = false;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -27,7 +27,6 @@ public class CourseModuleForUpdateResponse {
                 .id(courseModule.getId())
                 .title(courseModule.getTitle())
                 .orderIndex(courseModule.getOrderIndex())
-                .previewable(courseModule.isPreviewable())
                 .build();
     }
 }

@@ -1,5 +1,7 @@
 package codeverse.com.web_be.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "quiz_submission")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,15 +20,9 @@ public class QuizSubmission {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_progress_id", nullable = false)
+    @JoinColumn(name = "lesson_progress_id")
     private LessonProgress lessonProgress;
 
-    @Column(columnDefinition = "TEXT")
-    private String code;
-
-    @Column(name = "execution_time")
-    private Float executionTime;
-
-    @Column(name = "memory_usage")
-    private Float memoryUsage;
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
 }

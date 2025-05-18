@@ -39,7 +39,6 @@ public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Lo
                             .id(section.getId())
                             .title(section.getTitle())
                             .orderIndex(section.getOrderIndex())
-                            .previewable(section.isPreviewable())
                             .lessons(lessons.stream()
                                     .map(LessonWithinMaterialResponse::fromEntity)
                                     .toList())

@@ -1,10 +1,7 @@
 package codeverse.com.web_be.config.SystemConfig;
 
 import codeverse.com.web_be.entity.*;
-import codeverse.com.web_be.enums.CourseLevel;
-import codeverse.com.web_be.enums.LessonProgressStatus;
-import codeverse.com.web_be.enums.TestCasePriority;
-import codeverse.com.web_be.enums.UserRole;
+import codeverse.com.web_be.enums.*;
 import codeverse.com.web_be.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -116,7 +113,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("99000"))
                             .discount(new BigDecimal("10.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -127,7 +124,7 @@ public class DummyDataConfig {
                             .category(categories.get(1))
                             .price(new BigDecimal("79000"))
                             .discount(new BigDecimal("15.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -138,7 +135,7 @@ public class DummyDataConfig {
                             .category(categories.get(2))
                             .price(new BigDecimal("89000"))
                             .discount(new BigDecimal("0.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -149,7 +146,7 @@ public class DummyDataConfig {
                             .category(categories.get(3))
                             .price(new BigDecimal("0"))
                             .discount(new BigDecimal("0.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -160,7 +157,7 @@ public class DummyDataConfig {
                             .category(categories.get(4))
                             .price(new BigDecimal("149000"))
                             .discount(new BigDecimal("50.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     // Thêm 10 khóa học mới
@@ -172,7 +169,7 @@ public class DummyDataConfig {
                             .category(categories.get(1))
                             .price(new BigDecimal("50000"))
                             .discount(new BigDecimal("0.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -183,7 +180,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("100.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -194,7 +191,7 @@ public class DummyDataConfig {
                             .category(categories.get(2))
                             .price(new BigDecimal("25000"))
                             .discount(new BigDecimal("25.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -205,7 +202,7 @@ public class DummyDataConfig {
                             .category(categories.get(3))
                             .price(new BigDecimal("100000"))
                             .discount(new BigDecimal("30.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -216,7 +213,7 @@ public class DummyDataConfig {
                             .category(categories.get(4))
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("15.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -227,7 +224,7 @@ public class DummyDataConfig {
                             .category(categories.get(1))
                             .price(new BigDecimal("65000"))
                             .discount(new BigDecimal("45.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -238,7 +235,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("20.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -249,7 +246,7 @@ public class DummyDataConfig {
                             .category(categories.get(2))
                             .price(new BigDecimal("95000"))
                             .discount(new BigDecimal("10.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -260,7 +257,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("35.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -271,7 +268,7 @@ public class DummyDataConfig {
                             .category(categories.get(1))
                             .price(new BigDecimal("70000"))
                             .discount(new BigDecimal("40.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build()
             );
@@ -625,7 +622,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("20.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -636,7 +633,7 @@ public class DummyDataConfig {
                             .category(categories.get(1))
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("15.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -647,7 +644,7 @@ public class DummyDataConfig {
                             .category(categories.get(3))
                             .price(new BigDecimal("95000"))
                             .discount(new BigDecimal("25.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -658,7 +655,7 @@ public class DummyDataConfig {
                             .category(categories.get(4))
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("30.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -669,7 +666,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("65000"))
                             .discount(new BigDecimal("10.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -680,7 +677,7 @@ public class DummyDataConfig {
                             .category(categories.get(1))
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("40.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -691,7 +688,7 @@ public class DummyDataConfig {
                             .category(categories.get(2))
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("35.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -702,7 +699,7 @@ public class DummyDataConfig {
                             .category(categories.get(3))
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("45.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -713,7 +710,7 @@ public class DummyDataConfig {
                             .category(categories.get(4))
                             .price(new BigDecimal("95000"))
                             .discount(new BigDecimal("50.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -724,7 +721,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("70000"))
                             .discount(new BigDecimal("20.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -735,7 +732,7 @@ public class DummyDataConfig {
                             .category(categories.get(1))
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("25.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -746,7 +743,7 @@ public class DummyDataConfig {
                             .category(categories.get(2))
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("30.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -757,7 +754,7 @@ public class DummyDataConfig {
                             .category(categories.get(3))
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("35.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -768,7 +765,7 @@ public class DummyDataConfig {
                             .category(categories.get(4))
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("40.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build(),
                     Course.builder()
@@ -779,7 +776,7 @@ public class DummyDataConfig {
                             .category(categories.get(0))
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("45.00"))
-                            .isPublished(true)
+                            .status(CourseStatus.PUBLISHED)
                             .instructor(instructors.get(0))
                             .build()
             );

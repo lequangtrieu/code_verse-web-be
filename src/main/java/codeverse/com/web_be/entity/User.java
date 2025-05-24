@@ -36,6 +36,9 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @Column(name = "qr_code_url")
+    private String qrCodeUrl;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

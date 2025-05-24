@@ -1,6 +1,8 @@
 package codeverse.com.web_be.entity;
 
 import codeverse.com.web_be.enums.CodeLanguage;
+import codeverse.com.web_be.enums.CourseStatus;
+import codeverse.com.web_be.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -52,9 +54,10 @@ public class Course {
     @Builder.Default
     private BigDecimal discount = new BigDecimal(0);
 
-    @Column(name = "is_published", columnDefinition = "tinyint(1) default 0")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     @Builder.Default
-    private boolean isPublished = false;
+    private CourseStatus status = CourseStatus.DRAFT;
 
     @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
     @Builder.Default

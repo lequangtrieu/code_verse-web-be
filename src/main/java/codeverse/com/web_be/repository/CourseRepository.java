@@ -12,7 +12,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByInstructorId(Long instructorId);
     List<Course> findByInstructorUsername(String username);
 
-    List<Course> findAllByIsDeletedFalseAndIsPublishedTrue();
+//    List<Course> findAllByIsDeletedFalseAndIsPublishedTrue();
 
     @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.CourseResponse(" +
             "c.id, c.title, c.description, c.thumbnailUrl, CAST(c.level AS string), cat.name as category, c.price, c.discount, " +
@@ -26,7 +26,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "FROM Course c " +
             "LEFT JOIN c.category cat " +
             "LEFT JOIN c.instructor u " +
-            "WHERE (:id IS NULL OR c.id = :id) AND c.isDeleted = false AND c.isPublished = true")
+            "WHERE (:id IS NULL OR c.id = :id) AND c.isDeleted = false AND c.status = \"PUBLISHED\"")
     List<CourseResponse> selectCourses(@Param("id") Long id);
 
     default List<CourseResponse> selectAllCourses() {
@@ -53,7 +53,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "LEFT JOIN c.instructor u " +
             "WHERE pt.user.id = :userId " +
             "AND pt.completionPercentage < 100 " +
-            "AND c.isDeleted = false AND c.isPublished = true")
+            "AND c.isDeleted = false AND c.status = \"PUBLISHED\"")
     List<CourseResponse> findInProgressCourseResponsesByUserId(@Param("userId") Long userId);
 
     @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.CourseResponse(" +
@@ -71,7 +71,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "LEFT JOIN c.instructor u " +
             "WHERE pt.user.id = :userId " +
             "AND pt.completionPercentage >= 100 " +
-            "AND c.isDeleted = false AND c.isPublished = true")
+            "AND c.isDeleted = false AND c.status = \"PUBLISHED\"")
     List<CourseResponse> findCompletedCourseResponsesByUserId(@Param("userId") Long userId);
 
     @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.CourseResponse(" +
@@ -86,7 +86,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "FROM Course c " +
             "LEFT JOIN c.category cat " +
             "LEFT JOIN c.instructor u " +
-            "WHERE c.isDeleted = false AND c.isPublished = true " +
+            "WHERE c.isDeleted = false AND c.status = \"PUBLISHED\" " +
             "AND NOT EXISTS (SELECT 1 FROM CourseEnrollment pt WHERE pt.course = c AND pt.user.id = :userId)")
     List<CourseResponse> findSuggestedCourseResponsesByUserId(@Param("userId") Long userId);
 

@@ -124,7 +124,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.selectAllCourses();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public Course createFullCourse(CourseCreateRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
@@ -197,7 +197,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.selectCourseById(courseId);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public Course updateCourse(Long id, CourseUpdateRequest request) {
         Course course = courseRepository.findById(id)
@@ -219,7 +219,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.save(course);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public void updateCourseMaterials(Long courseId, List<CourseModuleUpdateRequest> materials) {
         Course course = courseRepository.findById(courseId)

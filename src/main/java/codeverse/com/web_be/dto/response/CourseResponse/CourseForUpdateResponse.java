@@ -21,7 +21,7 @@ public class CourseForUpdateResponse {
     private String instructor;
     private Long instructorId;
     private BigDecimal price;
-    private boolean published;
+    private String status;
     private boolean deleted;
 
     private List<CourseModuleForUpdateResponse> modules;

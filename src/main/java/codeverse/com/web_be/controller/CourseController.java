@@ -40,8 +40,8 @@ public class CourseController {
         );
     }
 
-    @GetMapping("/admin")
-    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesAdmin(@RequestParam String username) {
+    @GetMapping("/instructor")
+    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesInstructor(@RequestParam String username) {
         return ApiResponse.<List<CourseForUpdateResponse>>builder()
                 .result(courseService.findByInstructorUsername(username).stream()
                         .map(courseMapper::courseToCourseForUpdateResponse)

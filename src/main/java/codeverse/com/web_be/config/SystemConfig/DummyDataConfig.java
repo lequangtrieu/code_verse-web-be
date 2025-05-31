@@ -40,6 +40,7 @@ public class DummyDataConfig {
     String adminPassword = "admin";
     String thumbnailUrl1 = "https://vtiacademy.edu.vn/upload/images/artboard-1-copy-7-100.jpg";
     String thumbnailUrl2 = "https://letdiv.com/wp-content/uploads/2024/04/khoa-hoc-react.png";
+    String certInstructor ="https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/images%2Fb4d226af-50cf-4699-bb5b-449b0ea21a26_cert_page-0001.jpg?alt=media";
 
     private static final boolean DUMMY_DATA = false;
 
@@ -76,7 +77,7 @@ public class DummyDataConfig {
                             .username("tientnm@gmail.com")
                             .password(passwordEncoder.encode(password))
                             .name("Từ Nguyễn Minh Tiên")
-                            .role(UserRole.INSTRUCTOR)
+                            .role(UserRole.ADMIN)
                             .isVerified(true)
                             .build(),
                     User.builder()
@@ -84,7 +85,7 @@ public class DummyDataConfig {
                             .password(passwordEncoder.encode(password))
                             .name("Lê Quang Triêu")
                             .isVerified(true)
-                            .role(UserRole.INSTRUCTOR)
+                            .role(UserRole.LEARNER)
                             .build(),
                     User.builder()
                             .username("dolv@gmail.com")
@@ -98,7 +99,9 @@ public class DummyDataConfig {
                             .password(passwordEncoder.encode(password))
                             .name("Lê Thu Hiền")
                             .isVerified(true)
-                            .role(UserRole.LEARNER)
+                            .isActiveInstructor(true)
+                            .teachingCredentials(certInstructor)
+                            .role(UserRole.INSTRUCTOR)
                             .build()
             );
             userRepository.saveAll(instructors);

@@ -16,7 +16,7 @@ public class FunctionHelper {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        if (user.isDeleted()) {
+        if (user.getIsDeleted()) {
             throw new AppException(ErrorCode.USER_BANNED);
         }
 

@@ -88,7 +88,7 @@ public class AuthenticationService {
                 .username(user.getUsername())
                 .name(user.getName())
                 .role(user.getRole().name())
-                .isDeleted(user.isDeleted())
+                .isDeleted(user.getIsDeleted())
                 .avatar(user.getAvatar())
                 .build();
     }
@@ -105,7 +105,7 @@ public class AuthenticationService {
         if (Boolean.FALSE.equals(user.getIsVerified())) {
             throw new AppException(ErrorCode.UN_VERIFY_EMAIL);
         }
-        if(user.isDeleted()) {
+        if(user.getIsDeleted()) {
             throw new AppException(ErrorCode.USER_BANNED);
         }
         var token = generateToken(user, false);
@@ -142,7 +142,7 @@ public class AuthenticationService {
                     throw new AppException(ErrorCode.EMAIL_REGISTERED_WITH_PASSWORD);
                 }
 
-                if (user.isDeleted()) {
+                if (user.getIsDeleted()) {
                     throw new AppException(ErrorCode.USER_BANNED);
                 }
 

@@ -54,7 +54,7 @@ public class User {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
     @Builder.Default
-    private boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
     @PrePersist
     protected void onCreate() {

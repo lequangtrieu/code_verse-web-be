@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -54,7 +53,20 @@ public class User {
 
     @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
     @Builder.Default
-    private boolean isDeleted = false;
+    private Boolean isDeleted = false;
+
+    @Column(name = "is_active_instructor", columnDefinition = "tinyint(1) default 0")
+    @Builder.Default
+    private Boolean isActiveInstructor = false;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "teaching_credentials", columnDefinition = "TEXT")
+    private String teachingCredentials;
+
+    @Column(name = "educational_background", columnDefinition = "TEXT")
+    private String educationalBackground;
 
     @PrePersist
     protected void onCreate() {

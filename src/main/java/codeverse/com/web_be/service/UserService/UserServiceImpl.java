@@ -1,7 +1,10 @@
 package codeverse.com.web_be.service.UserService;
 
+import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
+import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.mapper.UserMapper;
@@ -66,4 +69,37 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return repository.save(user);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void toggleLockUser(Long userId, boolean lock) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setIsDeleted(lock); // true = locked
+        userRepository.save(user);
+    }
+
+    @Override
+    public User createUserByAdmin(UserCreationByAdminRequest request) {
+        // Bắt buộc role là LEARNER dù request có thay đổi
+        request.setRole(UserRole.LEARNER);
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        User user = userMapper.userCreationByAdminRequestToUser(request);
+        // Mã hóa password
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setIsVerified(true);  // User tạo từ admin import mặc định verified
+        return userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public UserDetailResponse getUserDetailByAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.userToUserDetailResponse(user);
+    }
+
 }

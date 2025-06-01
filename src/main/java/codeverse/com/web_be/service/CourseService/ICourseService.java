@@ -3,6 +3,7 @@ package codeverse.com.web_be.service.CourseService;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.service.IGenericService;
@@ -17,9 +18,9 @@ public interface ICourseService extends IGenericService<Course, Long> {
     Course updateCourse(Long id, CourseUpdateRequest request);
     void updateCourseMaterials(Long courseId, List<CourseModuleUpdateRequest> materials);
     List<CourseResponse> getCoursesByLearnerId(Long userId);
-    List<CourseResponse> getInProgressCoursesByLearnerId(Long userId);
-    List<CourseResponse> getCompletedCoursesByLearnerId(Long userId);
+    List<CourseProgressResponse> getInProgressCoursesByLearnerId(Long userId);
+    List<CourseProgressResponse> getCompletedCoursesByLearnerId(Long userId);
     List<CourseResponse> getSuggestedCoursesByLearnerId(Long userId);
     CourseResponse getCourseById(Long courseId);
-
+    List<CourseProgressResponse> getAllCoursesByLearnerId(Long userId);
 }

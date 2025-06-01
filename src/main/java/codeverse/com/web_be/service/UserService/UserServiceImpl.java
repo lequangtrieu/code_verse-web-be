@@ -6,6 +6,7 @@ import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.GenericServiceImpl;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,12 +23,14 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final FirebaseStorageService firebaseStorageService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService) {
         super(userRepository);
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     public UserResponse getMyInfo() {
@@ -38,6 +41,29 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return userMapper.userToUserResponse(user);
+    }
+
+    public UserResponse updateMyInfo(UserResponse userResponse) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+//        String avatar = null;
+//        if(userResponse.getAvatar() != null && !userResponse.getAvatar().isEmpty()) {
+//            avatar = firebaseStorageService.uploadImage(userResponse.getAvatar());
+//        }
+        // Chỉ cập nhật các trường được phép
+        user.setName(userResponse.getName());
+        user.setAvatar(userResponse.getAvatar());
+        user.setBio(userResponse.getBio());
+        user.setQrCodeUrl(userResponse.getQrCodeUrl());
+        user.setPhoneNumber(userResponse.getPhoneNumber());
+        user.setTeachingCredentials(userResponse.getTeachingCredentials());
+        user.setEducationalBackground(userResponse.getEducationalBackground());
+
+        User updatedUser = userRepository.save(user);
+        return userMapper.userToUserResponse(updatedUser);
     }
 
     @Override

@@ -90,7 +90,6 @@ public class AuthenticationService {
                 .username(user.getUsername())
                 .name(user.getName())
                 .role(user.getRole().name())
-                .isDeleted(user.getIsDeleted())
                 .avatar(user.getAvatar())
                 .build();
     }

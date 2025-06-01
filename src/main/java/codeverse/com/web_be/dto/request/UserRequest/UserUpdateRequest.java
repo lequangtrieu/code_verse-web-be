@@ -1,25 +1,21 @@
-package codeverse.com.web_be.dto.response.UserResponse;
+package codeverse.com.web_be.dto.request.UserRequest;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserResponse {
-    Long id;
+public class UserUpdateRequest {
     String username;
-    String role;
     String name;
-    String avatar;
+    MultipartFile avatar;
     String bio;
-    String qrCodeUrl;
+    MultipartFile qrCodeUrl;
     String phoneNumber;
     String teachingCredentials;
     String educationalBackground;
-    LocalDateTime createdAt;
 }

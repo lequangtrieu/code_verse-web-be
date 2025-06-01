@@ -1,6 +1,7 @@
 package codeverse.com.web_be.service.UserService;
 
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
+import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.enums.UserRole;
@@ -91,6 +92,14 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setIsVerified(true);  // User tạo từ admin import mặc định verified
         return userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public UserDetailResponse getUserDetailByAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.userToUserDetailResponse(user);
     }
 
 }

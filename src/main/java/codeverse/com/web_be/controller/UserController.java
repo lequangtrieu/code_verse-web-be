@@ -3,6 +3,7 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
+import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.enums.UserRole;
@@ -15,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import codeverse.com.web_be.dto.request.UserRequest.LockUserRequest;
 
@@ -102,4 +104,11 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUsers);
     }
+
+    @GetMapping("/admin/detailUser/{id}")
+    public ResponseEntity<UserDetailResponse> getUserDetailForAdmin(@PathVariable Long id) {
+        UserDetailResponse detail = userService.getUserDetailByAdmin(id);
+        return ResponseEntity.ok(detail);
+    }
+
 }

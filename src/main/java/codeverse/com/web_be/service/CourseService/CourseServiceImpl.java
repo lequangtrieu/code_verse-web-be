@@ -8,6 +8,7 @@ import codeverse.com.web_be.dto.request.LessonRequest.LessonFullCreateRequest;
 import codeverse.com.web_be.dto.request.LessonRequest.LessonUpdateRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleFullCreateRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.mapper.*;
 import codeverse.com.web_be.repository.*;
@@ -104,12 +105,17 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     }
 
     @Override
-    public List<CourseResponse> getInProgressCoursesByLearnerId(Long userId) {
+    public List<CourseProgressResponse> getAllCoursesByLearnerId(Long userId) {
+        return courseRepository.findAllCoursesWithProgressByUserId(userId);
+    }
+
+    @Override
+    public List<CourseProgressResponse> getInProgressCoursesByLearnerId(Long userId) {
         return courseRepository.findInProgressCourseResponsesByUserId(userId);
     }
 
     @Override
-    public List<CourseResponse> getCompletedCoursesByLearnerId(Long userId) {
+    public List<CourseProgressResponse> getCompletedCoursesByLearnerId(Long userId) {
         return courseRepository.findCompletedCourseResponsesByUserId(userId);
     }
 

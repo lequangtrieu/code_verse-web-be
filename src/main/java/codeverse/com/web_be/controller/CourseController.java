@@ -4,6 +4,7 @@ import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
@@ -106,13 +107,18 @@ public class CourseController {
         return ResponseEntity.ok(courses);
     }
 
+    @GetMapping("/user/{userId}/all-courses")
+    public ResponseEntity<List<CourseProgressResponse>> getAllCoursesByLearnerId(@PathVariable Long userId) {
+        return ResponseEntity.ok(courseService.getAllCoursesByLearnerId(userId));
+    }
+
     @GetMapping("/user/{userId}/in-progress")
-    public ResponseEntity<List<CourseResponse>> getInProgressCourses(@PathVariable Long userId) {
+    public ResponseEntity<List<CourseProgressResponse>> getInProgressCourses(@PathVariable Long userId) {
         return ResponseEntity.ok(courseService.getInProgressCoursesByLearnerId(userId));
     }
 
     @GetMapping("/user/{userId}/completed")
-    public ResponseEntity<List<CourseResponse>> getCompletedCourses(@PathVariable Long userId) {
+    public ResponseEntity<List<CourseProgressResponse>> getCompletedCourses(@PathVariable Long userId) {
         return ResponseEntity.ok(courseService.getCompletedCoursesByLearnerId(userId));
     }
 

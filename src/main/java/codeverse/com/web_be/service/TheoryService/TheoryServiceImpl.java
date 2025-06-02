@@ -36,7 +36,7 @@ public class TheoryServiceImpl extends GenericServiceImpl<Theory, Long> implemen
     }
 
     @Override
-    public TheoryResponse createTheory(TheoryCreateRequest request) {
+    public TheoryResponse saveTheory(TheoryCreateRequest request) {
         Lesson lesson = lessonRepository.findById(request.getLessonId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
 
@@ -46,7 +46,8 @@ public class TheoryServiceImpl extends GenericServiceImpl<Theory, Long> implemen
         if (request.getContentFile() != null && !request.getContentFile().isEmpty()) {
             try {
                 htmlHolder[0] = new String(request.getContentFile().getBytes(), StandardCharsets.UTF_8);
-                newHtmlUrl = firebaseStorageService.uploadHtml(request.getContentFile());
+                newHtmlUrl = firebaseStorageService.uploadFile(request.getContentFile(), "theories/" + lesson.getId() + "/");
+                firebaseStorageService.deleteOldHtmlVersions(lesson.getId(), newHtmlUrl);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read HTML content file", e);
             }
@@ -55,7 +56,7 @@ public class TheoryServiceImpl extends GenericServiceImpl<Theory, Long> implemen
         Optional<Theory> optionalOldTheory = theoryRepository.findByLesson(lesson);
         optionalOldTheory.ifPresent(oldTheory -> {
             try {
-                String oldHtmlContent = firebaseStorageService.downloadHtml(oldTheory.getContent());
+                String oldHtmlContent = firebaseStorageService.downloadHtmlByPath(oldTheory.getContent());
                 Set<String> oldMedia = HtmlMediaExtractor.extractMediaUrlsFromHtml(oldHtmlContent);
                 Set<String> newMedia = HtmlMediaExtractor.extractMediaUrlsFromHtml(htmlHolder[0]);
                 firebaseStorageService.cleanUpUnusedMedia(oldMedia, newMedia);
@@ -64,10 +65,20 @@ public class TheoryServiceImpl extends GenericServiceImpl<Theory, Long> implemen
             }
         });
 
+        try {
+            String folder = "editor/" + lesson.getId() + "/";
+            Set<String> allUploadedMedia = firebaseStorageService.listAllMediaInFolder(folder);
+            Set<String> newMedia = HtmlMediaExtractor.extractMediaUrlsFromHtml(htmlHolder[0]);
+            firebaseStorageService.cleanUpUnusedMedia(allUploadedMedia, newMedia);
+        } catch (Exception e) {
+            System.out.println("Failed to clean up unused uploaded media: " + e.getMessage());
+        }
+
         Theory theory = optionalOldTheory.orElse(new Theory());
         theory.setLesson(lesson);
         theory.setTitle(request.getTitle());
         theory.setContent(newHtmlUrl);
+
         return TheoryResponse.fromEntity(theoryRepository.save(theory));
     }
 }

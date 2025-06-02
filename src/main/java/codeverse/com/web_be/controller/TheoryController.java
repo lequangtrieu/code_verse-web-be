@@ -22,10 +22,10 @@ public class TheoryController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<TheoryResponse> createTheory(@ModelAttribute TheoryCreateRequest request){
-        TheoryResponse response = theoryService.createTheory(request);
+        TheoryResponse response = theoryService.saveTheory((request));
         return ApiResponse.<TheoryResponse>builder()
                 .result(response)
-                .code(HttpStatus.CREATED.value())
+                .code(HttpStatus.OK.value())
                 .build();
     }
 }

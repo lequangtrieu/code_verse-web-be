@@ -6,5 +6,5 @@ import codeverse.com.web_be.entity.Theory;
 import codeverse.com.web_be.service.IGenericService;
 
 public interface ITheoryService extends IGenericService<Theory, Long> {
-    TheoryResponse createTheory(TheoryCreateRequest request);
+    TheoryResponse saveTheory(TheoryCreateRequest request);
 }

@@ -3,6 +3,7 @@ package codeverse.com.web_be.dto.request.CourseRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleFullCreateRequest;
 import codeverse.com.web_be.enums.CodeLanguage;
 import codeverse.com.web_be.enums.CourseLevel;
+import codeverse.com.web_be.enums.CourseStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +27,7 @@ public class CourseCreateRequest {
     @Builder.Default
     private BigDecimal price = BigDecimal.ZERO;
     @Builder.Default
-    private Boolean isPublished = false;
+    private CourseStatus status = CourseStatus.DRAFT;
 
     private List<CourseModuleFullCreateRequest> modules;
 }

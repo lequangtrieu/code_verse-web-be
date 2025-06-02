@@ -132,7 +132,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
-    public Course createFullCourse(CourseCreateRequest request) {
+    public Course createCourse(CourseCreateRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
         User instructor = functionHelper.getActiveUserByUsername(request.getInstructor());
@@ -145,58 +145,9 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         Course course = courseMapper.courseCreateRequestToCourse(request, category, instructor);
         course.setThumbnailUrl(thumbnailUrl);
         course = courseRepository.save(course);
-
-        if(request.getModules() != null && !request.getModules().isEmpty()) {
-            for (CourseModuleFullCreateRequest moduleRequest : request.getModules()) {
-                CourseModule section = new CourseModule();
-                section.setCourse(course);
-                section.setTitle(moduleRequest.getTitle());
-                section.setOrderIndex(moduleRequest.getOrderIndex());
-                courseModuleRepository.save(section);
-
-                if(moduleRequest.getLessons() != null && !moduleRequest.getLessons().isEmpty()) {
-                    for (LessonFullCreateRequest lessonRequest : moduleRequest.getLessons()) {
-                        Lesson lesson = new Lesson();
-                        lesson.setCourseModule(section);
-                        lesson.setTitle(lessonRequest.getTitle());
-                        lesson.setOrderIndex(lessonRequest.getOrderIndex());
-                        lesson.setDuration(lessonRequest.getDuration());
-                        lesson = lessonRepository.save(lesson);
-
-                        if (lessonRequest.getTheory() != null) {
-                            Theory theory = new Theory();
-                            theory.setLesson(lesson);
-                            theory.setTitle(lessonRequest.getTheory().getTitle());
-                            theory.setContent(lessonRequest.getTheory().getContent());
-                            theoryRepository.save(theory);
-                        }
-
-                        if (lessonRequest.getExercise() != null) {
-                            Exercise exercise = new Exercise();
-                            exercise.setLesson(lesson);
-                            exercise.setTitle(lessonRequest.getExercise().getTitle());
-                            exercise.setExpReward(lessonRequest.getExercise().getExpReward());
-                            exercise.setInstruction(lessonRequest.getExercise().getInstruction());
-                            exercise = exerciseRepository.save(exercise);
-
-                            if(lessonRequest.getExercise().getTasks() != null && !lessonRequest.getExercise().getTasks().isEmpty()) {
-                                for (ExerciseTaskFullCreateRequest taskRequest : lessonRequest.getExercise().getTasks()) {
-                                    ExerciseTask task = new ExerciseTask();
-                                    task.setExercise(exercise);
-                                    task.setDescription(taskRequest.getDescription());
-                                    exerciseTaskRepository.save(task);
-                                }
-                            }
-
-                        }
-                    }
-                }
-
-            }
-        }
-
         return course;
     }
+
 
     @Override
     public CourseResponse getCourseById(Long courseId) {
@@ -223,159 +174,5 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         }
         course.setThumbnailUrl(thumbnailUrl);
         return courseRepository.save(course);
-    }
-
-    @PreAuthorize("hasRole('INSTRUCTOR')")
-    @Override
-    public void updateCourseMaterials(Long courseId, List<CourseModuleUpdateRequest> materials) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
-
-        Map<Long, CourseModule> existingSections = courseModuleRepository.findByCourseId(courseId).stream()
-                .collect(Collectors.toMap(CourseModule::getId, s -> s));
-
-        List<CourseModule> updatedSections = new ArrayList<>();
-
-        if (materials == null || materials.isEmpty()) {
-            List<CourseModule> existingMaterials = courseModuleRepository.findByCourseId(courseId);
-            for (CourseModule courseModule : existingMaterials) {
-                List<Lesson> existingLessons = lessonRepository.findByCourseModuleId(courseModule.getId());
-                lessonRepository.deleteAll(existingLessons);
-            }
-            courseModuleRepository.deleteAll(existingSections.values());
-        } else {
-            if(materials.stream().allMatch(s -> s.getId() == null)){
-                List<CourseModule> existingMaterials = courseModuleRepository.findByCourseId(courseId);
-                for (CourseModule courseModule : existingMaterials) {
-                    List<Lesson> existingLessons = lessonRepository.findByCourseModuleId(courseModule.getId());
-                    lessonRepository.deleteAll(existingLessons);
-                }
-                courseModuleRepository.deleteAll(existingSections.values());
-            }
-            for (CourseModuleUpdateRequest sectionReq : materials) {
-                CourseModule section;
-                boolean isNewSection = (sectionReq.getId() == null || !existingSections.containsKey(sectionReq.getId()));
-
-                if (isNewSection) {
-                    section = new CourseModule();
-                    courseModuleMapper.updateCourseModuleFromRequest(sectionReq, section);
-                    section.setCourse(course);
-                    section = courseModuleRepository.save(section);
-                } else {
-                    section = existingSections.remove(sectionReq.getId());
-                    courseModuleMapper.updateCourseModuleFromRequest(sectionReq, section);
-                    section.setCourse(course);
-                    section = courseModuleRepository.save(section);
-                }
-
-                Map<Long, Lesson> existingLessons = (section.getId() != null)
-                        ? lessonRepository.findByCourseModuleId(section.getId()).stream()
-                        .collect(Collectors.toMap(Lesson::getId, l -> l))
-                        : new HashMap<>();
-
-                List<LessonUpdateRequest> lessonReqs = sectionReq.getLessons();
-                if (lessonReqs == null || lessonReqs.isEmpty()) {
-                    lessonRepository.deleteAll(existingLessons.values());
-                } else {
-                    List<Lesson> updatedLessons = new ArrayList<>();
-
-                    for (LessonUpdateRequest lessonReq : lessonReqs) {
-                        Lesson lesson;
-                        boolean isNewLesson = (lessonReq.getId() == null || !existingLessons.containsKey(lessonReq.getId()));
-
-                        if (isNewLesson) {
-                            lesson = new Lesson();
-                            lessonMapper.updateLessonFromRequest(lessonReq, lesson);
-                            lesson.setCourseModule(section);
-                            lesson = lessonRepository.save(lesson);
-                        } else {
-                            lesson = existingLessons.remove(lessonReq.getId());
-                            lessonMapper.updateLessonFromRequest(lessonReq, lesson);
-                            lesson.setCourseModule(section);
-                            lesson = lessonRepository.save(lesson);
-                        }
-
-                        // Handle Theory
-                        if (lessonReq.getTheory() != null) {
-                            if (lesson.getTheory() == null) {
-                                Theory theory = theoryMapper.theoryUpdateRequestToTheory(lessonReq.getTheory());
-                                theory.setLesson(lesson);
-                                theory = theoryRepository.save(theory);
-                            } else {
-                                theoryMapper.updateTheoryFromRequest(lessonReq.getTheory(), lesson.getTheory());
-                            }
-                        } else if (lesson.getTheory() != null) {
-                            theoryRepository.delete(lesson.getTheory());
-                            lesson.setTheory(null);
-                        }
-
-                        // Handle Exercise and ExerciseTasks
-                        if (lessonReq.getExercise() != null) {
-                            Exercise exercise = (lesson.getExercise() == null) ? new Exercise() : lesson.getExercise();
-                            exerciseMapper.updateExerciseFromRequest(lessonReq.getExercise(), exercise);
-                            exercise.setLesson(lesson);
-
-                            exercise = exerciseRepository.save(exercise);
-
-                            Map<Long, ExerciseTask> existingTasks = (exercise.getTasks() != null)
-                                    ? exercise.getTasks().stream()
-                                    .filter(t -> t.getId() != null)
-                                    .collect(Collectors.toMap(ExerciseTask::getId, t -> t))
-                                    : new HashMap<>();
-
-                            List<ExerciseTaskUpdateRequest> taskReqs = lessonReq.getExercise().getTasks();
-                            List<ExerciseTask> updatedTasks = new ArrayList<>();
-
-                            if (taskReqs == null || taskReqs.isEmpty()) {
-                                if (!existingTasks.isEmpty()) {
-                                    exerciseTaskRepository.deleteAll(existingTasks.values());
-                                }
-                                exercise.setTasks(new ArrayList<>());
-                            } else {
-                                for (ExerciseTaskUpdateRequest taskReq : taskReqs) {
-                                    ExerciseTask task = (taskReq.getId() != null && existingTasks.containsKey(taskReq.getId()))
-                                            ? existingTasks.remove(taskReq.getId())
-                                            : new ExerciseTask();
-
-                                    exerciseTaskMapper.updateExerciseTaskFromRequest(taskReq, task);
-                                    task.setExercise(exercise);
-                                    updatedTasks.add(task);
-                                }
-
-                                if (!existingTasks.isEmpty()) {
-                                    exerciseTaskRepository.deleteAll(existingTasks.values());
-                                }
-
-                                exerciseTaskRepository.saveAll(updatedTasks);
-                                exercise.setTasks(updatedTasks);
-                            }
-
-                        } else if (lesson.getExercise() != null) {
-                            if (lesson.getExercise().getTasks() != null) {
-                                exerciseTaskRepository.deleteAll(lesson.getExercise().getTasks());
-                            }
-                            exerciseRepository.delete(lesson.getExercise());
-                            lesson.setExercise(null);
-                        }
-
-                        updatedLessons.add(lesson);
-                    }
-
-                    if (!existingLessons.isEmpty()) {
-                        lessonRepository.deleteAll(existingLessons.values());
-                    }
-
-                    lessonRepository.saveAll(updatedLessons);
-                }
-
-                updatedSections.add(section);
-            }
-
-            courseModuleRepository.saveAll(updatedSections);
-        }
-
-        if (!existingSections.isEmpty()) {
-            courseModuleRepository.deleteAll(existingSections.values());
-        }
     }
 }

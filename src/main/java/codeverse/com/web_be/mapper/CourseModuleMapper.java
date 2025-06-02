@@ -24,15 +24,5 @@ public interface CourseModuleMapper {
     CourseModule courseModuleUpdateRequestToCourseModule(CourseModuleUpdateRequest request);
 
     @Mapping(target = "course", ignore = true)
-    default void updateCourseModuleFromRequest(CourseModuleUpdateRequest request, @MappingTarget CourseModule courseModule){
-        if(!Objects.equals(courseModule.getOrderIndex(), request.getOrderIndex())){
-            courseModule.setOrderIndex(request.getOrderIndex());
-        }
-        if (!Objects.equals(courseModule.getTitle(), request.getTitle())){
-            courseModule.setTitle(request.getTitle());
-        }
-//        if (!Objects.equals(courseModule.isPreviewable(), request.isPreviewable())){
-//            courseModule.setPreviewable(request.isPreviewable());
-//        }
-    }
+    void updateCourseModuleFromRequest(CourseModuleCreateRequest request, @MappingTarget CourseModule courseModule);
 }

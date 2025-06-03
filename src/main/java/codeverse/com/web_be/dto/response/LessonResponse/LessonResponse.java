@@ -18,7 +18,7 @@ public class LessonResponse {
     private Integer orderIndex;
     private String theory;
     private String exercise;
-    private String defaultCode;
+    private String lessonType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,6 +30,7 @@ public class LessonResponse {
                 .orderIndex(lesson.getOrderIndex())
                 .theory(lesson.getTheory() == null ? null : lesson.getTheory().getTitle())
                 .exercise(lesson.getExercise() == null ? null : lesson.getExercise().getTitle())
+                .lessonType(lesson.getLessonType().toString())
                 .createdAt(lesson.getCreatedAt())
                 .updatedAt(lesson.getUpdatedAt())
                 .build();

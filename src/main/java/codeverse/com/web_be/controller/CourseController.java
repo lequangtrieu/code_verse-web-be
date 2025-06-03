@@ -60,15 +60,6 @@ public class CourseController {
                 .build();
     }
 
-    @PutMapping("/{courseId}/materials")
-    public ApiResponse<Void> updateCourseMaterials(@PathVariable Long courseId, @RequestBody List<CourseModuleUpdateRequest> requestList) {
-        courseService.updateCourseMaterials(courseId, requestList);
-        return ApiResponse.<Void>builder()
-                .code(HttpStatus.OK.value())
-                .message("Update succeed")
-                .build();
-    }
-
     @GetMapping("/{id}")
     public ApiResponse<CourseResponse> getCourseById(@PathVariable Long id) {
         return ApiResponse.<CourseResponse>builder()
@@ -78,7 +69,7 @@ public class CourseController {
                 .build();
     }
 
-    @GetMapping("/admin/{courseId}")
+    @GetMapping("/instructor/{courseId}")
     public ApiResponse<CourseForUpdateResponse> getFullCourseById(@PathVariable Long courseId) {
         Course course = courseService.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
@@ -93,7 +84,7 @@ public class CourseController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<CourseResponse> createCourse(@ModelAttribute CourseCreateRequest course) {
-        Course  courseCreated = courseService.createFullCourse(course);
+        Course  courseCreated = courseService.createCourse(course);
 
         return ApiResponse.<CourseResponse>builder()
                 .result(courseMapper.courseToCourseResponse(courseCreated))

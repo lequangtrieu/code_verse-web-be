@@ -2,6 +2,7 @@ package codeverse.com.web_be.dto.request.TheoryRequest;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
@@ -11,5 +12,5 @@ import lombok.experimental.FieldDefaults;
 public class TheoryCreateRequest {
     private Long lessonId;
     private String title = "";
-    private String content;
+    private MultipartFile contentFile;
 }

@@ -15,9 +15,8 @@ public interface ICourseService extends IGenericService<Course, Long> {
     List<Course> findByInstructorId(Long instructorId);
     List<Course> findByInstructorUsername(String username);
     List<CourseResponse> getAllCourses();
-    Course createFullCourse(CourseCreateRequest request);
+    Course createCourse(CourseCreateRequest request);
     Course updateCourse(Long id, CourseUpdateRequest request);
-    void updateCourseMaterials(Long courseId, List<CourseModuleUpdateRequest> materials);
     List<CourseResponse> getCoursesByLearnerId(Long userId);
     List<CourseProgressResponse> getInProgressCoursesByLearnerId(Long userId);
     List<CourseProgressResponse> getCompletedCoursesByLearnerId(Long userId);

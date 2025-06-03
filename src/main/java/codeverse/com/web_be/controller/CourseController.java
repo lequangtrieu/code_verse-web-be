@@ -118,4 +118,19 @@ public class CourseController {
         return ResponseEntity.ok(courseService.getSuggestedCoursesByLearnerId(userId));
     }
 
+    @GetMapping("/instructor/{id}")
+    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesInstructorById(@PathVariable Long id) {
+        return ApiResponse.<List<CourseForUpdateResponse>>builder()
+                .result(courseService.findByInstructorId(id).stream()
+                        .map(courseMapper::courseToCourseForUpdateResponse)
+                        .collect(Collectors.toList()))
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<CourseForUpdateResponse>> getAllCoursesForAdmin() {
+        List<CourseForUpdateResponse> courses = courseService.getAllCoursesByAdmin();
+        return ResponseEntity.ok(courses);
+    }
 }

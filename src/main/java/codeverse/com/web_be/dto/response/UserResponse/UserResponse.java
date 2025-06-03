@@ -17,6 +17,7 @@ public class UserResponse {
     String name;
     String avatar;
     String bio;
+    Boolean isDeleted;
     String qrCodeUrl;
     String phoneNumber;
     String teachingCredentials;

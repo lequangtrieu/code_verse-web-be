@@ -8,6 +8,7 @@ import codeverse.com.web_be.dto.request.LessonRequest.LessonFullCreateRequest;
 import codeverse.com.web_be.dto.request.LessonRequest.LessonUpdateRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleFullCreateRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.mapper.*;
@@ -377,5 +378,13 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         if (!existingSections.isEmpty()) {
             courseModuleRepository.deleteAll(existingSections.values());
         }
+    }
+
+    @Override
+    public List<CourseForUpdateResponse> getAllCoursesByAdmin() {
+        List<Course> courses = courseRepository.findAll();
+        return courses.stream()
+                .map(courseMapper::courseToCourseForUpdateResponse)
+                .collect(Collectors.toList());
     }
 }

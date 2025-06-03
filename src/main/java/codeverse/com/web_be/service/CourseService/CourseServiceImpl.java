@@ -175,4 +175,12 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         course.setThumbnailUrl(thumbnailUrl);
         return courseRepository.save(course);
     }
+
+    @Override
+    public List<CourseForUpdateResponse> getAllCoursesByAdmin() {
+        List<Course> courses = courseRepository.findAll();
+        return courses.stream()
+                .map(courseMapper::courseToCourseForUpdateResponse)
+                .collect(Collectors.toList());
+    }
 }

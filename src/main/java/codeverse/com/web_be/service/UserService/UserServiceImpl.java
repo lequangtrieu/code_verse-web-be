@@ -48,18 +48,10 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-//        String avatar = null;
-//        if(userResponse.getAvatar() != null && !userResponse.getAvatar().isEmpty()) {
-//            avatar = firebaseStorageService.uploadImage(userResponse.getAvatar());
-//        }
         // Chỉ cập nhật các trường được phép
         user.setName(userResponse.getName());
-        user.setAvatar(userResponse.getAvatar());
         user.setBio(userResponse.getBio());
-        user.setQrCodeUrl(userResponse.getQrCodeUrl());
         user.setPhoneNumber(userResponse.getPhoneNumber());
-        user.setTeachingCredentials(userResponse.getTeachingCredentials());
         user.setEducationalBackground(userResponse.getEducationalBackground());
 
         User updatedUser = userRepository.save(user);

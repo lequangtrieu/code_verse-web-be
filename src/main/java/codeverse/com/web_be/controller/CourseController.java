@@ -69,7 +69,7 @@ public class CourseController {
                 .build();
     }
 
-    @GetMapping("/instructor/{courseId}")
+    @GetMapping("/{courseId}/for-instructor")
     public ApiResponse<CourseForUpdateResponse> getFullCourseById(@PathVariable Long courseId) {
         Course course = courseService.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));

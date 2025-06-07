@@ -1,8 +1,6 @@
 package codeverse.com.web_be.dto.request.LessonRequest;
 
-import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseFullCreateRequest;
 import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseUpdateRequest;
-import codeverse.com.web_be.dto.request.TheoryRequest.TheoryFullCreateRequest;
 import codeverse.com.web_be.dto.request.TheoryRequest.TheoryUpdateRequest;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

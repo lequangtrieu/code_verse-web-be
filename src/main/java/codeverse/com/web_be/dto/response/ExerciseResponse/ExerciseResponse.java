@@ -1,6 +1,8 @@
 package codeverse.com.web_be.dto.response.ExerciseResponse;
 
+import codeverse.com.web_be.dto.response.TestCaseResponse.TestCaseResponse;
 import codeverse.com.web_be.entity.Exercise;
+import codeverse.com.web_be.entity.TestCase;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -19,10 +21,13 @@ public class ExerciseResponse {
     private Integer expReward;
     private String instruction;
     private List<ExerciseTaskResponse> tasks;
+    private List<TestCaseResponse> testCases;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static ExerciseResponse fromEntity(Exercise exercise) {
+    public static ExerciseResponse fromEntity(Exercise exercise, List<TestCase> testCases) {
+        if(exercise == null) return null;
+
         return ExerciseResponse.builder()
                 .id(exercise.getId())
                 .lesson(exercise.getLesson().getTitle())
@@ -32,6 +37,10 @@ public class ExerciseResponse {
                 .tasks(exercise.getTasks() == null ? null :
                         exercise.getTasks().stream()
                                 .map(ExerciseTaskResponse::fromEntity)
+                                .toList())
+                .testCases(testCases == null ? null :
+                        testCases.stream()
+                                .map(TestCaseResponse::fromEntity)
                                 .toList())
                 .createdAt(exercise.getCreatedAt())
                 .updatedAt(exercise.getUpdatedAt())

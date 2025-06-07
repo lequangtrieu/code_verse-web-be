@@ -47,7 +47,7 @@ public class CourseModuleController {
                 .build();
     }
 
-    @PutMapping("/{courseModuleId}")
+    @PutMapping("/update/{courseModuleId}")
     public ApiResponse<CourseModuleResponse> updateCourseModule(@PathVariable Long courseModuleId, @RequestBody CourseModuleCreateRequest request){
         CourseModule courseModule = courseModuleService.findById(courseModuleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course module not found"));

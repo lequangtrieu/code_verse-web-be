@@ -1,4 +1,4 @@
-package codeverse.com.web_be.dto.request.ExerciseRequest;
+package codeverse.com.web_be.dto.request.QuizRequest;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ExerciseTaskFullCreateRequest {
-    private String description;
+public class QuizAnswerCreateRequest {
+    private String answer;
+    private boolean correct;
 }

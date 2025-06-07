@@ -12,5 +12,4 @@ public class ExerciseCreateRequest {
     private Long lessonId;
     private String title;
     private String instruction;
-    private Integer expReward;
 }

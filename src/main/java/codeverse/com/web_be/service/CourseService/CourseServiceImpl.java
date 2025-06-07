@@ -2,12 +2,7 @@ package codeverse.com.web_be.service.CourseService;
 
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
-import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskFullCreateRequest;
-import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskUpdateRequest;
-import codeverse.com.web_be.dto.request.LessonRequest.LessonFullCreateRequest;
-import codeverse.com.web_be.dto.request.LessonRequest.LessonUpdateRequest;
-import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleFullCreateRequest;
-import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.entity.*;
@@ -37,13 +32,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final ExerciseTaskRepository exerciseTaskRepository;
     private final FirebaseStorageService firebaseStorageService;
     private final CourseMapper courseMapper;
-    private final CourseModuleMapper courseModuleMapper;
-    private final LessonMapper lessonMapper;
-    private final ExerciseMapper exerciseMapper;
-    private final ExerciseTaskMapper exerciseTaskMapper;
-    private final TheoryMapper theoryMapper;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
-
+    private final TestCaseRepository testCaseRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
+    private final QuizAnswerRepository quizAnswerRepository;
 
     public CourseServiceImpl(CourseRepository courseRepository,
                              CategoryRepository categoryRepository,
@@ -55,12 +47,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              ExerciseTaskRepository exerciseTaskRepository,
                              FirebaseStorageService firebaseStorageService,
                              CourseMapper courseMapper,
-                             CourseModuleMapper courseModuleMapper,
-                             LessonMapper lessonMapper,
-                             ExerciseMapper exerciseMapper,
-                             ExerciseTaskMapper exerciseTaskMapper,
-                             TheoryMapper theoryMapper,
-                             CourseEnrollmentRepository courseEnrollmentRepository
+                             CourseEnrollmentRepository courseEnrollmentRepository,
+                             TestCaseRepository testCaseRepository,
+                             QuizQuestionRepository quizQuestionRepository,
+                             QuizAnswerRepository quizAnswerRepository
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -73,12 +63,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.exerciseTaskRepository = exerciseTaskRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.courseMapper = courseMapper;
-        this.courseModuleMapper = courseModuleMapper;
-        this.lessonMapper = lessonMapper;
-        this.exerciseMapper = exerciseMapper;
-        this.exerciseTaskMapper = exerciseTaskMapper;
-        this.theoryMapper = theoryMapper;
         this.courseEnrollmentRepository = courseEnrollmentRepository;
+        this.testCaseRepository = testCaseRepository;
+        this.quizQuestionRepository = quizQuestionRepository;
+        this.quizAnswerRepository = quizAnswerRepository;
     }
 
     @Override
@@ -139,7 +127,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         User instructor = functionHelper.getActiveUserByUsername(request.getInstructor());
 
         String thumbnailUrl = null;
-        if(request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             thumbnailUrl = firebaseStorageService.uploadImage(request.getImageFile());
         }
 
@@ -161,7 +149,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         Category category = null;
-        if(request.getCategoryId() != null) {
+        if (request.getCategoryId() != null) {
             category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         }
@@ -169,7 +157,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         courseMapper.courseUpdateRequestToCourse(request, category, course);
 
         String thumbnailUrl = request.getThumbnailUrl();
-        if(request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             thumbnailUrl = firebaseStorageService.uploadImage(request.getImageFile());
         }
         course.setThumbnailUrl(thumbnailUrl);
@@ -182,5 +170,76 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courses.stream()
                 .map(courseMapper::courseToCourseForUpdateResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CourseModuleValidationResponse validateCourseSection(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        List<String> errors = new ArrayList<>();
+
+        List<CourseModule> modules = courseModuleRepository.findByCourseId(courseId);
+        if (modules.isEmpty()) {
+            errors.add("Course must have at least one module.");
+        }
+
+        for (CourseModule module : modules) {
+            List<Lesson> lessons = lessonRepository.findByCourseModuleId(module.getId());
+            if (lessons.isEmpty()) {
+                errors.add("Module '" + module.getTitle() + "' must have at least one lesson.");
+                continue;
+            }
+
+            for (Lesson lesson : lessons) {
+                switch (lesson.getLessonType()) {
+                    case CODE -> {
+                        Theory theory = theoryRepository.findByLessonId(lesson.getId());
+                        if (theory == null || theory.getContent() == null) {
+                            errors.add("Lesson '" + lesson.getTitle() + "' is missing theory content.");
+                        }
+
+                        Exercise exercise = exerciseRepository.findByLessonId(lesson.getId());
+                        if (exercise == null) {
+                            errors.add("Lesson '" + lesson.getTitle() + "' is missing exercise.");
+                            continue;
+                        }
+
+                        if (exerciseTaskRepository.countByExerciseId(exercise.getId()) == 0) {
+                            errors.add("Exercise in lesson '" + lesson.getTitle() + "' has no tasks.");
+                        }
+
+                        if (testCaseRepository.countByExerciseId(exercise.getId()) == 0) {
+                            errors.add("Exercise in lesson '" + lesson.getTitle() + "' has no test cases.");
+                        }
+                    }
+
+                    case EXAM -> {
+                        List<QuizQuestion> questions = quizQuestionRepository.findByLessonId(lesson.getId());
+                        if (questions.isEmpty()) {
+                            errors.add("Lesson '" + lesson.getTitle() + "' has no quiz questions.");
+                            continue;
+                        }
+
+                        for (QuizQuestion question : questions) {
+                            long correctCount = quizAnswerRepository.countByQuestionIdAndIsCorrectTrue(question.getId());
+                            if (correctCount == 0) {
+                                errors.add("Question '" + question.getQuestion() + "' in lesson '" + lesson.getTitle() + "' has no correct answer.");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return new CourseModuleValidationResponse(errors.isEmpty(), errors);
+    }
+
+    @Override
+    public void updateCourseStatus(Long courseId, CourseUpdateRequest request) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        course.setStatus(request.getStatus());
+        courseRepository.save(course);
     }
 }

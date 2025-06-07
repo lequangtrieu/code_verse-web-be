@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExerciseTaskResponse {
     private Long id;
-    private String exercise;
     private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -21,7 +20,6 @@ public class ExerciseTaskResponse {
     public static ExerciseTaskResponse fromEntity(ExerciseTask exerciseTask) {
         return ExerciseTaskResponse.builder()
                 .id(exerciseTask.getId())
-                .exercise(exerciseTask.getExercise().getTitle())
                 .description(exerciseTask.getDescription())
                 .createdAt(exerciseTask.getCreatedAt())
                 .updatedAt(exerciseTask.getUpdatedAt())

@@ -2,7 +2,7 @@ package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
-import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
@@ -69,7 +69,7 @@ public class CourseController {
                 .build();
     }
 
-    @GetMapping("/instructor/{courseId}")
+    @GetMapping("/{courseId}/for-instructor")
     public ApiResponse<CourseForUpdateResponse> getFullCourseById(@PathVariable Long courseId) {
         Course course = courseService.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
@@ -132,5 +132,22 @@ public class CourseController {
     public ResponseEntity<List<CourseForUpdateResponse>> getAllCoursesForAdmin() {
         List<CourseForUpdateResponse> courses = courseService.getAllCoursesByAdmin();
         return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/{courseId}/validate")
+    public ApiResponse<CourseModuleValidationResponse> validateCourse(@PathVariable Long courseId) {
+        CourseModuleValidationResponse response = courseService.validateCourseSection(courseId);
+        return ApiResponse.<CourseModuleValidationResponse>builder()
+                .result(response)
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @PatchMapping("/{courseId}/status")
+    public ApiResponse updateCourseStatus(@PathVariable Long courseId, @RequestBody CourseUpdateRequest request) {
+        courseService.updateCourseStatus(courseId, request);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .build();
     }
 }

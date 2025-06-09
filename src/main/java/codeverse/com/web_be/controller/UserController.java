@@ -2,6 +2,7 @@ package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
+import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
@@ -52,6 +53,14 @@ public class UserController {
     ApiResponse<UserResponse> getMyInfo(){
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
+                .build();
+    }
+
+    @PutMapping("/updateMyInfo")
+    public ApiResponse<UserResponse> updateProfile(@RequestBody UserUpdateRequest userUpdateRequest) {
+        UserResponse updatedUser = userService.updateMyInfo(userUpdateRequest);
+        return ApiResponse.<UserResponse>builder()
+                .result(updatedUser)
                 .build();
     }
 

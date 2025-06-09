@@ -1,6 +1,7 @@
 package codeverse.com.web_be.service.UserService;
 
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
+import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.entity.User;
@@ -15,5 +16,5 @@ public interface IUserService extends IGenericService<User, Long> {
     User createUserByAdmin(UserCreationByAdminRequest request);
     Optional<User> findById(Long id);
     UserDetailResponse getUserDetailByAdmin(Long userId);
-
+    UserResponse updateMyInfo(UserUpdateRequest userUpdateRequest);
 }

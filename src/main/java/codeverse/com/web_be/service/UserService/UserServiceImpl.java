@@ -1,6 +1,7 @@
 package codeverse.com.web_be.service.UserService;
 
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
+import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
@@ -46,16 +47,16 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         return userMapper.userToUserResponse(user);
     }
 
-    public UserResponse updateMyInfo(UserResponse userResponse) {
+    @Override
+    public UserResponse updateMyInfo(UserUpdateRequest userUpdateRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         // Chỉ cập nhật các trường được phép
-        user.setName(userResponse.getName());
-        user.setBio(userResponse.getBio());
-        user.setPhoneNumber(userResponse.getPhoneNumber());
-        user.setEducationalBackground(userResponse.getEducationalBackground());
+        user.setName(userUpdateRequest.getName());
+        user.setBio(userUpdateRequest.getBio());
+        user.setPhoneNumber(userUpdateRequest.getPhoneNumber());
 
         User updatedUser = userRepository.save(user);
         return userMapper.userToUserResponse(updatedUser);

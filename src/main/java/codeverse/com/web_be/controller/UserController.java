@@ -1,13 +1,13 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.UserRequest.LockUserRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
+import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
-import codeverse.com.web_be.enums.UserRole;
-import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.service.UserService.IUserService;
 import lombok.AccessLevel;
@@ -16,9 +16,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import codeverse.com.web_be.dto.request.UserRequest.LockUserRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -52,6 +51,22 @@ public class UserController {
     ApiResponse<UserResponse> getMyInfo(){
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
+                .build();
+    }
+
+    @PutMapping("/updateMyInfo")
+    public ApiResponse<UserResponse> updateProfile(@RequestBody UserUpdateRequest userUpdateRequest) {
+        UserResponse updatedUser = userService.updateMyInfo(userUpdateRequest);
+        return ApiResponse.<UserResponse>builder()
+                .result(updatedUser)
+                .build();
+    }
+
+    @PutMapping("/updateAvatar")
+    public ApiResponse<UserResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
+        UserResponse updatedUser = userService.updateAvatar(file);
+        return ApiResponse.<UserResponse>builder()
+                .result(updatedUser)
                 .build();
     }
 

@@ -1,6 +1,7 @@
 package codeverse.com.web_be.service.UserService;
 
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
+import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,25 +48,33 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         return userMapper.userToUserResponse(user);
     }
 
-    public UserResponse updateMyInfo(UserResponse userResponse) {
+    @Override
+    public UserResponse updateMyInfo(UserUpdateRequest userUpdateRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        // Chỉ cập nhật các trường được phép
+        user.setName(userUpdateRequest.getName());
+        user.setBio(userUpdateRequest.getBio());
+        user.setPhoneNumber(userUpdateRequest.getPhoneNumber());
+
+        User updatedUser = userRepository.save(user);
+        return userMapper.userToUserResponse(updatedUser);
+    }
+
+    @Override
+    public UserResponse updateAvatar(MultipartFile file) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-//        String avatar = null;
-//        if(userResponse.getAvatar() != null && !userResponse.getAvatar().isEmpty()) {
-//            avatar = firebaseStorageService.uploadImage(userResponse.getAvatar());
-//        }
-        // Chỉ cập nhật các trường được phép
-        user.setName(userResponse.getName());
-        user.setAvatar(userResponse.getAvatar());
-        user.setBio(userResponse.getBio());
-        user.setQrCodeUrl(userResponse.getQrCodeUrl());
-        user.setPhoneNumber(userResponse.getPhoneNumber());
-        user.setTeachingCredentials(userResponse.getTeachingCredentials());
-        user.setEducationalBackground(userResponse.getEducationalBackground());
-
+        String avatar = null;
+        if(file != null && !file.isEmpty()) {
+            avatar = firebaseStorageService.uploadImage(file);
+        }
+        user.setAvatar(avatar);
         User updatedUser = userRepository.save(user);
         return userMapper.userToUserResponse(updatedUser);
     }

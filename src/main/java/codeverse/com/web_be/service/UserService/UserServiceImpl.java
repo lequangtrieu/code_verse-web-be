@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,22 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         user.setBio(userUpdateRequest.getBio());
         user.setPhoneNumber(userUpdateRequest.getPhoneNumber());
 
+        User updatedUser = userRepository.save(user);
+        return userMapper.userToUserResponse(updatedUser);
+    }
+
+    @Override
+    public UserResponse updateAvatar(MultipartFile file) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        String avatar = null;
+        if(file != null && !file.isEmpty()) {
+            avatar = firebaseStorageService.uploadImage(file);
+        }
+        user.setAvatar(avatar);
         User updatedUser = userRepository.save(user);
         return userMapper.userToUserResponse(updatedUser);
     }

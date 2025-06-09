@@ -4,7 +4,6 @@ import codeverse.com.web_be.dto.request.AuthenRequest.*;
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse;
 import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
-import codeverse.com.web_be.entity.Cart;
 import codeverse.com.web_be.entity.InvalidatedToken;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.enums.UserRole;
@@ -27,9 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -216,7 +213,7 @@ public class AuthenticationService {
         UserRole role = determineUserRole(request);
 
         String teachingCredentials = null;
-        if(request.getTeachingCredentials() != null && !request.getTeachingCredentials().isEmpty()) {
+        if (request.getTeachingCredentials() != null && !request.getTeachingCredentials().isEmpty()) {
             teachingCredentials = firebaseStorageService.uploadImage(request.getTeachingCredentials());
         }
 

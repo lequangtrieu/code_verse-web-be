@@ -1,5 +1,6 @@
 package codeverse.com.web_be.entity;
 
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
@@ -55,9 +56,8 @@ public class User {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    @Column(name = "is_active_instructor", columnDefinition = "tinyint(1) default 0")
-    @Builder.Default
-    private Boolean isActiveInstructor = false;
+    @Enumerated(EnumType.STRING)
+    private InstructorStatus instructorStatus;
 
     @Column(name = "phone_number")
     private String phoneNumber;

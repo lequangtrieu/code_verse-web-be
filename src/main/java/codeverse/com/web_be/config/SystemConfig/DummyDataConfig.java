@@ -99,7 +99,7 @@ public class DummyDataConfig {
                             .password(passwordEncoder.encode(password))
                             .name("Lê Thu Hiền")
                             .isVerified(true)
-                            .isActiveInstructor(true)
+                            .instructorStatus(InstructorStatus.APPROVED)
                             .teachingCredentials(certInstructor)
                             .role(UserRole.INSTRUCTOR)
                             .build()

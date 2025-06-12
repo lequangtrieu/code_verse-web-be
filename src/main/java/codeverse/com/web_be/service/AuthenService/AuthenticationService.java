@@ -6,10 +6,10 @@ import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.InvalidatedToken;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
-import codeverse.com.web_be.repository.CartRepository;
 import codeverse.com.web_be.repository.InvalidatedTokenRepository;
 import codeverse.com.web_be.repository.UserRepository;
 import codeverse.com.web_be.service.EmailService.EmailServiceSender;
@@ -46,7 +46,6 @@ import java.util.UUID;
 public class AuthenticationService {
     private final GoogleService googleService;
     UserRepository userRepository;
-    CartRepository cartRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
     FirebaseStorageService firebaseStorageService;
 
@@ -106,7 +105,7 @@ public class AuthenticationService {
         if(Boolean.TRUE.equals(user.getIsDeleted())) {
             throw new AppException(ErrorCode.USER_BANNED);
         }
-        if (user.getRole() == UserRole.INSTRUCTOR && Boolean.FALSE.equals(user.getIsActiveInstructor())) {
+        if (user.getRole() == UserRole.INSTRUCTOR && InstructorStatus.APPROVED.equals(user.getInstructorStatus())) {
             throw new AppException(ErrorCode.INSTRUCTOR_NOT_ACTIVE);
         }
         var token = generateToken(user, false);
@@ -225,7 +224,7 @@ public class AuthenticationService {
                 .verificationToken(verificationToken)
                 .isVerified(false)
                 .isDeleted(false)
-                .isActiveInstructor(false);
+                .instructorStatus(InstructorStatus.APPROVED);
 
         if (role == UserRole.INSTRUCTOR) {
             userBuilder.phoneNumber(request.getPhoneNumber());

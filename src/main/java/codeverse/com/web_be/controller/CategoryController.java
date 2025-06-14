@@ -3,7 +3,6 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.response.CategoryResponse.CategoryResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.service.CategoryService.CategoryServiceImpl;
-import codeverse.com.web_be.service.CourseService.CourseServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

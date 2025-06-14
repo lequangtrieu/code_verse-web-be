@@ -1,9 +1,12 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetailDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseModuleDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
@@ -19,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -121,4 +125,23 @@ public class CourseController {
         return ResponseEntity.ok(courseService.getSuggestedCoursesByLearnerId(userId));
     }
 
+    @GetMapping("/{userId}/{courseId}/lesson")
+    public ApiResponse<CourseDetailDTO> getCourseDetails(@PathVariable Long courseId, @PathVariable Long userId) {
+        CourseDetailDTO courseDetail = courseService.getCourseDetails(courseId, userId);
+        return ApiResponse.<CourseDetailDTO>builder()
+                .result(courseDetail)
+                .code(HttpStatus.OK.value())
+                .message("Course details fetched successfully")
+                .build();
+    }
+
+    @PostMapping("/submitCode")
+    public ApiResponse<?> submitCodeHandler(@RequestBody CodeRequestDTO request) {
+        courseService.submitCodeHandler(request);
+        return ApiResponse.<Long>builder()
+                .result(request.getLessonId())
+                .code(HttpStatus.OK.value())
+                .message("Submit code successfully")
+                .build();
+    }
 }

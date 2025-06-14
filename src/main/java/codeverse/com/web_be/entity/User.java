@@ -1,6 +1,7 @@
 package codeverse.com.web_be.entity;
 
 import codeverse.com.web_be.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -55,6 +56,10 @@ public class User {
     @Column(name = "is_deleted", columnDefinition = "tinyint(1) default 0")
     @Builder.Default
     private boolean isDeleted = false;
+
+    @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties({"user", "hibernateLazyInitializer", "handler"})
+    private List<Cart> carts;
 
     @PrePersist
     protected void onCreate() {

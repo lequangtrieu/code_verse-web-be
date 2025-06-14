@@ -31,6 +31,7 @@ public class CartServiceImpl implements ICartService {
     private final PayOS payOS;
     private final FunctionHelper functionHelper;
     private final EmailServiceSender emailServiceSender;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
 
     @Override
     @Transactional
@@ -111,6 +112,18 @@ public class CartServiceImpl implements ICartService {
                 .priceAtPurchase(BigDecimal.ZERO)
                 .build();
         orderItemRepository.save(orderItem);
+
+        CourseEnrollment courseEnrollment = CourseEnrollment.builder()
+                .user(user)
+                .course(course)
+                .completionPercentage(0f)
+                .totalExpGained(0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        courseEnrollmentRepository.save(courseEnrollment);
+
         try {
             emailServiceSender.sendFreeCourseConfirmationEmail(user, course);
         } catch (MessagingException e) {
@@ -250,6 +263,20 @@ public class CartServiceImpl implements ICartService {
 
         cartRepository.deleteByUserAndCourseIdIn(user, purchasedCourseIds);
         List<Course> purchasedCourses = courseRepository.findAllById(purchasedCourseIds);
+
+        for (Course course : purchasedCourses) {
+            CourseEnrollment courseEnrollment = CourseEnrollment.builder()
+                    .user(user)
+                    .course(course)
+                    .completionPercentage(0f)
+                    .totalExpGained(0)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            courseEnrollmentRepository.save(courseEnrollment);
+        }
+
         try {
             emailServiceSender.sendPaidCoursesConfirmationEmail(user, purchasedCourses);
         } catch (MessagingException e) {

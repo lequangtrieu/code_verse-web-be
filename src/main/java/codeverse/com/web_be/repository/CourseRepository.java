@@ -1,7 +1,8 @@
 package codeverse.com.web_be.repository;
 
-import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.entity.Course;
+import codeverse.com.web_be.entity.LessonProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -90,7 +91,70 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "AND NOT EXISTS (SELECT 1 FROM CourseEnrollment pt WHERE pt.course = c AND pt.user.id = :userId)")
     List<CourseResponse> findSuggestedCourseResponsesByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT lp FROM LessonProgress lp " +
+            "WHERE lp.user.id = :userId AND lp.lesson.courseModule.course.id = :courseId")
+    List<LessonProgress> findByUserIdAndCourseId(@Param("userId") Long userId,
+                                                 @Param("courseId") Long courseId);
 
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.CourseModuleDTO(" +
+            "cm.id as id, " +
+            "cm.title as title) " +
+            "FROM CourseModule cm " +
+            "WHERE cm.course.id = :courseId")
+    List<CourseModuleDTO> getModulesByCourseId(@Param("courseId") Long courseId);
 
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.LessonDTO(" +
+            "l.id as id, " +
+            "l.lessonType as lessonType, " +
+            "l.title as title) " +
+            "FROM Lesson l " +
+            "WHERE l.courseModule.id = :moduleId")
+    List<LessonDTO> getLessonsByModuleId(@Param("moduleId") Long moduleId);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.TheoryDTO(" +
+            "t.title as title, " +
+            "t.content as content) " +
+            "FROM Theory t " +
+            "WHERE t.lesson.id = :lessonId")
+    TheoryDTO getTheoryByLessonId(@Param("lessonId") Long lessonId);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.ExerciseDTO(" +
+            "e.id as id, " +
+            "e.title as title, " +
+            "e.instruction as instruction) " +
+            "FROM Exercise e " +
+            "WHERE e.lesson.id = :lessonId")
+    ExerciseDTO getExerciseByLessonId(@Param("lessonId") Long lessonId);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.TaskDTO(" +
+            "e.id as id, " +
+            "e.description as description)" +
+            "FROM ExerciseTask e " +
+            "WHERE e.exercise.id = :exerciseID")
+    List<TaskDTO> getExerciseTaskByExerciseID(@Param("exerciseID") Long exerciseID);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.QuestionDTO(" +
+            "q.id as id, " +
+            "q.quizType as quizType, " +
+            "q.question as question) " +
+            "FROM QuizQuestion q " +
+            "WHERE q.lesson.id = :lessonId")
+    List<QuestionDTO> getQuestionByLessonId(@Param("lessonId") Long lessonId);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.AnswersDTO(" +
+            "q.id as id, " +
+            "q.answer as answer, " +
+            "q.isCorrect as isCorrect) " +
+            "FROM QuizAnswer q " +
+            "WHERE q.question.id = :questionId")
+    List<AnswersDTO> getAnswersByQuestionID(@Param("questionId") Long questionId);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.TestCaseDTO(" +
+            "t.id as id, " +
+            "t.input as input, " +
+            "t.expectedOutput as expected)" +
+            "FROM TestCase t " +
+            "WHERE t.exercise.id = :exerciseID")
+    List<TestCaseDTO> getTestCaseByExerciseId(@Param("exerciseID") Long exerciseID);
 
 }

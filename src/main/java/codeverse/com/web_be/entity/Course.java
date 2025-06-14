@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import codeverse.com.web_be.enums.CourseLevel;
 
@@ -21,7 +22,7 @@ import codeverse.com.web_be.enums.CourseLevel;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category", "instructor"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category", "instructor", "courseModules"})
 public class Course {
 
     @Id
@@ -83,4 +84,7 @@ public class Course {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    private List<CourseModule> courseModules;
 }

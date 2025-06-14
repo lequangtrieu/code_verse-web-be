@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
     Optional<User> findByVerificationToken(String verificationToken);
-    @Query("SELECT u FROM User u WHERE u.role = 'INSTRUCTOR' AND u.isActiveInstructor = false")
+    @Query("SELECT u FROM User u WHERE u.role = 'INSTRUCTOR' AND u.instructorStatus = 'PENDING'")
     List<User> findInactiveInstructors();
 }
 

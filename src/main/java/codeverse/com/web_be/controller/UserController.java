@@ -134,11 +134,20 @@ public class UserController {
     }
 
     @PatchMapping("/{instructorId}/activate")
-    public ApiResponse updateInstructorStatus(@PathVariable Long instructorId) {
+    public ApiResponse activateInstructor(@PathVariable Long instructorId) {
         userService.activateInstructor(instructorId);
         return ApiResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Instructor activated successfully")
+                .build();
+    }
+
+    @PatchMapping("/{instructorId}/deactivate")
+    public ApiResponse deactivateInstructor(@PathVariable Long instructorId) {
+        userService.deactivateInstructor(instructorId);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Instructor deactivated successfully")
                 .build();
     }
 }

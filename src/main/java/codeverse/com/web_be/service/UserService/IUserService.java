@@ -22,4 +22,5 @@ public interface IUserService extends IGenericService<User, Long> {
     UserResponse updateAvatar(MultipartFile file);
     List<UserDetailResponse> getInactiveInstructors();
     void activateInstructor(Long userId);
+    void deactivateInstructor(Long userId);
 }

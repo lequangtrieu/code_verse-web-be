@@ -7,6 +7,7 @@ import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
@@ -120,6 +121,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         userRepository.save(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public User createUserByAdmin(UserCreationByAdminRequest request) {
         // Bắt buộc role là LEARNER dù request có thay đổi
@@ -153,13 +155,23 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
                 .toList();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void activateInstructor(Long instructorId) {
         User user = userRepository.findById(instructorId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        // Update isActiveInstructor to true (1)
-        user.setIsActiveInstructor(true);
+        user.setInstructorStatus(InstructorStatus.APPROVED);
+        userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void deactivateInstructor(Long instructorId) {
+        User user = userRepository.findById(instructorId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setInstructorStatus(InstructorStatus.REJECTED);
         userRepository.save(user);
     }
 }

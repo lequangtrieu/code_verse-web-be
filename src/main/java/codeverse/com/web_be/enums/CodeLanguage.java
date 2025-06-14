@@ -8,5 +8,6 @@ public enum CodeLanguage {
     CPP,
     CSHARP,
     RUBY,
-    KOTLIN
+    KOTLIN,
+    ALL
 }

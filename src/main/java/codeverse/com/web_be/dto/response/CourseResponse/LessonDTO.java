@@ -23,4 +23,6 @@ public class LessonDTO {
     private List<CommentDTO> comments;
     private LessonProgressStatus status;
     private String code;
+    private Integer orderIndex;
+    private Integer expGained;
 }

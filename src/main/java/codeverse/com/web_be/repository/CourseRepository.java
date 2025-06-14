@@ -123,7 +123,9 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.LessonDTO(" +
             "l.id as id, " +
+            "l.orderIndex as orderIndex, " +
             "l.lessonType as lessonType, " +
+            "l.expReward as expGained, " +
             "l.title as title) " +
             "FROM Lesson l " +
             "WHERE l.courseModule.id = :moduleId")

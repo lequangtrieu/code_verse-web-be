@@ -8,6 +8,7 @@ import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.entity.*;
+import codeverse.com.web_be.enums.CodeLanguage;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import codeverse.com.web_be.enums.LessonType;
 import codeverse.com.web_be.mapper.*;
@@ -137,7 +138,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         User instructor = functionHelper.getActiveUserByUsername(request.getInstructor());
 
         String thumbnailUrl = null;
-        if  (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             thumbnailUrl = firebaseStorageService.uploadImage(request.getImageFile());
         }
 
@@ -159,7 +160,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         Category category = null;
-        if  (request.getCategoryId() != null) {
+        if (request.getCategoryId() != null) {
             category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         }
@@ -167,7 +168,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         courseMapper.courseUpdateRequestToCourse(request, category, course);
 
         String thumbnailUrl = request.getThumbnailUrl();
-        if  (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             thumbnailUrl = firebaseStorageService.uploadImage(request.getImageFile());
         }
         course.setThumbnailUrl(thumbnailUrl);
@@ -314,7 +315,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         }
         CourseDetailDTO courseDetailDTO = new CourseDetailDTO();
         courseDetailDTO.setData(modules);
-        courseDetailDTO.setLanguage(course.getLanguage());
+        courseDetailDTO.setLanguage(course.getLanguage() != null ? course.getLanguage() : CodeLanguage.ALL);
         return courseDetailDTO;
     }
 
@@ -323,44 +324,49 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         Long userId = request.getUserId();
         Long lessonId = request.getLessonId();
 
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
         LessonProgress lessonProgress = lessonProgressRepository
                 .findByUserIdAndLessonId(userId, lessonId)
-                .orElseGet(() -> {
-                    Lesson lesson = lessonRepository.findById(lessonId)
-                            .orElseThrow(() -> new RuntimeException("Lesson not found"));
-                    User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElse(null);
 
-                    return lessonProgressRepository.save(
-                            LessonProgress.builder()
-                                    .lesson(lesson)
-                                    .user(user)
-                                    .status(LessonProgressStatus.PASSED)
-                                    .startedAt(LocalDateTime.now())
-                                    .build()
-                    );
-                });
+        if (lessonProgress == null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        CodeSubmission existingSubmission = lessonProgress.getCodeSubmission();
-
-        if (existingSubmission != null) {
-            existingSubmission.setCode(request.getCode());
-            existingSubmission.setExecutionTime(request.getExecutionTime());
-            existingSubmission.setMemoryUsage(request.getMemoryUsage());
+            lessonProgress = LessonProgress.builder()
+                    .lesson(lesson)
+                    .user(user)
+                    .status(LessonProgressStatus.PASSED)
+                    .completedAt(LocalDateTime.now())
+                    .expGained(lesson.getExpReward())
+                    .build();
         } else {
-            CodeSubmission newSubmission = CodeSubmission.builder()
+            if (lessonProgress.getExpGained() == null) {
+                lessonProgress.setExpGained(lesson.getExpReward());
+            }
+        }
+
+        CodeSubmission submission = lessonProgress.getCodeSubmission();
+        if (submission != null) {
+            submission.setCode(request.getCode());
+            submission.setExecutionTime(request.getExecutionTime());
+            submission.setMemoryUsage(request.getMemoryUsage());
+        } else {
+            submission = CodeSubmission.builder()
                     .lessonProgress(lessonProgress)
                     .code(request.getCode())
                     .executionTime(request.getExecutionTime())
                     .memoryUsage(request.getMemoryUsage())
                     .build();
 
-            lessonProgress.setCodeSubmission(newSubmission);
+            lessonProgress.setCodeSubmission(submission);
         }
 
         lessonProgress.setStatus(LessonProgressStatus.PASSED);
-        lessonProgressRepository.save(lessonProgress);
 
+        lessonProgressRepository.save(lessonProgress);
         return "submitted";
     }
 }

@@ -10,7 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                  .allowedOriginPatterns(
                         "http://localhost:3000",
-                        "https://*.vercel.app"
+                        "https://code-verse-web-fe.vercel.app"
                 )
                 .allowedMethods("*")
                 .allowedHeaders("*")

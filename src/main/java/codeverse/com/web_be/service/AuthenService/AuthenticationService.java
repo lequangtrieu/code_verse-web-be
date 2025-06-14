@@ -223,13 +223,13 @@ public class AuthenticationService {
                 .role(role)
                 .verificationToken(verificationToken)
                 .isVerified(false)
-                .isDeleted(false)
-                .instructorStatus(InstructorStatus.APPROVED);
+                .isDeleted(false);
 
         if (role == UserRole.INSTRUCTOR) {
             userBuilder.phoneNumber(request.getPhoneNumber());
             userBuilder.teachingCredentials(teachingCredentials);
             userBuilder.educationalBackground(request.getEducationalBackground());
+            userBuilder.instructorStatus(InstructorStatus.PENDING);
         }
 
         User newUser = userBuilder.build();

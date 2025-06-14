@@ -1,5 +1,6 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.request.UserRequest.LockUserRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
@@ -8,6 +9,7 @@ import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.service.UserService.IUserService;
 import lombok.AccessLevel;
@@ -126,4 +128,26 @@ public class UserController {
         return ResponseEntity.ok(detail);
     }
 
+    @GetMapping("/inactive-instructors")
+    public List<UserDetailResponse> getInactiveInstructors() {
+        return userService.getInactiveInstructors();
+    }
+
+    @PatchMapping("/{instructorId}/activate")
+    public ApiResponse activateInstructor(@PathVariable Long instructorId) {
+        userService.activateInstructor(instructorId);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Instructor activated successfully")
+                .build();
+    }
+
+    @PatchMapping("/{instructorId}/deactivate")
+    public ApiResponse deactivateInstructor(@PathVariable Long instructorId) {
+        userService.deactivateInstructor(instructorId);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Instructor deactivated successfully")
+                .build();
+    }
 }

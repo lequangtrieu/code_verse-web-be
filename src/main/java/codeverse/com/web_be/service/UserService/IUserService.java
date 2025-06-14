@@ -8,6 +8,7 @@ import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.service.IGenericService;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IUserService extends IGenericService<User, Long> {
@@ -19,4 +20,7 @@ public interface IUserService extends IGenericService<User, Long> {
     UserDetailResponse getUserDetailByAdmin(Long userId);
     UserResponse updateMyInfo(UserUpdateRequest userUpdateRequest);
     UserResponse updateAvatar(MultipartFile file);
+    List<UserDetailResponse> getInactiveInstructors();
+    void activateInstructor(Long userId);
+    void deactivateInstructor(Long userId);
 }

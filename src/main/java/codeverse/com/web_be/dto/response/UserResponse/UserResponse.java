@@ -3,6 +3,8 @@ package codeverse.com.web_be.dto.response.UserResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,6 +15,12 @@ public class UserResponse {
     String username;
     String role;
     String name;
-    Boolean isDeleted;
     String avatar;
+    String bio;
+    Boolean isDeleted;
+    String qrCodeUrl;
+    String phoneNumber;
+    String teachingCredentials;
+    String educationalBackground;
+    LocalDateTime createdAt;
 }

@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Base64;
 
 @Configuration
 public class FirebaseConfig {
@@ -24,15 +25,17 @@ public class FirebaseConfig {
     @Value("${firebase.bucket-name}")
     private String bucketName;
 
-    @Value("${firebase.credentials}")
-    private String credentials;
-
     private static final String PASSWORD = "codeverse";
 
     @PostConstruct
     public void initializeFirebase() {
-        try{
-            byte[] encryptedData = Files.readAllBytes(new File(credentials).toPath());
+        try {
+            String base64Config = System.getenv("FIREBASE_CONFIG_BASE64");
+            if (base64Config == null || base64Config.isEmpty()) {
+                throw new RuntimeException("FIREBASE_CONFIG_BASE64 not set");
+            }
+
+            byte[] encryptedData = Base64.getDecoder().decode(base64Config);
 
             byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
             if (!new String(header).equals("Salted__")) {

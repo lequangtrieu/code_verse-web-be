@@ -1,6 +1,7 @@
 package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleCreateRequest;
+import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/material")
+@RequestMapping("/module")
 @RequiredArgsConstructor
 public class CourseModuleController {
     private final ICourseModuleService courseModuleService;
@@ -43,6 +44,18 @@ public class CourseModuleController {
         return ApiResponse.<CourseModuleResponse>builder()
                 .result(CourseModuleResponse.fromEntity(createdCourseModule))
                 .code(HttpStatus.CREATED.value())
+                .build();
+    }
+
+    @PutMapping("/{courseModuleId}")
+    public ApiResponse<CourseModuleResponse> updateCourseModule(@PathVariable Long courseModuleId, @RequestBody CourseModuleCreateRequest request){
+        CourseModule courseModule = courseModuleService.findById(courseModuleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course module not found"));
+        courseModuleMapper.updateCourseModuleFromRequest(request,courseModule);
+        CourseModule updatedCourseModule = courseModuleService.update(courseModule);
+        return ApiResponse.<CourseModuleResponse>builder()
+                .result(CourseModuleResponse.fromEntity(updatedCourseModule))
+                .code(HttpStatus.OK.value())
                 .build();
     }
 }

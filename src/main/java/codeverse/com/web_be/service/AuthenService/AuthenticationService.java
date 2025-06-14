@@ -4,16 +4,16 @@ import codeverse.com.web_be.dto.request.AuthenRequest.*;
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse;
 import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
-import codeverse.com.web_be.entity.Cart;
 import codeverse.com.web_be.entity.InvalidatedToken;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
-import codeverse.com.web_be.repository.CartRepository;
 import codeverse.com.web_be.repository.InvalidatedTokenRepository;
 import codeverse.com.web_be.repository.UserRepository;
 import codeverse.com.web_be.service.EmailService.EmailServiceSender;
+import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.GoogleService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -26,9 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,8 +46,8 @@ import java.util.UUID;
 public class AuthenticationService {
     private final GoogleService googleService;
     UserRepository userRepository;
-    CartRepository cartRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    FirebaseStorageService firebaseStorageService;
 
     private final EmailServiceSender emailService;
 
@@ -88,7 +86,6 @@ public class AuthenticationService {
                 .username(user.getUsername())
                 .name(user.getName())
                 .role(user.getRole().name())
-                .isDeleted(user.isDeleted())
                 .avatar(user.getAvatar())
                 .build();
     }
@@ -105,8 +102,11 @@ public class AuthenticationService {
         if (Boolean.FALSE.equals(user.getIsVerified())) {
             throw new AppException(ErrorCode.UN_VERIFY_EMAIL);
         }
-        if(user.isDeleted()) {
+        if(Boolean.TRUE.equals(user.getIsDeleted())) {
             throw new AppException(ErrorCode.USER_BANNED);
+        }
+        if (user.getRole() == UserRole.INSTRUCTOR && InstructorStatus.APPROVED.equals(user.getInstructorStatus())) {
+            throw new AppException(ErrorCode.INSTRUCTOR_NOT_ACTIVE);
         }
         var token = generateToken(user, false);
         var refreshToken = generateToken(user, true);
@@ -142,7 +142,7 @@ public class AuthenticationService {
                     throw new AppException(ErrorCode.EMAIL_REGISTERED_WITH_PASSWORD);
                 }
 
-                if (user.isDeleted()) {
+                if (user.getIsDeleted()) {
                     throw new AppException(ErrorCode.USER_BANNED);
                 }
 
@@ -209,17 +209,33 @@ public class AuthenticationService {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         String verificationToken = UUID.randomUUID().toString();
-        User newUser = User.builder()
+        UserRole role = determineUserRole(request);
+
+        String teachingCredentials = null;
+        if (request.getTeachingCredentials() != null && !request.getTeachingCredentials().isEmpty()) {
+            teachingCredentials = firebaseStorageService.uploadImage(request.getTeachingCredentials());
+        }
+
+        User.UserBuilder userBuilder = User.builder()
                 .username(request.getUsername())
                 .name(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.LEARNER)
+                .role(role)
                 .verificationToken(verificationToken)
                 .isVerified(false)
-                .build();
+                .isDeleted(false)
+                .instructorStatus(InstructorStatus.APPROVED);
+
+        if (role == UserRole.INSTRUCTOR) {
+            userBuilder.phoneNumber(request.getPhoneNumber());
+            userBuilder.teachingCredentials(teachingCredentials);
+            userBuilder.educationalBackground(request.getEducationalBackground());
+        }
+
+        User newUser = userBuilder.build();
 
         userRepository.save(newUser);
-        cartRepository.save(Cart.builder().user(newUser).build());
+
         emailService.sendVerificationEmail(newUser.getUsername(), verificationToken);
 
         String token = generateToken(newUser, false);
@@ -388,4 +404,10 @@ public class AuthenticationService {
                 .build();
     }
 
+    private UserRole determineUserRole(SignUpRequest request) {
+        if ("INSTRUCTOR".equalsIgnoreCase(request.getRole())) {
+            return UserRole.INSTRUCTOR;
+        }
+        return UserRole.LEARNER;
+    }
 }

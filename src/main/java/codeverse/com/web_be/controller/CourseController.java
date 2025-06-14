@@ -3,9 +3,11 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetailDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseModuleDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
@@ -44,8 +46,8 @@ public class CourseController {
         );
     }
 
-    @GetMapping("/admin")
-    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesAdmin(@RequestParam String username) {
+    @GetMapping("/instructor")
+    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesInstructor(@RequestParam String username) {
         return ApiResponse.<List<CourseForUpdateResponse>>builder()
                 .result(courseService.findByInstructorUsername(username).stream()
                         .map(courseMapper::courseToCourseForUpdateResponse)
@@ -63,15 +65,6 @@ public class CourseController {
                 .build();
     }
 
-    @PutMapping("/{courseId}/materials")
-    public ApiResponse<Void> updateCourseMaterials(@PathVariable Long courseId, @RequestBody List<CourseModuleUpdateRequest> requestList) {
-        courseService.updateCourseMaterials(courseId, requestList);
-        return ApiResponse.<Void>builder()
-                .code(HttpStatus.OK.value())
-                .message("Update succeed")
-                .build();
-    }
-
     @GetMapping("/{id}")
     public ApiResponse<CourseResponse> getCourseById(@PathVariable Long id) {
         return ApiResponse.<CourseResponse>builder()
@@ -81,7 +74,7 @@ public class CourseController {
                 .build();
     }
 
-    @GetMapping("/admin/{courseId}")
+    @GetMapping("/{courseId}/for-instructor")
     public ApiResponse<CourseForUpdateResponse> getFullCourseById(@PathVariable Long courseId) {
         Course course = courseService.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
@@ -96,7 +89,7 @@ public class CourseController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<CourseResponse> createCourse(@ModelAttribute CourseCreateRequest course) {
-        Course  courseCreated = courseService.createFullCourse(course);
+        Course  courseCreated = courseService.createCourse(course);
 
         return ApiResponse.<CourseResponse>builder()
                 .result(courseMapper.courseToCourseResponse(courseCreated))
@@ -110,13 +103,18 @@ public class CourseController {
         return ResponseEntity.ok(courses);
     }
 
+    @GetMapping("/user/{userId}/all-courses")
+    public ResponseEntity<List<CourseProgressResponse>> getAllCoursesByLearnerId(@PathVariable Long userId) {
+        return ResponseEntity.ok(courseService.getAllCoursesByLearnerId(userId));
+    }
+
     @GetMapping("/user/{userId}/in-progress")
-    public ResponseEntity<List<CourseResponse>> getInProgressCourses(@PathVariable Long userId) {
+    public ResponseEntity<List<CourseProgressResponse>> getInProgressCourses(@PathVariable Long userId) {
         return ResponseEntity.ok(courseService.getInProgressCoursesByLearnerId(userId));
     }
 
     @GetMapping("/user/{userId}/completed")
-    public ResponseEntity<List<CourseResponse>> getCompletedCourses(@PathVariable Long userId) {
+    public ResponseEntity<List<CourseProgressResponse>> getCompletedCourses(@PathVariable Long userId) {
         return ResponseEntity.ok(courseService.getCompletedCoursesByLearnerId(userId));
     }
 
@@ -125,6 +123,38 @@ public class CourseController {
         return ResponseEntity.ok(courseService.getSuggestedCoursesByLearnerId(userId));
     }
 
+    @GetMapping("/instructor/{id}")
+    public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesInstructorById(@PathVariable Long id) {
+        return ApiResponse.<List<CourseForUpdateResponse>>builder()
+                .result(courseService.findByInstructorId(id).stream()
+                        .map(courseMapper::courseToCourseForUpdateResponse)
+                        .collect(Collectors.toList()))
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<CourseForUpdateResponse>> getAllCoursesForAdmin() {
+        List<CourseForUpdateResponse> courses = courseService.getAllCoursesByAdmin();
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/{courseId}/validate")
+    public ApiResponse<CourseModuleValidationResponse> validateCourse(@PathVariable Long courseId) {
+        CourseModuleValidationResponse response = courseService.validateCourseSection(courseId);
+        return ApiResponse.<CourseModuleValidationResponse>builder()
+                .result(response)
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @PatchMapping("/{courseId}/status")
+    public ApiResponse updateCourseStatus(@PathVariable Long courseId, @RequestBody CourseUpdateRequest request) {
+        courseService.updateCourseStatus(courseId, request);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .build();
+    }
     @GetMapping("/{userId}/{courseId}/lesson")
     public ApiResponse<CourseDetailDTO> getCourseDetails(@PathVariable Long courseId, @PathVariable Long userId) {
         CourseDetailDTO courseDetail = courseService.getCourseDetails(courseId, userId);

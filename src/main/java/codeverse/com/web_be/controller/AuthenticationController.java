@@ -91,7 +91,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    ApiResponse<AuthenticationResponse> authenticateSignup(@RequestBody SignUpRequest request) throws MessagingException {
+    ApiResponse<AuthenticationResponse> authenticateSignup(@ModelAttribute SignUpRequest request) throws MessagingException {
         var result = authenticationService.authenticateSignup(request);
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(result)

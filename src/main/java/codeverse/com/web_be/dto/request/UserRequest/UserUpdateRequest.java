@@ -1,4 +1,4 @@
-package codeverse.com.web_be.dto.request.ExerciseRequest;
+package codeverse.com.web_be.dto.request.UserRequest;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,6 +8,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ExerciseTaskFullCreateRequest {
-    private String description;
+public class UserUpdateRequest {
+    String name;
+    String phoneNumber;
+    String bio;
 }

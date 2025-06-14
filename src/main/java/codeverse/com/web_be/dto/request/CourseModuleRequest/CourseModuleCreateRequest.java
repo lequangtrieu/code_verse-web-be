@@ -12,5 +12,4 @@ public class CourseModuleCreateRequest {
     private Long courseId;
     private String title;
     private Integer orderIndex;
-    private boolean previewable = false;
 }

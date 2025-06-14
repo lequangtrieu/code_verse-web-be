@@ -30,6 +30,7 @@ public enum ErrorCode {
     COURSE_NOT_FREE(1021, "This course is not free and cannot be added via free method.", HttpStatus.BAD_REQUEST),
     COURSE_ALREADY_OWNED(1022, "You already own this course.", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED_ACCESS(1023, "You are not allowed to access these cart items.", HttpStatus.FORBIDDEN),
+    INSTRUCTOR_NOT_ACTIVE(102, "INSTRUCTOR IS NOT ACTIVE BY ADMIN.", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

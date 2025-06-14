@@ -13,23 +13,20 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LessonResponse {
     private Long id;
-    private String courseModule;
     private String title;
     private Integer orderIndex;
-    private String theory;
-    private String exercise;
-    private String defaultCode;
+    private String lessonType;
+    private Integer expReward;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static LessonResponse fromEntity(Lesson lesson) {
         return LessonResponse.builder()
                 .id(lesson.getId())
-                .courseModule(lesson.getCourseModule().getTitle())
                 .title(lesson.getTitle())
                 .orderIndex(lesson.getOrderIndex())
-                .theory(lesson.getTheory() == null ? null : lesson.getTheory().getTitle())
-                .exercise(lesson.getExercise() == null ? null : lesson.getExercise().getTitle())
+                .expReward(lesson.getExpReward())
+                .lessonType(lesson.getLessonType().toString())
                 .createdAt(lesson.getCreatedAt())
                 .updatedAt(lesson.getUpdatedAt())
                 .build();

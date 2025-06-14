@@ -1,7 +1,11 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.UserRequest.LockUserRequest;
+import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
+import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
+import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.mapper.UserMapper;
@@ -13,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -49,6 +54,22 @@ public class UserController {
                 .build();
     }
 
+    @PutMapping("/updateMyInfo")
+    public ApiResponse<UserResponse> updateProfile(@RequestBody UserUpdateRequest userUpdateRequest) {
+        UserResponse updatedUser = userService.updateMyInfo(userUpdateRequest);
+        return ApiResponse.<UserResponse>builder()
+                .result(updatedUser)
+                .build();
+    }
+
+    @PutMapping("/updateAvatar")
+    public ApiResponse<UserResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
+        UserResponse updatedUser = userService.updateAvatar(file);
+        return ApiResponse.<UserResponse>builder()
+                .result(updatedUser)
+                .build();
+    }
+
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserCreationRequest request) {
         User userToCreate = userMapper.userRequestToUser(request);
@@ -73,4 +94,36 @@ public class UserController {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/lock")
+    public ResponseEntity<ApiResponse<String>> lockOrUnlockUser(
+            @PathVariable Long id,
+            @RequestBody LockUserRequest request
+    ) {
+        userService.toggleLockUser(id, request.isLock());
+        String status = request.isLock() ? "User locked" : "User unlocked";
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .result(status)
+                .build());
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<List<UserResponse>> importUsers(@RequestBody List<UserCreationByAdminRequest> requests) {
+        List<UserResponse> createdUsers = requests.stream()
+                .map(request -> {
+                    // Luôn gán role LEARNER trong service
+                    User user = userService.createUserByAdmin(request);
+                    return userMapper.userToUserResponse(user);
+                })
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUsers);
+    }
+
+    @GetMapping("/admin/detailUser/{id}")
+    public ResponseEntity<UserDetailResponse> getUserDetailForAdmin(@PathVariable Long id) {
+        UserDetailResponse detail = userService.getUserDetailByAdmin(id);
+        return ResponseEntity.ok(detail);
+    }
+
 }

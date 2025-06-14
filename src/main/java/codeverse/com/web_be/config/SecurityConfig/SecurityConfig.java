@@ -27,17 +27,19 @@ public class SecurityConfig {
     private final String[] PUBLIC_ENDPOINTS = {
             "/api/users",
             "/auth/login",
+            "/auth/googleLogin",
             "/auth/signup",
             "/auth/introspect",
             "/auth/logout",
-            "/auth/refresh",
             "/auth/userDetail",
             "/auth/resetPassword",
             "/api/test",
     };
 
     private final String[] PUBLIC_ENDPOINTS_GET = {
-            "/auth/verify-email/**"
+            "/auth/verify-email/**",
+            "/course/**",
+            "/category/**"
     };
 
 

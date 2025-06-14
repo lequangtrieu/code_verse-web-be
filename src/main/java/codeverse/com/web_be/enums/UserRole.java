@@ -1,8 +1,8 @@
 package codeverse.com.web_be.enums;
 
 public enum UserRole {
-    LEARNER,
+    ADMIN,
     INSTRUCTOR,
-    ADMIN
+    LEARNER
 }
 

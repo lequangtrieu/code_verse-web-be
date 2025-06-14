@@ -6,30 +6,31 @@ import codeverse.com.web_be.dto.response.AuthenResponse.IntrospectResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.InvalidatedToken;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.InvalidatedTokenRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.EmailService.EmailServiceSender;
+import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
+import codeverse.com.web_be.service.GoogleService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.text.ParseException;
@@ -43,10 +44,12 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class AuthenticationService {
+    private final GoogleService googleService;
     UserRepository userRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
-    @Autowired
-    private JavaMailSender emailSender;
+    FirebaseStorageService firebaseStorageService;
+
+    private final EmailServiceSender emailService;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -83,7 +86,7 @@ public class AuthenticationService {
                 .username(user.getUsername())
                 .name(user.getName())
                 .role(user.getRole().name())
-                .isDeleted(user.isDeleted())
+                .avatar(user.getAvatar())
                 .build();
     }
 
@@ -99,15 +102,78 @@ public class AuthenticationService {
         if (Boolean.FALSE.equals(user.getIsVerified())) {
             throw new AppException(ErrorCode.UN_VERIFY_EMAIL);
         }
-        if(user.isDeleted()) {
+        if(Boolean.TRUE.equals(user.getIsDeleted())) {
             throw new AppException(ErrorCode.USER_BANNED);
         }
-        var token = generateToken(user);
-
+        if (user.getRole() == UserRole.INSTRUCTOR && InstructorStatus.APPROVED.equals(user.getInstructorStatus())) {
+            throw new AppException(ErrorCode.INSTRUCTOR_NOT_ACTIVE);
+        }
+        var token = generateToken(user, false);
+        var refreshToken = generateToken(user, true);
         return AuthenticationResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .authenticated(true)
                 .build();
+    }
+
+    public AuthenticationResponse authenticateGoogleLogin(AuthenticationRequest request) {
+        try {
+            String idToken = request.getUsername();
+
+            if (idToken == null || idToken.isBlank()) {
+                throw new AppException(ErrorCode.INVALID_TOKEN);
+            }
+
+            var googlePayload = googleService.verifyToken(idToken);
+            String email = googlePayload.getEmail();
+            String name = (String) googlePayload.get("name");
+            String avatarUrl = (String) googlePayload.get("picture");
+
+            var userOptional = userRepository.findByUsername(email);
+            User user;
+
+            if (userOptional.isPresent()) {
+                user = userOptional.get();
+
+                if (user.getPassword() != null
+                        && !user.getPassword().isBlank()
+                        && !user.getPassword().startsWith("GOOGLE_CODEVERSE")) {
+                    throw new AppException(ErrorCode.EMAIL_REGISTERED_WITH_PASSWORD);
+                }
+
+                if (user.getIsDeleted()) {
+                    throw new AppException(ErrorCode.USER_BANNED);
+                }
+
+            } else {
+                user = User.builder()
+                        .username(email)
+                        .name(name)
+                        .avatar(avatarUrl)
+                        .role(UserRole.LEARNER)
+                        .password("GOOGLE_CODEVERSE" + UUID.randomUUID().toString())
+                        .isVerified(true)
+                        .build();
+                userRepository.save(user);
+            }
+
+            var token = generateToken(user, false);
+            var refreshToken = generateToken(user, true);
+
+            return AuthenticationResponse.builder()
+                    .token(token)
+                    .refreshToken(refreshToken)
+                    .username(email)
+                    .authenticated(true)
+                    .build();
+
+        } catch (AppException ae) {
+            throw ae;
+        } catch (Exception e) {
+            log.error("Unexpected error during Google login: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
     }
 
     private String generateRandomPassword(int length) {
@@ -123,35 +189,17 @@ public class AuthenticationService {
     public void authenticateResetPassword(SignUpRequest request) throws MessagingException {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        System.out.println(user);
+
+        if (!user.getPassword().isBlank() && user.getPassword().startsWith("GOOGLE_CODEVERSE")) {
+            throw new AppException(ErrorCode.RESET_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE);
+        }
 
         String newPassword = generateRandomPassword(10);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(newPassword));
-
         userRepository.save(user);
 
-        String subject = "Your Password Has Been Reset";
-        String htmlContent = """
-        <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
-          <h2 style="color: #333; text-align: center;">Password Reset Successful</h2>
-          <p style="font-size: 16px; color: #555;">Your new password is:</p>
-          <div style="text-align: center; font-size: 18px; font-weight: bold; background: #f4f4f4; padding: 10px; border-radius: 5px; margin: 10px 0;">
-            %s
-          </div>
-          <p style="font-size: 14px; color: #777;">Please log in and change your password for security reasons.</p>
-          <hr style="border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 Our Service. All rights reserved.</p>
-        </div>
-    """.formatted(newPassword);
-
-        MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(user.getUsername()); // username là email
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
-
-        emailSender.send(message);
+        emailService.sendResetPasswordEmail(user.getUsername(), newPassword);
     }
 
     public AuthenticationResponse authenticateSignup(SignUpRequest request) throws MessagingException {
@@ -161,43 +209,36 @@ public class AuthenticationService {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         String verificationToken = UUID.randomUUID().toString();
-        User newUser = User.builder()
+        UserRole role = determineUserRole(request);
+
+        String teachingCredentials = null;
+        if (request.getTeachingCredentials() != null && !request.getTeachingCredentials().isEmpty()) {
+            teachingCredentials = firebaseStorageService.uploadImage(request.getTeachingCredentials());
+        }
+
+        User.UserBuilder userBuilder = User.builder()
                 .username(request.getUsername())
                 .name(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.LEARNER)
+                .role(role)
                 .verificationToken(verificationToken)
                 .isVerified(false)
-                .build();
+                .isDeleted(false)
+                .instructorStatus(InstructorStatus.APPROVED);
+
+        if (role == UserRole.INSTRUCTOR) {
+            userBuilder.phoneNumber(request.getPhoneNumber());
+            userBuilder.teachingCredentials(teachingCredentials);
+            userBuilder.educationalBackground(request.getEducationalBackground());
+        }
+
+        User newUser = userBuilder.build();
 
         userRepository.save(newUser);
-        String subject = "Verify Your Email - Welcome to Our Service";
-        String verificationLink = "http://localhost:8080/codeVerse/auth/verify-email/" + verificationToken;
-                String htmlContent = """
-            <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
-              <h2 style="color: #333; text-align: center;">Welcome to Our Service!</h2>
-              <p style="font-size: 16px; color: #555;">Thank you for signing up. Please verify your email address by clicking the button below:</p>
-              <div style="text-align: center; margin: 20px 0;">
-                <a href="%s"
-                   style="background-color: #007bff; color: #fff; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
-                   Verify Your Email
-                </a>
-              </div>
-              <p style="font-size: 14px; color: #777;">If you didn’t create an account, you can safely ignore this email.</p>
-              <hr style="border: none; border-top: 1px solid #ddd;">
-              <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 Our Service. All rights reserved.</p>
-            </div>
-        """.formatted(verificationLink);
 
-        MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(request.getUsername());
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
+        emailService.sendVerificationEmail(newUser.getUsername(), verificationToken);
 
-        emailSender.send(message);
-
-        String token = generateToken(newUser);
+        String token = generateToken(newUser, false);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -237,37 +278,54 @@ public class AuthenticationService {
         }
     }
 
-    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken(), true);
+    @Transactional
+    public AuthenticationResponse refreshToken(String refreshToken) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(refreshToken, true);
 
         var jit = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        InvalidatedToken invalidatedToken =
-                InvalidatedToken.builder().id(jit).expiryTime(expiryTime).build();
-
-        invalidatedTokenRepository.save(invalidatedToken);
+        try {
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jit)
+                    .expiryTime(expiryTime)
+                    .build();
+            invalidatedTokenRepository.save(invalidatedToken);
+        } catch (Exception e) {
+            if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
+                System.out.println("Refresh token.");
+            } else {
+                throw e;
+            }
+        }
 
         var username = signedJWT.getJWTClaimsSet().getSubject();
 
-        var user =
-                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
-        var token = generateToken(user);
+        var tokenNew = generateToken(user, false);
+        var refreshTokenNew = generateToken(user, true);
 
-        return AuthenticationResponse.builder().token(token).authenticated(true).build();
+        return AuthenticationResponse.builder()
+                .token(tokenNew)
+                .refreshToken(refreshTokenNew)
+                .authenticated(true)
+                .build();
     }
 
-    private String generateToken(User user) {
+    private String generateToken(User user, boolean isRefresh) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+        Date expiration = isRefresh
+                ? new Date(Instant.now().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+                : new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
                 .issuer("codeVerse.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
-                ))
+                .expirationTime(expiration)
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", user.getRole())
                 .claim("userId", user.getId())
@@ -310,4 +368,46 @@ public class AuthenticationService {
         return signedJWT;
     }
 
+    public AuthenticationResponse  authenticateChangePassword(ChangePasswordRequest request) {
+        var user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (user.getPassword() != null && user.getPassword().startsWith("GOOGLE_CODEVERSE")) {
+            throw new AppException(ErrorCode.CHANGE_PASSWORD_NOT_SUPPORTED_FOR_GOOGLE);
+        }
+
+        PasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        if (!encoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.OLD_PASSWORD_INCORRECT);
+        }
+
+        String newPassword = request.getNewPassword();
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new AppException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        if (encoder.matches(newPassword, user.getPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_SAME_AS_OLD);
+        }
+
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        var token = generateToken(user, false);
+        var refreshToken = generateToken(user, true);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .username(user.getUsername())
+                .authenticated(true)
+                .build();
+    }
+
+    private UserRole determineUserRole(SignUpRequest request) {
+        if ("INSTRUCTOR".equalsIgnoreCase(request.getRole())) {
+            return UserRole.INSTRUCTOR;
+        }
+        return UserRole.LEARNER;
+    }
 }

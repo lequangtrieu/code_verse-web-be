@@ -1,6 +1,8 @@
 package codeverse.com.web_be.mapper;
 
+import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
+import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
 import org.mapstruct.Mapper;
@@ -17,4 +19,8 @@ public interface UserMapper {
     // Áp dụng update dữ liệu từ dto vào entity đã tồn tại
     void updateUserFromRequest(UserCreationRequest request, @MappingTarget User entity);
 
+    //UserCreationByAdminRequest -> User
+    User userCreationByAdminRequestToUser(UserCreationByAdminRequest request);
+
+    UserDetailResponse userToUserDetailResponse(User user);
 }

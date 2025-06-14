@@ -1,5 +1,6 @@
 package codeverse.com.web_be.dto.response.UserResponse;
 
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import lombok.*;
 
@@ -21,7 +22,7 @@ public class UserDetailResponse {
     private LocalDateTime updatedAt;
     private Boolean isVerified;
     private Boolean isDeleted;
-    private Boolean isActiveInstructor;
+    private InstructorStatus instructorStatus;
     private String phoneNumber;
     private String teachingCredentials;
     private String educationalBackground;

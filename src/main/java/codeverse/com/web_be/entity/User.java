@@ -1,10 +1,13 @@
 package codeverse.com.web_be.entity;
 
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -55,9 +58,8 @@ public class User {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    @Column(name = "is_active_instructor", columnDefinition = "tinyint(1) default 0")
-    @Builder.Default
-    private Boolean isActiveInstructor = false;
+    @Enumerated(EnumType.STRING)
+    private InstructorStatus instructorStatus;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -67,6 +69,10 @@ public class User {
 
     @Column(name = "educational_background", columnDefinition = "TEXT")
     private String educationalBackground;
+
+    @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties({"user", "hibernateLazyInitializer", "handler"})
+    private List<Cart> carts;
 
     @PrePersist
     protected void onCreate() {

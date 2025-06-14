@@ -25,8 +25,8 @@ public class FirebaseConfig {
     @Value("${firebase.bucket-name}")
     private String bucketName;
 
-    // @Value("${firebase.credentials}")
-    // private String credentials;
+//     @Value("${firebase.credentials}")
+//     private String credentials;
 
     private static final String PASSWORD = "codeverse";
 
@@ -73,37 +73,25 @@ public class FirebaseConfig {
 //     @PostConstruct
 //     public void initializeFirebase() {
 //         try {
-//             //chạy ở local thì comment đoạn dưới lại
-//             String base64Config = System.getenv("FIREBASE_CONFIG_BASE64");
-//             if (base64Config == null || base64Config.isEmpty()) {
-//                 throw new RuntimeException("FIREBASE_CONFIG_BASE64 not set");
+//             byte[] encryptedData = Files.readAllBytes(new File(credentials).toPath());
+//             byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
+//             if (!new String(header).equals("Salted__")) {
+//                 throw new RuntimeException("File not formatted AES OpenSSL");
 //             }
-
-//             byte[] encryptedData = Base64.getDecoder().decode(base64Config);
-//             InputStream serviceAccount = new ByteArrayInputStream(encryptedData);
-//             //comment đến đây
-
-//             // deploy thì comment đoạn dưới lại
-// //            byte[] encryptedData = Files.readAllBytes(new File(credentials).toPath());
-// //            byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
-// //            if (!new String(header).equals("Salted__")) {
-// //                throw new RuntimeException("File not formatted AES OpenSSL");
-// //            }
-// //
-// //            byte[] salt = Arrays.copyOfRange(encryptedData, 8, 16);
-// //            byte[] cipherText = Arrays.copyOfRange(encryptedData, 16, encryptedData.length);
-// //
-// //            byte[][] keyAndIV = deriveKeyAndIV(PASSWORD.getBytes(), salt);
-// //            SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
-// //            IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
-// //
-// //            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-// //            cipher.init(Cipher.DECRYPT_MODE, key, iv);
-// //
-// //            byte[] decrypted = cipher.doFinal(cipherText);
-// //            InputStream serviceAccount = new ByteArrayInputStream(decrypted);
-//             //comment đến đây
-
+//
+//             byte[] salt = Arrays.copyOfRange(encryptedData, 8, 16);
+//             byte[] cipherText = Arrays.copyOfRange(encryptedData, 16, encryptedData.length);
+//
+//             byte[][] keyAndIV = deriveKeyAndIV(PASSWORD.getBytes(), salt);
+//             SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
+//             IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
+//
+//             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+//             cipher.init(Cipher.DECRYPT_MODE, key, iv);
+//
+//             byte[] decrypted = cipher.doFinal(cipherText);
+//             InputStream serviceAccount = new ByteArrayInputStream(decrypted);
+//
 //             FirebaseOptions options = FirebaseOptions.builder()
 //                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
 //                     .setStorageBucket(bucketName)

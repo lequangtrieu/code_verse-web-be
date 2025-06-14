@@ -25,8 +25,8 @@ public class FirebaseConfig {
     @Value("${firebase.bucket-name}")
     private String bucketName;
 
-    @Value("${firebase.credentials}")
-    private String credentials;
+    // @Value("${firebase.credentials}")
+    // private String credentials;
 
     private static final String PASSWORD = "codeverse";
 

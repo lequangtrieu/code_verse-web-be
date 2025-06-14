@@ -123,7 +123,7 @@ public class CourseController {
         return ResponseEntity.ok(courseService.getSuggestedCoursesByLearnerId(userId));
     }
 
-    @GetMapping("/instructor/{id}")
+    @GetMapping("/admin/instructor/{id}")
     public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesInstructorById(@PathVariable Long id) {
         return ApiResponse.<List<CourseForUpdateResponse>>builder()
                 .result(courseService.findByInstructorId(id).stream()

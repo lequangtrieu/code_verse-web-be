@@ -1,10 +1,13 @@
 package codeverse.com.web_be.service.UserService;
 
+import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
+import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
@@ -12,11 +15,15 @@ import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.repository.UserRepository;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -114,6 +121,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         userRepository.save(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public User createUserByAdmin(UserCreationByAdminRequest request) {
         // Bắt buộc role là LEARNER dù request có thay đổi
@@ -138,4 +146,32 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         return userMapper.userToUserDetailResponse(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserDetailResponse> getInactiveInstructors() {
+        List<User> inactiveInstructors = userRepository.findInactiveInstructors();
+
+        return inactiveInstructors.stream()
+                .map(userMapper::userToUserDetailResponse)
+                .toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void activateInstructor(Long instructorId) {
+        User user = userRepository.findById(instructorId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setInstructorStatus(InstructorStatus.APPROVED);
+        userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public void deactivateInstructor(Long instructorId) {
+        User user = userRepository.findById(instructorId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setInstructorStatus(InstructorStatus.REJECTED);
+        userRepository.save(user);
+    }
 }

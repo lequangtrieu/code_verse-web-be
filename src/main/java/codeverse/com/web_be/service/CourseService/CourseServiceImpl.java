@@ -1,11 +1,15 @@
 package codeverse.com.web_be.service.CourseService;
 
+import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.entity.*;
+import codeverse.com.web_be.enums.LessonProgressStatus;
+import codeverse.com.web_be.enums.LessonType;
 import codeverse.com.web_be.mapper.*;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
@@ -14,8 +18,8 @@ import codeverse.com.web_be.service.GenericServiceImpl;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +40,9 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final TestCaseRepository testCaseRepository;
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizAnswerRepository quizAnswerRepository;
+    private final LessonProgressRepository lessonProgressRepository;
+    private final UserRepository userRepository;
+
 
     public CourseServiceImpl(CourseRepository courseRepository,
                              CategoryRepository categoryRepository,
@@ -50,7 +57,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              CourseEnrollmentRepository courseEnrollmentRepository,
                              TestCaseRepository testCaseRepository,
                              QuizQuestionRepository quizQuestionRepository,
-                             QuizAnswerRepository quizAnswerRepository
+                             QuizAnswerRepository quizAnswerRepository,
+                             LessonProgressRepository lessonProgressRepository, UserRepository userRepository
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -67,6 +75,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.testCaseRepository = testCaseRepository;
         this.quizQuestionRepository = quizQuestionRepository;
         this.quizAnswerRepository = quizAnswerRepository;
+        this.lessonProgressRepository = lessonProgressRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -127,7 +137,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         User instructor = functionHelper.getActiveUserByUsername(request.getInstructor());
 
         String thumbnailUrl = null;
-        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+        if  (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             thumbnailUrl = firebaseStorageService.uploadImage(request.getImageFile());
         }
 
@@ -149,7 +159,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         Category category = null;
-        if (request.getCategoryId() != null) {
+        if  (request.getCategoryId() != null) {
             category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         }
@@ -157,7 +167,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         courseMapper.courseUpdateRequestToCourse(request, category, course);
 
         String thumbnailUrl = request.getThumbnailUrl();
-        if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
+        if  (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
             thumbnailUrl = firebaseStorageService.uploadImage(request.getImageFile());
         }
         course.setThumbnailUrl(thumbnailUrl);
@@ -241,5 +251,116 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
         course.setStatus(request.getStatus());
         courseRepository.save(course);
+    }
+
+
+    @Override
+    public CourseDetailDTO getCourseDetails(Long courseId, Long userId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+        List<CourseModuleDTO> modules = courseRepository.getModulesByCourseId(courseId);
+        List<LessonProgress> progresses = courseRepository.findByUserIdAndCourseId(userId, courseId);
+
+        Map<Long, LessonProgress> progressMap = new HashMap<>();
+        for (LessonProgress progress : progresses) {
+            progressMap.put(progress.getLesson().getId(), progress);
+        }
+
+        for (CourseModuleDTO module : modules) {
+            List<LessonDTO> lessons = courseRepository.getLessonsByModuleId(module.getId());
+
+            for (LessonDTO lesson : lessons) {
+                LessonProgress progress = progressMap.get(lesson.getId());
+                if (progress != null) {
+                    lesson.setStatus(progress.getStatus());
+                    if (progress.getCodeSubmission() != null) {
+                        lesson.setCode(progress.getCodeSubmission().getCode());
+                    }
+                } else {
+                    lesson.setStatus(LessonProgressStatus.NOT_STARTED);
+                }
+
+                if (Objects.equals(lesson.getLessonType(), LessonType.EXAM)) {
+                    List<QuestionDTO> questionDTO = courseRepository.getQuestionByLessonId(lesson.getId());
+                    for (QuestionDTO question : questionDTO) {
+                        question.setAnswers(courseRepository.getAnswersByQuestionID(question.getId()));
+                    }
+
+                    lesson.setQuestions(questionDTO);
+                } else {
+                    TheoryDTO theory = courseRepository.getTheoryByLessonId(lesson.getId());
+                    ExerciseDTO exerciseDTO = courseRepository.getExerciseByLessonId(lesson.getId());
+
+                    if (exerciseDTO != null) {
+                        List<TaskDTO> taskDTOS = courseRepository.getExerciseTaskByExerciseID(exerciseDTO.getId());
+                        List<TestCaseDTO> testCaseDTO = courseRepository.getTestCaseByExerciseId(exerciseDTO.getId());
+                        List<String> tasks = new ArrayList<>();
+                        for (TaskDTO taskDTO : taskDTOS) {
+                            tasks.add(taskDTO.getDescription());
+                        }
+                        exerciseDTO.setTasks(tasks);
+                        lesson.setTestCases(testCaseDTO);
+                        lesson.setExercise(exerciseDTO);
+                    } else {
+                        lesson.setExercise(null);
+                    }
+
+                    lesson.setTheory(theory);
+                }
+
+
+            }
+            module.setSubLessons(lessons);
+        }
+        CourseDetailDTO courseDetailDTO = new CourseDetailDTO();
+        courseDetailDTO.setData(modules);
+        courseDetailDTO.setLanguage(course.getLanguage());
+        return courseDetailDTO;
+    }
+
+    @Override
+    public String submitCodeHandler(CodeRequestDTO request) {
+        Long userId = request.getUserId();
+        Long lessonId = request.getLessonId();
+
+        LessonProgress lessonProgress = lessonProgressRepository
+                .findByUserIdAndLessonId(userId, lessonId)
+                .orElseGet(() -> {
+                    Lesson lesson = lessonRepository.findById(lessonId)
+                            .orElseThrow(() -> new RuntimeException("Lesson not found"));
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+
+                    return lessonProgressRepository.save(
+                            LessonProgress.builder()
+                                    .lesson(lesson)
+                                    .user(user)
+                                    .status(LessonProgressStatus.PASSED)
+                                    .startedAt(LocalDateTime.now())
+                                    .build()
+                    );
+                });
+
+        CodeSubmission existingSubmission = lessonProgress.getCodeSubmission();
+
+        if (existingSubmission != null) {
+            existingSubmission.setCode(request.getCode());
+            existingSubmission.setExecutionTime(request.getExecutionTime());
+            existingSubmission.setMemoryUsage(request.getMemoryUsage());
+        } else {
+            CodeSubmission newSubmission = CodeSubmission.builder()
+                    .lessonProgress(lessonProgress)
+                    .code(request.getCode())
+                    .executionTime(request.getExecutionTime())
+                    .memoryUsage(request.getMemoryUsage())
+                    .build();
+
+            lessonProgress.setCodeSubmission(newSubmission);
+        }
+
+        lessonProgress.setStatus(LessonProgressStatus.PASSED);
+        lessonProgressRepository.save(lessonProgress);
+
+        return "submitted";
     }
 }

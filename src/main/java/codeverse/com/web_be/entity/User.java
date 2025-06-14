@@ -2,10 +2,12 @@ package codeverse.com.web_be.entity;
 
 import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -67,6 +69,10 @@ public class User {
 
     @Column(name = "educational_background", columnDefinition = "TEXT")
     private String educationalBackground;
+
+    @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties({"user", "hibernateLazyInitializer", "handler"})
+    private List<Cart> carts;
 
     @PrePersist
     protected void onCreate() {

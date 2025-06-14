@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "course_module")
@@ -35,6 +36,9 @@ public class CourseModule {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "courseModule", fetch = FetchType.LAZY)
+    private List<Lesson> lessons;
 
     @PrePersist
     protected void onCreate() {

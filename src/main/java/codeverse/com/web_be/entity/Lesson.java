@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "lesson")
@@ -22,8 +23,11 @@ public class Lesson {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "material_id", nullable = false)
+    @JoinColumn(name = "material_id ", nullable = false)
     private CourseModule courseModule;
+
+    @OneToMany(mappedBy = "lesson", fetch = FetchType.LAZY)
+    private List<QuizQuestion> quizQuestions;
 
     @Column(nullable = false)
     private String title;

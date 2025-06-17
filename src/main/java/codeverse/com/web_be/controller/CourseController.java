@@ -4,13 +4,9 @@ import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
-import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseDetailDTO;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseModuleDTO;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.mapper.CourseMapper;
@@ -24,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -66,8 +61,8 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<CourseResponse> getCourseById(@PathVariable Long id) {
-        return ApiResponse.<CourseResponse>builder()
+    public ApiResponse<CourseDetailResponse> getCourseById(@PathVariable Long id) {
+        return ApiResponse.<CourseDetailResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("Get Course Success")
                 .result(courseService.getCourseById(id))

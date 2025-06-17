@@ -4,14 +4,14 @@ import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.CodeLanguage;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import codeverse.com.web_be.enums.LessonType;
-import codeverse.com.web_be.mapper.*;
+import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
@@ -149,8 +149,15 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     }
 
     @Override
-    public CourseResponse getCourseById(Long courseId) {
-        return courseRepository.selectCourseById(courseId);
+    public CourseDetailResponse getCourseById(Long courseId) {
+        Course course = courseRepository.findCourseById(courseId);
+        CourseMoreInfoDTO courseMoreInfoDTO = courseRepository.selectCourseMoreInfoById(courseId);
+
+        CourseDetailResponse courseDetailResponse = new CourseDetailResponse();
+        courseDetailResponse.setCourse(course);
+        courseDetailResponse.setCourseMoreInfo(courseMoreInfoDTO);
+
+        return courseDetailResponse;
     }
 
     @PreAuthorize("hasRole('INSTRUCTOR')")

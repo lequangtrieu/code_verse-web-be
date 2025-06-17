@@ -1,8 +1,7 @@
 package codeverse.com.web_be.repository;
 
-import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.LessonProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +12,10 @@ import java.util.List;
 
 public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByInstructorId(Long instructorId);
+
     List<Course> findByInstructorUsername(String username);
+
+    Course findCourseById(Long courseId);
 
 //    List<Course> findAllByIsDeletedFalseAndIsPublishedTrue();
 
@@ -32,20 +34,21 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "WHERE c.isDeleted = false AND c.status = \"PUBLISHED\"")
     List<CourseResponse> selectAllCourses();
 
-    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.CourseResponse(" +
-            "c.id, c.title, c.description, c.thumbnailUrl, CAST(c.level AS string), cat.name as category, c.price, c.discount, " +
-            "u.name, " +
-            "(SELECT COUNT(l) FROM Lesson l JOIN l.courseModule ms WHERE ms.course = c) as totalLessons, " +
-            "(SELECT COALESCE(ROUND(AVG(cr.rating), 1), 0) FROM CourseRating cr WHERE cr.course = c) as rating, " +
-            "(SELECT COUNT(cr) FROM CourseRating cr WHERE cr.course = c) as ratingCount, " +
-            "(SELECT COUNT(DISTINCT pt.user) FROM CourseEnrollment pt WHERE pt.course = c) as totalStudents, " +
-            "false as isTrending, " +
-            "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course = c) as totalDurations) " +
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO(" +
+            "(SELECT COALESCE(ROUND(AVG(cr.rating), 1), 0) FROM CourseRating cr WHERE cr.course.id = :courseId), " + // rating
+            "(SELECT COUNT(cr) FROM CourseRating cr WHERE cr.course.id = :courseId), " +                            // ratingCount
+            "(SELECT COUNT(DISTINCT pt.user) FROM CourseEnrollment pt WHERE pt.course.id = :courseId), " +         // totalStudents
+            "false, " +                                                                                              // isTrending
+            "(SELECT COUNT(l) FROM Lesson l JOIN l.courseModule ms WHERE ms.course.id = :courseId), " +            // totalLessons
+            "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course.id = :courseId), " + // totalDurations
+            "cat.name, " +                                                                                           // category
+            "u.name) " +                                                                                              // instructor
             "FROM Course c " +
             "LEFT JOIN c.category cat " +
             "LEFT JOIN c.instructor u " +
-            "WHERE c.id = :id AND c.isDeleted = false AND c.status = \"PUBLISHED\"")
-    CourseResponse selectCourseById(Long id);
+            "WHERE c.id = :courseId AND c.isDeleted = false AND c.status = 'PUBLISHED'")
+    CourseMoreInfoDTO selectCourseMoreInfoById(@Param("courseId") Long courseId);
+
 
     @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse(" +
             "c.id, c.title, c.description, c.thumbnailUrl, CAST(c.level AS string), cat.name, u.name, " +
@@ -109,6 +112,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "WHERE pt.user.id = :userId " +
             "AND c.isDeleted = false AND c.status = 'PUBLISHED'")
     List<CourseProgressResponse> findAllCoursesWithProgressByUserId(@Param("userId") Long userId);
+
     @Query("SELECT lp FROM LessonProgress lp " +
             "WHERE lp.user.id = :userId AND lp.lesson.courseModule.course.id = :courseId")
     List<LessonProgress> findByUserIdAndCourseId(@Param("userId") Long userId,

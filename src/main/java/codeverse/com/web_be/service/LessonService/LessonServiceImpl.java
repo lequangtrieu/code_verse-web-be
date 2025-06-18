@@ -8,8 +8,10 @@ import codeverse.com.web_be.mapper.LessonMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.GenericServiceImpl;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -31,7 +33,8 @@ public class LessonServiceImpl extends GenericServiceImpl<Lesson, Long> implemen
                                 LessonRepository lessonRepository,
                                 QuizQuestionRepository quizQuestionRepository,
                                 QuizAnswerRepository quizAnswerRepository,
-                                LessonMapper lessonMapper, TestCaseRepository testCaseRepository, ExerciseTaskRepository exerciseTaskRepository) {
+                                LessonMapper lessonMapper, TestCaseRepository testCaseRepository,
+                                ExerciseTaskRepository exerciseTaskRepository) {
         super(lessonRepository);
         this.exerciseRepository = exerciseRepository;
         this.theoryRepository = theoryRepository;
@@ -44,6 +47,7 @@ public class LessonServiceImpl extends GenericServiceImpl<Lesson, Long> implemen
         this.exerciseTaskRepository = exerciseTaskRepository;
     }
 
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public LessonResponse createLesson(LessonCreateRequest request) {
         Lesson lesson = lessonMapper.lessonCreateRequestToLesson(request);
@@ -64,6 +68,7 @@ public class LessonServiceImpl extends GenericServiceImpl<Lesson, Long> implemen
         return LessonResponse.fromEntity(createdLesson);
     }
 
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Transactional
     @Override
     public LessonResponse updateLesson(Long lessonId, LessonCreateRequest request) {
@@ -115,5 +120,42 @@ public class LessonServiceImpl extends GenericServiceImpl<Lesson, Long> implemen
             lesson.setLessonType(newType);
         }
         return LessonResponse.fromEntity(lessonRepository.save(lesson));
+    }
+
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public void deleteLesson(Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+        switch (lesson.getLessonType()) {
+            case CODE:
+                testCaseRepository.deleteTestCasesByLessonId(lessonId);
+                exerciseTaskRepository.deleteTasksByLessonId(lessonId);
+                Exercise exercise = lesson.getExercise();
+                if (exercise != null) {
+                    exercise.setLesson(null);
+                    lesson.setExercise(null);
+                    exerciseRepository.delete(exercise);
+                }
+
+                Theory theory = lesson.getTheory();
+                if (theory != null) {
+                    theory.setLesson(null);
+                    lesson.setTheory(null);
+                    theoryRepository.delete(theory);
+                }
+                break;
+            case EXAM:
+                List<QuizQuestion> existingQuestions = quizQuestionRepository.findByLessonId(lessonId);
+
+                List<Long> questionIds = existingQuestions.stream()
+                        .map(QuizQuestion::getId)
+                        .toList();
+
+                quizAnswerRepository.deleteByQuestionIdIn(questionIds);
+
+                quizQuestionRepository.deleteAllById(questionIds);
+                break;
+        }
+        lessonRepository.delete(lesson);
     }
 }

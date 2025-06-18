@@ -1,6 +1,7 @@
 package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskCreateRequest;
+import codeverse.com.web_be.dto.request.ExerciseRequest.ExerciseTaskUpdateRequest;
 import codeverse.com.web_be.dto.response.ExerciseResponse.ExerciseTaskResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Exercise;
@@ -11,10 +12,7 @@ import codeverse.com.web_be.service.ExerciseTaskService.IExerciseTaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/exercise-task")
@@ -34,6 +32,28 @@ public class ExerciseTaskController {
         return ApiResponse.<ExerciseTaskResponse>builder()
                 .result(ExerciseTaskResponse.fromEntity(createdExerciseTask))
                 .code(HttpStatus.CREATED.value())
+                .build();
+    }
+
+    @PutMapping("/{taskId}")
+    public ApiResponse<ExerciseTaskResponse> updateExerciseTask(@PathVariable Long taskId, @RequestBody ExerciseTaskUpdateRequest request) {
+        ExerciseTask exerciseTask = exerciseTaskService.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exercise task not found"));
+        exerciseTaskMapper.updateExerciseTaskFromRequest(request, exerciseTask);
+        ExerciseTask updatedExerciseTask = exerciseTaskService.update(exerciseTask);
+        return ApiResponse.<ExerciseTaskResponse>builder()
+                .result(ExerciseTaskResponse.fromEntity(updatedExerciseTask))
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @DeleteMapping("/{taskId}")
+    public ApiResponse<?> deleteExerciseTask(@PathVariable Long taskId) {
+        exerciseTaskService.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exercise task not found"));
+        exerciseTaskService.deleteById(taskId);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
                 .build();
     }
 }

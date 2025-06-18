@@ -81,4 +81,20 @@ public class TheoryServiceImpl extends GenericServiceImpl<Theory, Long> implemen
 
         return TheoryResponse.fromEntity(theoryRepository.save(theory));
     }
+
+    @Override
+    public TheoryResponse getTheoryByLessonId(Long lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(
+                () -> new ResourceNotFoundException("Lesson not found")
+        );
+
+        Optional<Theory> optionalTheory = theoryRepository.findByLesson(lesson);
+        Theory theory = optionalTheory.orElse(null);
+
+        if (theory != null && theory.getContent() != null) {
+            String htmlContent = firebaseStorageService.downloadHtmlByPath(theory.getContent());
+            theory.setContent(htmlContent);
+        }
+        return TheoryResponse.fromEntity(theory);
+    }
 }

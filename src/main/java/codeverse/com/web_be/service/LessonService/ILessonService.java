@@ -8,4 +8,5 @@ import codeverse.com.web_be.service.IGenericService;
 public interface ILessonService extends IGenericService<Lesson, Long> {
     LessonResponse createLesson(LessonCreateRequest request);
     LessonResponse updateLesson(Long lessonId, LessonCreateRequest request);
+    void deleteLesson(Long lessonId);
 }

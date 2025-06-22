@@ -41,4 +41,12 @@ public class LessonController {
                 .code(HttpStatus.OK.value())
                 .build();
     }
+
+    @DeleteMapping("/{lessonId}")
+    public ApiResponse<?> deleteLesson(@PathVariable Long lessonId) {
+        lessonService.deleteLesson(lessonId);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .build();
+    }
 }

@@ -16,4 +16,6 @@ public interface QuizAnswerRepository extends JpaRepository<QuizAnswer, Long> {
     void deleteByQuestionIdIn(@Param("questionIds") List<Long> questionIds);
 
     long countByQuestionIdAndIsCorrectTrue(Long questionId);
+
+    List<QuizAnswer> findByQuestionId(Long questionId);
 }

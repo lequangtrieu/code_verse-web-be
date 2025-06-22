@@ -20,6 +20,7 @@ public class TheoryResponse {
     private LocalDateTime updatedAt;
 
     public static TheoryResponse fromEntity(Theory theory) {
+        if(theory == null) return null;
         return TheoryResponse.builder()
                 .id(theory.getId())
                 .lesson(theory.getLesson().getTitle())

@@ -26,9 +26,9 @@ public class CourseModuleController {
     private final CourseModuleMapper courseModuleMapper;
 
     @GetMapping("/course/{courseId}")
-    public ApiResponse<List<CourseModuleForUpdateResponse>> getCourseModuleListByCourseId(@PathVariable Long courseId) {
-        List<CourseModuleForUpdateResponse> materials = courseModuleService.getCourseModuleListByCourseId(courseId);
-        return ApiResponse.<List<CourseModuleForUpdateResponse>>builder()
+    public ApiResponse<List<CourseModuleResponse>> getCourseModuleListByCourseId(@PathVariable Long courseId) {
+        List<CourseModuleResponse> materials = courseModuleService.getCourseModuleListByCourseId(courseId);
+        return ApiResponse.<List<CourseModuleResponse>>builder()
                 .result(materials)
                 .code(HttpStatus.OK.value())
                 .build();
@@ -56,6 +56,14 @@ public class CourseModuleController {
         return ApiResponse.<CourseModuleResponse>builder()
                 .result(CourseModuleResponse.fromEntity(updatedCourseModule))
                 .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @DeleteMapping("/{courseModuleId}")
+    public ApiResponse<?> deleteCourseModule(@PathVariable Long courseModuleId){
+        courseModuleService.deleteModule(courseModuleId);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
                 .build();
     }
 }

@@ -114,6 +114,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(0))
+                            .language(CodeLanguage.JAVA)
                             .price(new BigDecimal("99000"))
                             .discount(new BigDecimal("10.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -125,6 +126,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
+                            .language(CodeLanguage.C)
                             .price(new BigDecimal("79000"))
                             .discount(new BigDecimal("15.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -136,6 +138,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(2))
+                            .language(CodeLanguage.CSHARP)
                             .price(new BigDecimal("89000"))
                             .discount(new BigDecimal("0.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -147,6 +150,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
+                            .language(CodeLanguage.PYTHON)
                             .price(new BigDecimal("0"))
                             .discount(new BigDecimal("0.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -158,6 +162,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
+                            .language(CodeLanguage.CPP)
                             .price(new BigDecimal("149000"))
                             .discount(new BigDecimal("50.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -170,6 +175,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("50000"))
                             .discount(new BigDecimal("0.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -181,6 +187,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(0))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("100.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -192,6 +199,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.BEGINNER)
                             .category(categories.get(2))
+                            .language(CodeLanguage.PYTHON)
                             .price(new BigDecimal("25000"))
                             .discount(new BigDecimal("25.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -203,6 +211,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
+                            .language(CodeLanguage.C)
                             .price(new BigDecimal("100000"))
                             .discount(new BigDecimal("30.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -214,6 +223,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
+                            .language(CodeLanguage.JAVA)
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("15.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -225,6 +235,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("65000"))
                             .discount(new BigDecimal("45.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -236,6 +247,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(0))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("20.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -247,6 +259,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(2))
+                            .language(CodeLanguage.CSHARP)
                             .price(new BigDecimal("95000"))
                             .discount(new BigDecimal("10.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -258,6 +271,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(0))
+                            .language(CodeLanguage.C)
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("35.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -269,6 +283,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
+                            .language(CodeLanguage.CSHARP)
                             .price(new BigDecimal("70000"))
                             .discount(new BigDecimal("40.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -456,6 +471,7 @@ public class DummyDataConfig {
                             .title(section.getTitle() + " - " + lessonTypes[i])
                             .orderIndex(i + 1)
                             .duration(10)
+                            .lessonType(LessonType.CODE)
                             .build());
                 }
             }
@@ -468,6 +484,7 @@ public class DummyDataConfig {
                             .title(section.getTitle() + " - " + lessonTypes[i])
                             .orderIndex(i + 1)
                             .duration(10)
+                            .lessonType(LessonType.CODE)
                             .build());
                 }
             }
@@ -479,7 +496,7 @@ public class DummyDataConfig {
                 theories.add(Theory.builder()
                         .lesson(lesson)
                         .title(lesson.getTitle() + " - Theory")
-                        .content("This is the theory content for " + lesson.getTitle() + ". Learn about the concepts and principles...")
+                        .content("https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/theories%2F376%2F52c7b32f-fc26-4383-9f08-656f1d8b062e_Theory.html?alt=media")
                         .build());
             }
             theoryRepository.saveAll(theories);
@@ -557,25 +574,25 @@ public class DummyDataConfig {
             }
             testCaseRepository.saveAll(testCases);
 
-            // Tạo progress tracking
-            List<CourseEnrollment> courseEnrollments = new ArrayList<>();
-            courseEnrollments.add(CourseEnrollment.builder()
-                    .user(instructors.get(2))
-                    .course(courses.get(0))
-                    .completionPercentage(100f)
-                    .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
-                    .build());
-            for (Course course : courses) {
-                for (User instructor : instructors) {
-                    courseEnrollments.add(CourseEnrollment.builder()
-                            .user(instructor)
-                            .course(course)
-                            .completionPercentage((float) (Math.random() * 100))
-                            .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
-                            .build());
-                }
-            }
-            courseEnrollmentRepository.saveAll(courseEnrollments);
+//            // Tạo progress tracking
+//            List<CourseEnrollment> courseEnrollments = new ArrayList<>();
+//            courseEnrollments.add(CourseEnrollment.builder()
+//                    .user(instructors.get(2))
+//                    .course(courses.get(0))
+//                    .completionPercentage(100f)
+//                    .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+//                    .build());
+//            for (Course course : courses) {
+//                for (User instructor : instructors) {
+//                    courseEnrollments.add(CourseEnrollment.builder()
+//                            .user(instructor)
+//                            .course(course)
+//                            .completionPercentage((float) (Math.random() * 100))
+//                            .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+//                            .build());
+//                }
+//            }
+//            courseEnrollmentRepository.saveAll(courseEnrollments);
 
             // Tạo course ratings
             List<CourseRating> courseRatings = new ArrayList<>();
@@ -623,6 +640,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(0))
+                            .language(CodeLanguage.JAVA)
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("20.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -634,6 +652,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
+                            .language(CodeLanguage.JAVA)
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("15.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -645,6 +664,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
+                            .language(CodeLanguage.CPP)
                             .price(new BigDecimal("95000"))
                             .discount(new BigDecimal("25.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -656,6 +676,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
+                            .language(CodeLanguage.CSHARP)
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("30.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -667,6 +688,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(0))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("65000"))
                             .discount(new BigDecimal("10.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -678,6 +700,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("40.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -689,6 +712,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(2))
+                            .language(CodeLanguage.PYTHON)
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("35.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -700,6 +724,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
+                            .language(CodeLanguage.JAVA)
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("45.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -711,6 +736,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
+                            .language(CodeLanguage.CPP)
                             .price(new BigDecimal("95000"))
                             .discount(new BigDecimal("50.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -722,6 +748,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(0))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("70000"))
                             .discount(new BigDecimal("20.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -733,6 +760,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(1))
+                            .language(CodeLanguage.CSHARP)
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("25.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -744,6 +772,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(2))
+                            .language(CodeLanguage.CSHARP)
                             .price(new BigDecimal("85000"))
                             .discount(new BigDecimal("30.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -755,6 +784,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.ADVANCED)
                             .category(categories.get(3))
+                            .language(CodeLanguage.RUBY)
                             .price(new BigDecimal("90000"))
                             .discount(new BigDecimal("35.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -766,6 +796,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl2)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(4))
+                            .language(CodeLanguage.C)
                             .price(new BigDecimal("80000"))
                             .discount(new BigDecimal("40.00"))
                             .status(CourseStatus.PUBLISHED)
@@ -777,6 +808,7 @@ public class DummyDataConfig {
                             .thumbnailUrl(thumbnailUrl1)
                             .level(CourseLevel.INTERMEDIATE)
                             .category(categories.get(0))
+                            .language(CodeLanguage.JAVASCRIPT)
                             .price(new BigDecimal("75000"))
                             .discount(new BigDecimal("45.00"))
                             .status(CourseStatus.PUBLISHED)

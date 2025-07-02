@@ -3,17 +3,18 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseEnrollmentResponse.CourseEnrollmentStatusDTO;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
-import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleUpdateRequest;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseDetailDTO;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseModuleDTO;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
+import codeverse.com.web_be.entity.CourseEnrollment;
 import codeverse.com.web_be.mapper.CourseMapper;
+import codeverse.com.web_be.mapper.CourseModuleMapper;
+import codeverse.com.web_be.repository.CourseEnrollmentRepository;
 import codeverse.com.web_be.service.CourseService.ICourseService;
 import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,6 +35,7 @@ public class CourseController {
     private final ICourseService courseService;
     private final ICourseModuleService courseModuleService;
     private final CourseMapper courseMapper;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CourseResponse>>> getAllCourses() {
@@ -66,8 +68,8 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<CourseResponse> getCourseById(@PathVariable Long id) {
-        return ApiResponse.<CourseResponse>builder()
+    public ApiResponse<CourseDetailResponse> getCourseById(@PathVariable Long id) {
+        return ApiResponse.<CourseDetailResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("Get Course Success")
                 .result(courseService.getCourseById(id))
@@ -79,8 +81,6 @@ public class CourseController {
         Course course = courseService.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
         CourseForUpdateResponse response = courseMapper.courseToCourseForUpdateResponse(course);
-        List<CourseModuleForUpdateResponse> materials = courseModuleService.getCourseModuleListByCourseId(courseId);
-        response.setModules(materials);
         return ApiResponse.<CourseForUpdateResponse>builder()
                 .result(response)
                 .code(HttpStatus.OK.value())
@@ -173,5 +173,23 @@ public class CourseController {
                 .code(HttpStatus.OK.value())
                 .message("Submit code successfully")
                 .build();
+    }
+
+    @GetMapping("/{courseId}/enrollment-status")
+    public ResponseEntity<CourseEnrollmentStatusDTO> getEnrollmentStatus(
+            @PathVariable Long courseId,
+            @RequestParam Long userId) {
+
+        Optional<CourseEnrollment> enrollmentOpt = courseEnrollmentRepository
+                .findByUserIdAndCourseId(userId, courseId);
+
+        if (enrollmentOpt.isPresent()) {
+            CourseEnrollment enrollment = enrollmentOpt.get();
+            return ResponseEntity.ok(
+                    new CourseEnrollmentStatusDTO(true, enrollment.getCompletionPercentage() != null ? enrollment.getCompletionPercentage() : 0f)
+            );
+        } else {
+            return ResponseEntity.ok(new CourseEnrollmentStatusDTO(false, 0f));
+        }
     }
 }

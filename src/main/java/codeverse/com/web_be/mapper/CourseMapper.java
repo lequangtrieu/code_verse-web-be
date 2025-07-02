@@ -42,4 +42,5 @@ public interface CourseMapper {
     @Mapping(target = "instructorId", source = "instructor.id")
     @Mapping(target = "modules", ignore = true)
     CourseForUpdateResponse  courseToCourseForUpdateResponse(Course course);
+
 }

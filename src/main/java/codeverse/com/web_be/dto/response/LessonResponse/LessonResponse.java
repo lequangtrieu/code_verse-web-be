@@ -17,6 +17,7 @@ public class LessonResponse {
     private Integer orderIndex;
     private String lessonType;
     private Integer expReward;
+    private Integer duration;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -27,6 +28,7 @@ public class LessonResponse {
                 .orderIndex(lesson.getOrderIndex())
                 .expReward(lesson.getExpReward())
                 .lessonType(lesson.getLessonType().toString())
+                .duration(lesson.getDuration())
                 .createdAt(lesson.getCreatedAt())
                 .updatedAt(lesson.getUpdatedAt())
                 .build();

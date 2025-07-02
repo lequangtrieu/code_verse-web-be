@@ -24,9 +24,5 @@ public interface ExerciseTaskMapper {
     ExerciseTask exerciseTaskUpdateRequestToExerciseTask(ExerciseTaskUpdateRequest request);
 
     @Mapping(target = "exercise", ignore = true)
-    default void updateExerciseTaskFromRequest(ExerciseTaskUpdateRequest request, @MappingTarget ExerciseTask exerciseTask){
-        if(!Objects.equals(exerciseTask.getDescription(), request.getDescription())){
-            exerciseTask.setDescription(request.getDescription());
-        }
-    }
+    void updateExerciseTaskFromRequest(ExerciseTaskUpdateRequest request, @MappingTarget ExerciseTask exerciseTask);
 }

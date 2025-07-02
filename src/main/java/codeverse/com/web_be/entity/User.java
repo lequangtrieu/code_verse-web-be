@@ -74,6 +74,10 @@ public class User {
     @JsonIgnoreProperties({"user", "hibernateLazyInitializer", "handler"})
     private List<Cart> carts;
 
+    public User(Long userId) {
+        this.id = userId;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

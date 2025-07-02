@@ -11,10 +11,7 @@ import codeverse.com.web_be.service.TestCaseService.ITestCaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/test-case")
@@ -27,6 +24,7 @@ public class TestCaseController {
     @PostMapping
     public ApiResponse<TestCaseResponse> createTestCase(@RequestBody TestCaseCreateRequest request) {
         TestCase testCase = testCaseMapper.testCaseCreateRequestToTestCase(request);
+        testCase.setPublic(request.isPublic());
         Exercise exercise = exerciseService.findById(request.getExerciseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Exercise not found"));
         testCase.setExercise(exercise);
@@ -35,5 +33,28 @@ public class TestCaseController {
                 .result(TestCaseResponse.fromEntity(createdTestCase))
                 .code(HttpStatus.CREATED.value())
                 .build();
+    }
+
+    @PutMapping("/{testCaseId}")
+    public ApiResponse<TestCaseResponse> updateTestCase(@PathVariable Long testCaseId, @RequestBody TestCaseCreateRequest request) {
+        TestCase testCase = testCaseService.findById(testCaseId)
+                .orElseThrow(() -> new ResourceNotFoundException("TestCase not found"));
+        testCaseMapper.updateTestCaseFromRequest(request, testCase);
+        TestCase updatedTestCase = testCaseService.update(testCase);
+        return ApiResponse.<TestCaseResponse>builder()
+                .result(TestCaseResponse.fromEntity(updatedTestCase))
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @DeleteMapping("/{testCaseId}")
+    public ApiResponse<?> deleteTestCase(@PathVariable Long testCaseId) {
+        testCaseService.findById(testCaseId)
+                .orElseThrow(() -> new ResourceNotFoundException("TestCase not found"));
+        testCaseService.deleteById(testCaseId);
+        return ApiResponse.builder()
+                .code(HttpStatus.NO_CONTENT.value())
+                .build();
+
     }
 }

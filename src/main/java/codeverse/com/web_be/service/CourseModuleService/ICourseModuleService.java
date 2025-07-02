@@ -8,6 +8,7 @@ import codeverse.com.web_be.service.IGenericService;
 import java.util.List;
 
 public interface ICourseModuleService extends IGenericService<CourseModule, Long> {
-    List<CourseModuleForUpdateResponse> getCourseModuleListByCourseId(Long courseId);
+    List<CourseModuleResponse> getCourseModuleListByCourseId(Long courseId);
     CourseModuleResponse getById(Long id);
+    void deleteModule(Long moduleId);
 }

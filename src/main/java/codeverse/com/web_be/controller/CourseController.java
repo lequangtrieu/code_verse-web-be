@@ -3,6 +3,7 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
@@ -74,8 +75,6 @@ public class CourseController {
         Course course = courseService.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
         CourseForUpdateResponse response = courseMapper.courseToCourseForUpdateResponse(course);
-        List<CourseModuleForUpdateResponse> materials = courseModuleService.getCourseModuleListByCourseId(courseId);
-        response.setModules(materials);
         return ApiResponse.<CourseForUpdateResponse>builder()
                 .result(response)
                 .code(HttpStatus.OK.value())

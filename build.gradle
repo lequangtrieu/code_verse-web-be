@@ -1,4 +1,5 @@
 plugins {
+    id 'groovy'
     id 'java'
     id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
@@ -47,8 +48,51 @@ dependencies {
     implementation group: 'com.google.firebase', name: 'firebase-admin', version: '9.4.3'
     implementation 'vn.payos:payos-java:1.0.3'
     implementation 'com.google.api-client:google-api-client:2.2.0'
+
+    // Groovy & Spock test support
+    testImplementation 'org.codehaus.groovy:groovy:3.0.17'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
+    // JUnit Platform (Spock chạy trên JUnit 5)
+    testImplementation 'org.junit.platform:junit-platform-launcher'
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation("org.mockito:mockito-core:5.17.0")
+    // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+    implementation("ch.qos.logback:logback-classic:1.5.18")
 }
 
-tasks.named('test') {
+test {
     useJUnitPlatform()
 }
+
+// ------------------------------
+// 🔧 Integration Test Setup
+// ------------------------------
+sourceSets {
+    intTest {
+        java {
+            srcDirs = ['src/intTest/java', 'src/intTest/groovy']
+        }
+        resources {
+            srcDirs = ['src/intTest/resources']
+        }
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+configurations {
+    intTestImplementation.extendsFrom testImplementation
+    intTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+tasks.register('intTest', Test) {
+    description = 'Run integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.intTest.output.classesDirs
+    classpath = sourceSets.intTest.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+}
+
+check.dependsOn tasks.named('intTest')

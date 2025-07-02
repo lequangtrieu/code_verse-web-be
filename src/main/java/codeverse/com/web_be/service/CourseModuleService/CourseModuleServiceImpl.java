@@ -1,13 +1,13 @@
 package codeverse.com.web_be.service.CourseModuleService;
 
-import codeverse.com.web_be.dto.response.LessonResponse.LessonWithinMaterialResponse;
-import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
+import codeverse.com.web_be.dto.response.LessonResponse.LessonResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.entity.CourseModule;
 import codeverse.com.web_be.entity.Lesson;
 import codeverse.com.web_be.repository.LessonRepository;
 import codeverse.com.web_be.repository.CourseModuleRepository;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import codeverse.com.web_be.service.LessonService.ILessonService;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -16,32 +16,36 @@ import java.util.List;
 
 @Service
 public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Long> implements ICourseModuleService {
-
+    private final ILessonService lessonService;
     private final CourseModuleRepository courseModuleRepository;
     private final LessonRepository lessonRepository;
 
-    protected CourseModuleServiceImpl(CourseModuleRepository courseModuleRepository,
+    protected CourseModuleServiceImpl(ILessonService lessonService,
+                                      CourseModuleRepository courseModuleRepository,
                                       LessonRepository lessonRepository) {
         super(courseModuleRepository);
+        this.lessonService = lessonService;
         this.courseModuleRepository = courseModuleRepository;
         this.lessonRepository = lessonRepository;
     }
 
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
-    public List<CourseModuleForUpdateResponse> getCourseModuleListByCourseId(Long courseId) {
+    public List<CourseModuleResponse> getCourseModuleListByCourseId(Long courseId) {
         List<CourseModule> sections = courseModuleRepository.findByCourseId(courseId);
         return sections.stream()
-                .map(section -> {
-                    List<Lesson> lessons = lessonRepository.findByCourseModuleId(section.getId());
+                .map(module -> {
+                    List<Lesson> lessons = lessonRepository.findByCourseModuleId(module.getId());
 
-                    return CourseModuleForUpdateResponse.builder()
-                            .id(section.getId())
-                            .title(section.getTitle())
-                            .orderIndex(section.getOrderIndex())
+                    return CourseModuleResponse.builder()
+                            .id(module.getId())
+                            .title(module.getTitle())
+                            .orderIndex(module.getOrderIndex())
                             .lessons(lessons.stream()
-                                    .map(LessonWithinMaterialResponse::fromEntity)
+                                    .map(LessonResponse::fromEntity)
                                     .toList())
+                            .createdAt(module.getCreatedAt())
+                            .updatedAt(module.getUpdatedAt())
                             .build();
                 })
                 .toList();
@@ -52,5 +56,18 @@ public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Lo
         CourseModule courseModule = courseModuleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material section not found"));
         return CourseModuleResponse.fromEntity(courseModule);
+    }
+
+    @Override
+    public void deleteModule(Long moduleId) {
+        CourseModule courseModule = courseModuleRepository.findById(moduleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Material section not found"));
+        List<Lesson> lessons = lessonRepository.findByCourseModuleId(courseModule.getId());
+        if(!lessons.isEmpty()){
+            for (Lesson lesson : lessons) {
+                lessonService.deleteLesson(lesson.getId());
+            }
+        }
+        courseModuleRepository.deleteById(courseModule.getId());
     }
 }

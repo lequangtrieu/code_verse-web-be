@@ -1,6 +1,7 @@
 package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.QuizRequest.QuizQuestionCreateRequest;
+import codeverse.com.web_be.dto.response.QuizResponse.QuizQuestionWithinLessonResponse;
 import codeverse.com.web_be.dto.response.LessonProgressDTO.LessonProgressDTO;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.LessonProgress;
@@ -24,6 +25,15 @@ public class QuizController {
         quizService.savequizBankByLessonId(lessonId, requests);
         return ApiResponse.builder()
                 .code(HttpStatus.CREATED.value())
+                .build();
+    }
+
+    @GetMapping("/lesson/{lessonId}")
+    public ApiResponse<List<QuizQuestionWithinLessonResponse>> getQuizBankByLessonId(@PathVariable Long lessonId) {
+        List<QuizQuestionWithinLessonResponse> responses = quizService.getQuizBankByLessonId(lessonId);
+        return ApiResponse.<List<QuizQuestionWithinLessonResponse>>builder()
+                .result(responses)
+                .code(HttpStatus.OK.value())
                 .build();
     }
 

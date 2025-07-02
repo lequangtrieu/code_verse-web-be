@@ -7,4 +7,5 @@ import codeverse.com.web_be.service.IGenericService;
 
 public interface ITheoryService extends IGenericService<Theory, Long> {
     TheoryResponse saveTheory(TheoryCreateRequest request);
+    TheoryResponse getTheoryByLessonId(Long lessonId);
 }

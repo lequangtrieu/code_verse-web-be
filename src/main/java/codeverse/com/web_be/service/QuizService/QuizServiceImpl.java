@@ -5,6 +5,11 @@ import codeverse.com.web_be.dto.response.CourseResponse.QuestionDTO;
 import codeverse.com.web_be.dto.response.LessonProgressDTO.LessonProgressDTO;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.LessonProgressStatus;
+import codeverse.com.web_be.dto.response.QuizResponse.QuizAnswerWithinQuizQuestionResponse;
+import codeverse.com.web_be.dto.response.QuizResponse.QuizQuestionWithinLessonResponse;
+import codeverse.com.web_be.entity.Lesson;
+import codeverse.com.web_be.entity.QuizAnswer;
+import codeverse.com.web_be.entity.QuizQuestion;
 import codeverse.com.web_be.mapper.QuizMapper;
 import codeverse.com.web_be.repository.LessonProgressRepository;
 import codeverse.com.web_be.repository.LessonRepository;
@@ -19,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,17 +65,18 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
         for(QuizQuestionCreateRequest request : requests) {
             QuizQuestion question = quizMapper.quizQuestionCreateRequestToQuizQuestion(request);
             question.setLesson(lesson);
-            QuizQuestion savedQuestion = quizQuestionRepository.save(question);
+
 
             List<QuizAnswer> answers = request.getAnswers().stream()
                     .map(answerDto -> {
                         QuizAnswer answer = quizMapper.quizAnswerCreateRequestToQuizAnswer(answerDto);
-                        answer.setQuestion(savedQuestion);
+                        answer.setQuestion(question);
                         return answer;
                     })
                     .toList();
 
-            quizAnswerRepository.saveAll(answers);
+            question.setAnswers(answers);
+            quizQuestionRepository.save(question);
         }
     }
 
@@ -205,5 +212,21 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
                 .startedAt(lessonProgress.getStartedAt())
                 .completedAt(lessonProgress.getCompletedAt())
                 .build();
+    @Override
+    public List<QuizQuestionWithinLessonResponse> getQuizBankByLessonId(Long lessonId) {
+        lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+        List<QuizQuestion> questions = quizQuestionRepository.findByLessonId(lessonId);
+        List<QuizQuestionWithinLessonResponse> responses = questions.stream()
+                .map(QuizQuestionWithinLessonResponse::fromEntity)
+                .toList();
+        for (QuizQuestionWithinLessonResponse response : responses) {
+            List<QuizAnswer> answers = quizAnswerRepository.findByQuestionId(response.getId());
+
+            response.setAnswers(answers.stream()
+                    .map(QuizAnswerWithinQuizQuestionResponse::fromEntity)
+            .toList());
+        }
+        return responses;
     }
 }

@@ -574,25 +574,25 @@ public class DummyDataConfig {
             }
             testCaseRepository.saveAll(testCases);
 
-            // Tạo progress tracking
-            List<CourseEnrollment> courseEnrollments = new ArrayList<>();
-            courseEnrollments.add(CourseEnrollment.builder()
-                    .user(instructors.get(2))
-                    .course(courses.get(0))
-                    .completionPercentage(100f)
-                    .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
-                    .build());
-            for (Course course : courses) {
-                for (User instructor : instructors) {
-                    courseEnrollments.add(CourseEnrollment.builder()
-                            .user(instructor)
-                            .course(course)
-                            .completionPercentage((float) (Math.random() * 100))
-                            .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
-                            .build());
-                }
-            }
-            courseEnrollmentRepository.saveAll(courseEnrollments);
+//            // Tạo progress tracking
+//            List<CourseEnrollment> courseEnrollments = new ArrayList<>();
+//            courseEnrollments.add(CourseEnrollment.builder()
+//                    .user(instructors.get(2))
+//                    .course(courses.get(0))
+//                    .completionPercentage(100f)
+//                    .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+//                    .build());
+//            for (Course course : courses) {
+//                for (User instructor : instructors) {
+//                    courseEnrollments.add(CourseEnrollment.builder()
+//                            .user(instructor)
+//                            .course(course)
+//                            .completionPercentage((float) (Math.random() * 100))
+//                            .completedAt(LocalDateTime.now().minusDays((long) (Math.random() * 10)))
+//                            .build());
+//                }
+//            }
+//            courseEnrollmentRepository.saveAll(courseEnrollments);
 
             // Tạo course ratings
             List<CourseRating> courseRatings = new ArrayList<>();

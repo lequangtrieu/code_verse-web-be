@@ -38,7 +38,7 @@ public class AIController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth("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");
+        headers.setBearerAuth(GROQ_API_KEY);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(groqRequest, headers);
 

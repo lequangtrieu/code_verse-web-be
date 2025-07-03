@@ -18,8 +18,6 @@ import java.util.Map;
 @RequestMapping("/ai")
 @RequiredArgsConstructor
 public class AIController {
-    private final String GROQ_API_KEY = "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";
-
     @PostMapping("/feedback")
     public ResponseEntity<?> getAIFeedback(@RequestBody Map<String, String> body) {
         String prompt = generatePrompt(body);
@@ -36,7 +34,7 @@ public class AIController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(GROQ_API_KEY);
+        headers.setBearerAuth("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");
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(groqRequest, headers);
 

@@ -29,7 +29,7 @@ public class AIController {
         Map<String, Object> groqRequest = Map.of(
                 "model", "llama3-70b-8192",
                 "messages", List.of(
-                        Map.of("role", "system", "content", "Bạn là trợ lý lập trình, hãy giúp người học sửa lỗi code."),
+                        Map.of("role", "system", "content", "You are a programming assistant helping learners understand and fix their code."),
                         Map.of("role", "user", "content", prompt)
                 )
         );

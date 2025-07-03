@@ -30,32 +30,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CodeExecutionController {
 
-//    @PostMapping("/execute")
-//    public ResponseEntity<?> executeJavaInDocker(@RequestBody CodeExecutionRequest request) {
-//        if (request.getCode() == null) {
-//            return ResponseEntity.badRequest().body(Map.of("error", "Missing code"));
-//        }
-//
-//        try {
-//            ProcessBuilder builder = new ProcessBuilder(
-//                    "docker", "run", "--rm",
-//                    "-e", "CODE=" + request.getCode().replace("\"", "\\\""),
-//                    "-e", "INPUT=" + (request.getInput() == null ? "" : request.getInput().replace("\"", "\\\"")),
-//                    "java-runner"
-//            );
-//
-//            builder.redirectErrorStream(true);
-//            Process process = builder.start();
-//            String output = new BufferedReader(new InputStreamReader(process.getInputStream()))
-//                    .lines().collect(Collectors.joining("\n"));
-//            int exitCode = process.waitFor();
-//
-//            return ResponseEntity.ok(Map.of("output", output, "exitCode", exitCode));
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-//        }
-//    }
-
     @PostMapping("/execute")
     public ResponseEntity<?> executeCode(@RequestBody CodeExecutionRequest request) {
         try {

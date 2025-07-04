@@ -4,6 +4,7 @@ import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModuleMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
@@ -17,6 +18,7 @@ import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -397,5 +399,15 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
         lessonProgressRepository.save(lessonProgress);
         return "submitted";
+    }
+
+    @Override
+    public List<SimpleCourseCardDto> getAuthorCourses(Long instructorId, Long excludedCourseId) {
+        return courseRepository.findOtherCoursesByInstructor(instructorId, excludedCourseId);
+    }
+
+    @Override
+    public List<SimpleCourseCardDto> getPopularCourses() {
+        return courseRepository.findPopularCourses(PageRequest.of(0, 5));
     }
 }

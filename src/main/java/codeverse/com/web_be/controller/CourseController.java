@@ -8,6 +8,7 @@ import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleRespon
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
@@ -191,5 +192,20 @@ public class CourseController {
         } else {
             return ResponseEntity.ok(new CourseEnrollmentStatusDTO(false, 0f));
         }
+    }
+
+    @GetMapping("/authorOther/{instructorId}")
+    public ResponseEntity<List<SimpleCourseCardDto>> getAuthorCourses(
+            @PathVariable Long instructorId,
+            @RequestParam Long excludeCourseId
+    ) {
+        List<SimpleCourseCardDto> result = courseService.getAuthorCourses(instructorId, excludeCourseId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<SimpleCourseCardDto>> getPopularCourses() {
+        List<SimpleCourseCardDto> result = courseService.getPopularCourses();
+        return ResponseEntity.ok(result);
     }
 }

@@ -4,6 +4,7 @@ import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetailDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
@@ -47,4 +48,7 @@ public interface ICourseService extends IGenericService<Course, Long> {
 
     String submitCodeHandler(CodeRequestDTO request);
 
+    List<SimpleCourseCardDto> getAuthorCourses(Long instructorId, Long excludedCourseId);
+
+    List<SimpleCourseCardDto> getPopularCourses();
 }

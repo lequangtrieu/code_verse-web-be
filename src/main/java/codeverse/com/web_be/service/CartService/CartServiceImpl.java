@@ -232,8 +232,8 @@ public class CartServiceImpl implements ICartService {
                     .amount(total.intValue())
                     .orderCode(orderCode)
                     .description("CodeVerse Course Payment")
-                    .returnUrl("http://localhost:3000/payment-success?orderCode=" + orderCode + "&orderId=" + order.getId())
-                    .cancelUrl("http://localhost:3000/payment-failed?orderCode=" + orderCode + "&orderId=" + order.getId())
+                    .returnUrl("https://code-verse-web-fe.vercel.app/payment-success?orderCode=" + orderCode + "&orderId=" + order.getId())
+                    .cancelUrl("https://code-verse-web-fe.vercel.app/payment-failed?orderCode=" + orderCode + "&orderId=" + order.getId())
                     .build();
 
             CheckoutResponseData paymentLink = payOS.createPaymentLink(paymentRequest);

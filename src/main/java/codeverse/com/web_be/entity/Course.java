@@ -1,8 +1,8 @@
 package codeverse.com.web_be.entity;
 
 import codeverse.com.web_be.enums.CodeLanguage;
+import codeverse.com.web_be.enums.CourseLevel;
 import codeverse.com.web_be.enums.CourseStatus;
-import codeverse.com.web_be.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import codeverse.com.web_be.enums.CourseLevel;
 
 @Entity
 @Table(name = "course")

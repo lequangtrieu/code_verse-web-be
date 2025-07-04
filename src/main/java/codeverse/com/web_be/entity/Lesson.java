@@ -1,6 +1,7 @@
 package codeverse.com.web_be.entity;
 
 import codeverse.com.web_be.enums.LessonType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +27,7 @@ public class Lesson {
     @JoinColumn(name = "material_id ", nullable = false)
     private CourseModule courseModule;
 
+    @JsonBackReference
     @OneToMany(mappedBy = "lesson", fetch = FetchType.LAZY)
     private List<QuizQuestion> quizQuestions;
 
@@ -35,9 +37,11 @@ public class Lesson {
     @Column(name = "order_index")
     private Integer orderIndex;
 
+    @JsonBackReference
     @OneToOne(mappedBy = "lesson", cascade = CascadeType.ALL)
     private Theory theory;
 
+    @JsonBackReference
     @OneToOne(mappedBy = "lesson", cascade = CascadeType.ALL)
     private Exercise exercise;
 

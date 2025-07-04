@@ -1,9 +1,11 @@
 package codeverse.com.web_be.repository;
 
+import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.LessonProgress;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,7 +44,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "(SELECT COUNT(l) FROM Lesson l JOIN l.courseModule ms WHERE ms.course.id = :courseId), " +            // totalLessons
             "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course.id = :courseId), " + // totalDurations
             "cat.name, " +                                                                                           // category
-            "u.name) " +                                                                                              // instructor
+            "u.name, u.id) " +                                                                                              // instructor
             "FROM Course c " +
             "LEFT JOIN c.category cat " +
             "LEFT JOIN c.instructor u " +
@@ -180,5 +182,19 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "FROM TestCase t " +
             "WHERE t.exercise.id = :exerciseID")
     List<TestCaseDTO> getTestCaseByExerciseId(@Param("exerciseID") Long exerciseID);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto(" +
+            "c.id, c.title, c.thumbnailUrl, c.price, c.discount) " +
+            "FROM Course c " +
+            "WHERE c.instructor.id = :instructorId AND c.id <> :courseId AND c.status = 'PUBLISHED' AND c.isDeleted = false")
+    List<SimpleCourseCardDto> findOtherCoursesByInstructor(@Param("instructorId") Long instructorId,
+                                                           @Param("courseId") Long courseId);
+
+    @Query("SELECT new codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto(" +
+            "c.id, c.title, c.thumbnailUrl, c.price, c.discount) " +
+            "FROM Course c " +
+            "WHERE c.status = 'PUBLISHED' AND c.isDeleted = false " +
+            "ORDER BY (SELECT COUNT(e) FROM CourseEnrollment e WHERE e.course = c) DESC")
+    List<SimpleCourseCardDto> findPopularCourses(Pageable pageable);
 
 }

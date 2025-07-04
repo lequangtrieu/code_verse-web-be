@@ -4,7 +4,9 @@ import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModuleMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.entity.*;
@@ -16,6 +18,7 @@ import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -152,10 +155,31 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     public CourseDetailResponse getCourseById(Long courseId) {
         Course course = courseRepository.findCourseById(courseId);
         CourseMoreInfoDTO courseMoreInfoDTO = courseRepository.selectCourseMoreInfoById(courseId);
+        List<CourseModule> courseModules = courseModuleRepository.findByCourseId(courseId);
+
+        List<CourseModuleMoreInfoDTO> courseModuleMoreInfoDTOList = new ArrayList<>();
+
+        for (CourseModule courseModule : courseModules) {
+            Integer totalDuration = 0;
+            List<Lesson> lessons = lessonRepository.findByCourseModuleIdOrderByOrderIndexAsc(courseModule.getId());
+
+            for (Lesson lesson : lessons) {
+                totalDuration += lesson.getDuration();
+            }
+
+            CourseModuleMoreInfoDTO courseModuleMoreInfoDTO = new CourseModuleMoreInfoDTO();
+            courseModuleMoreInfoDTO.setCourseModule(courseModule);
+            courseModuleMoreInfoDTO.setLessons(lessons);
+            courseModuleMoreInfoDTO.setTotalDuration(totalDuration);
+
+            courseModuleMoreInfoDTOList.add(courseModuleMoreInfoDTO);
+        }
+
 
         CourseDetailResponse courseDetailResponse = new CourseDetailResponse();
         courseDetailResponse.setCourse(course);
         courseDetailResponse.setCourseMoreInfo(courseMoreInfoDTO);
+        courseDetailResponse.setCourseModuleMoreInfoDTOList(courseModuleMoreInfoDTOList);
 
         return courseDetailResponse;
     }
@@ -375,5 +399,15 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
         lessonProgressRepository.save(lessonProgress);
         return "submitted";
+    }
+
+    @Override
+    public List<SimpleCourseCardDto> getAuthorCourses(Long instructorId, Long excludedCourseId) {
+        return courseRepository.findOtherCoursesByInstructor(instructorId, excludedCourseId);
+    }
+
+    @Override
+    public List<SimpleCourseCardDto> getPopularCourses() {
+        return courseRepository.findPopularCourses(PageRequest.of(0, 5));
     }
 }

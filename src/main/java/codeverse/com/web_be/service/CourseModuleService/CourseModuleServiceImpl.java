@@ -1,5 +1,6 @@
 package codeverse.com.web_be.service.CourseModuleService;
 
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModuleMoreInfoDTO;
 import codeverse.com.web_be.dto.response.LessonResponse.LessonResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.entity.CourseModule;
@@ -12,6 +13,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -69,5 +71,29 @@ public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Lo
             }
         }
         courseModuleRepository.deleteById(courseModule.getId());
+    }
+
+    @Override
+    public List<CourseModuleMoreInfoDTO> getCourseModuleMoreInfoDTOList(Long courseId) {
+        List<CourseModule> courseModules = courseModuleRepository.findByCourseId(courseId);
+
+        List<CourseModuleMoreInfoDTO> courseModuleMoreInfoDTOList = new ArrayList<>();
+
+        for (CourseModule courseModule : courseModules) {
+            Integer totalDuration = 0;
+            List<Lesson> lessons = lessonRepository.findByCourseModuleIdOrderByOrderIndexAsc(courseModule.getId());
+
+            for (Lesson lesson : lessons) {
+                totalDuration += lesson.getDuration();
+            }
+
+            CourseModuleMoreInfoDTO courseModuleMoreInfoDTO = new CourseModuleMoreInfoDTO();
+            courseModuleMoreInfoDTO.setCourseModule(courseModule);
+            courseModuleMoreInfoDTO.setLessons(lessons);
+            courseModuleMoreInfoDTO.setTotalDuration(totalDuration);
+
+            courseModuleMoreInfoDTOList.add(courseModuleMoreInfoDTO);
+        }
+        return courseModuleMoreInfoDTOList;
     }
 }

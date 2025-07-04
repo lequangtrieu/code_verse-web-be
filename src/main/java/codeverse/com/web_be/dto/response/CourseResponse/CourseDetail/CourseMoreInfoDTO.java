@@ -12,6 +12,7 @@ public class CourseMoreInfoDTO {
     private Long totalDurations;
     private String category;
     private String instructor;
+    private Long instructorId;
 
     public CourseMoreInfoDTO(
             Double rating,
@@ -21,7 +22,8 @@ public class CourseMoreInfoDTO {
             Long totalLessons,
             Long totalDurations,
             String category,
-            String instructor
+            String instructor,
+            Long instructorId
     ) {
         this.rating = rating != null ? rating : 0;
         this.ratingCount = ratingCount != null ? ratingCount : 0;
@@ -31,5 +33,6 @@ public class CourseMoreInfoDTO {
         this.totalDurations = totalDurations != null ? totalDurations : 0;
         this.category = category;
         this.instructor = instructor;
+        this.instructorId = instructorId;
     }
 }

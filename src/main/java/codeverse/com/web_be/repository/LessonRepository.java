@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
     List<Lesson> findByCourseModuleId(Long courseModuleId);
+
+    List<Lesson> findByCourseModuleIdOrderByOrderIndexAsc(Long courseModuleId);
 }

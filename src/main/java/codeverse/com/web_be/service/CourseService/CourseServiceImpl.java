@@ -5,6 +5,7 @@ import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModuleMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.entity.*;
@@ -152,10 +153,31 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     public CourseDetailResponse getCourseById(Long courseId) {
         Course course = courseRepository.findCourseById(courseId);
         CourseMoreInfoDTO courseMoreInfoDTO = courseRepository.selectCourseMoreInfoById(courseId);
+        List<CourseModule> courseModules = courseModuleRepository.findByCourseId(courseId);
+
+        List<CourseModuleMoreInfoDTO> courseModuleMoreInfoDTOList = new ArrayList<>();
+
+        for (CourseModule courseModule : courseModules) {
+            Integer totalDuration = 0;
+            List<Lesson> lessons = lessonRepository.findByCourseModuleIdOrderByOrderIndexAsc(courseModule.getId());
+
+            for (Lesson lesson : lessons) {
+                totalDuration += lesson.getDuration();
+            }
+
+            CourseModuleMoreInfoDTO courseModuleMoreInfoDTO = new CourseModuleMoreInfoDTO();
+            courseModuleMoreInfoDTO.setCourseModule(courseModule);
+            courseModuleMoreInfoDTO.setLessons(lessons);
+            courseModuleMoreInfoDTO.setTotalDuration(totalDuration);
+
+            courseModuleMoreInfoDTOList.add(courseModuleMoreInfoDTO);
+        }
+
 
         CourseDetailResponse courseDetailResponse = new CourseDetailResponse();
         courseDetailResponse.setCourse(course);
         courseDetailResponse.setCourseMoreInfo(courseMoreInfoDTO);
+        courseDetailResponse.setCourseModuleMoreInfoDTOList(courseModuleMoreInfoDTOList);
 
         return courseDetailResponse;
     }

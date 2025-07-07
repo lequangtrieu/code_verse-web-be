@@ -35,6 +35,8 @@ public class DummyDataConfig {
     LessonProgressRepository lessonProgressRepository;
     ExerciseTaskRepository exerciseTaskRepository;
     TestCaseRepository testCaseRepository;
+    NotificationRepository notificationRepository;
+    UserNotificationRepository userNotificationRepository;
 
     String password = "pass";
     String adminPassword = "admin";
@@ -496,7 +498,7 @@ public class DummyDataConfig {
                 theories.add(Theory.builder()
                         .lesson(lesson)
                         .title(lesson.getTitle() + " - Theory")
-                        .content("https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/theories%2F376%2F52c7b32f-fc26-4383-9f08-656f1d8b062e_Theory.html?alt=media")
+                        .content("<b>Lesson 1</b><p>Theory:</p><video src=\"https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/editor%2F1%2FReact%20in%20100%20Seconds.mp4?alt=media&token=bebd1795-5387-4656-a2cb-0cf241ec11d8\" controls=\"true\"></video>")
                         .build());
             }
             theoryRepository.saveAll(theories);
@@ -816,6 +818,77 @@ public class DummyDataConfig {
                             .build()
             );
             courseRepository.saveAll(additionalCourses);
+
+            List<Notification> notifications = List.of(
+                    Notification.builder()
+                            .title("System Maintain")
+                            .content("CodeVerse is in maintenance from 30/7 to 1/8. Please notice that you cannot log in during this period.")
+                            .createdBy(instructors.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    Notification.builder()
+                            .title("System Maintain")
+                            .content("CodeVerse is in maintenance from 30/3 to 1/4. Please notice that you cannot log in during this period.")
+                            .createdBy(instructors.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    Notification.builder()
+                            .title("System Maintain")
+                            .content("CodeVerse is in maintenance from 30/12 to 1/1. Please notice that you cannot log in during this period.")
+                            .createdBy(instructors.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
+            notificationRepository.saveAll(notifications);
+
+            List<UserNotification> userNotifications = List.of(
+                    UserNotification.builder()
+                            .user(instructors.get(2))
+                            .notification(notifications.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(3))
+                            .notification(notifications.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(4))
+                            .notification(notifications.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(2))
+                            .notification(notifications.get(1))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(3))
+                            .notification(notifications.get(1))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(4))
+                            .notification(notifications.get(1))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(2))
+                            .notification(notifications.get(2))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(3))
+                            .notification(notifications.get(2))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(4))
+                            .notification(notifications.get(2))
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
+            userNotificationRepository.saveAll(userNotifications);
 
             log.info("Dummy data has been initialized successfully");
             log.info("Additional dummy data has been initialized successfully");

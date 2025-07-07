@@ -29,9 +29,10 @@ public class CourseResponse {
     private Long totalDurations;
     private String language;
 
-    public CourseResponse(Long id, String title, String description, String thumbnailUrl, 
-                         String level, String category, BigDecimal price, BigDecimal discount, String instructor,
-                         Long totalLessons, Double rating, Long ratingCount, Long totalStudents, Boolean isTrending, Long totalDurations, String language) {
+    public CourseResponse(Long id, String title, String description, String thumbnailUrl,
+                          String level, String category, BigDecimal price, BigDecimal discount, String instructor,
+                          Long totalLessons, Double rating, Long ratingCount, Long totalStudents,
+                          Boolean isTrending, Long totalDurations, String language) {
         this.id = id;
         this.title = title;
         this.description = description;

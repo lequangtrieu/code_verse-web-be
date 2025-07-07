@@ -27,10 +27,11 @@ public class CourseResponse {
     private Boolean isTrending;
     private Long totalLessons;
     private Long totalDurations;
+    private String language;
 
     public CourseResponse(Long id, String title, String description, String thumbnailUrl, 
                          String level, String category, BigDecimal price, BigDecimal discount, String instructor,
-                         Long totalLessons, Double rating, Long ratingCount, Long totalStudents, Boolean isTrending, Long totalDurations) {
+                         Long totalLessons, Double rating, Long ratingCount, Long totalStudents, Boolean isTrending, Long totalDurations, String language) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -46,5 +47,6 @@ public class CourseResponse {
         this.totalStudents = totalStudents != null ? totalStudents : 0;
         this.isTrending = isTrending != null ? isTrending : false;
         this.totalDurations = totalDurations != null ? totalDurations : 0;
+        this.language = language;
     }
 }

@@ -29,7 +29,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "(SELECT COUNT(cr) FROM CourseRating cr WHERE cr.course = c) as ratingCount, " +
             "(SELECT COUNT(DISTINCT pt.user) FROM CourseEnrollment pt WHERE pt.course = c) as totalStudents, " +
             "false as isTrending, " +
-            "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course = c) as totalDurations) " +
+            "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course = c) as totalDurations," +
+            "CAST(c.language AS string)) " +
             "FROM Course c " +
             "LEFT JOIN c.category cat " +
             "LEFT JOIN c.instructor u " +
@@ -92,7 +93,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "(SELECT COUNT(cr) FROM CourseRating cr WHERE cr.course = c) as ratingCount, " +
             "(SELECT COUNT(DISTINCT pt2.user) FROM CourseEnrollment pt2 WHERE pt2.course = c) as totalStudents, " +
             "false as isTrending, " +
-            "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course = c) as totalDurations) " +
+            "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course = c) as totalDurations," +
+            "CAST(c.language AS string))  " +
             "FROM Course c " +
             "LEFT JOIN c.category cat " +
             "LEFT JOIN c.instructor u " +

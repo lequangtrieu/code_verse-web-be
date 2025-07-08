@@ -105,7 +105,7 @@ public class AuthenticationService {
         if(Boolean.TRUE.equals(user.getIsDeleted())) {
             throw new AppException(ErrorCode.USER_BANNED);
         }
-        if (user.getRole() == UserRole.INSTRUCTOR && InstructorStatus.APPROVED.equals(user.getInstructorStatus())) {
+        if (user.getRole() == UserRole.INSTRUCTOR && !InstructorStatus.APPROVED.equals(user.getInstructorStatus())) {
             throw new AppException(ErrorCode.INSTRUCTOR_NOT_ACTIVE);
         }
         var token = generateToken(user, false);

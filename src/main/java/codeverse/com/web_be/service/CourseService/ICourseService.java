@@ -10,6 +10,7 @@ import codeverse.com.web_be.dto.response.CourseResponse.CourseDetailDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.service.IGenericService;
 
@@ -25,6 +26,7 @@ public interface ICourseService extends IGenericService<Course, Long> {
     Course createCourse(CourseCreateRequest request);
 
     Course updateCourse(Long id, CourseUpdateRequest request);
+    List<LearnerResponse> getLearnersByCourseId (Long courseId);
 
     List<CourseResponse> getCoursesByLearnerId(Long userId);
 

@@ -9,12 +9,15 @@ import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetai
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModuleMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
+import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
+import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.CodeLanguage;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import codeverse.com.web_be.enums.LessonType;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
+import codeverse.com.web_be.service.AuthenService.AuthenticationService;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
@@ -46,7 +49,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final QuizAnswerRepository quizAnswerRepository;
     private final LessonProgressRepository lessonProgressRepository;
     private final UserRepository userRepository;
-
+    private final AuthenticationService authenticationService;
 
     public CourseServiceImpl(CourseRepository courseRepository,
                              CategoryRepository categoryRepository,
@@ -62,7 +65,9 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              TestCaseRepository testCaseRepository,
                              QuizQuestionRepository quizQuestionRepository,
                              QuizAnswerRepository quizAnswerRepository,
-                             LessonProgressRepository lessonProgressRepository, UserRepository userRepository
+                             LessonProgressRepository lessonProgressRepository,
+                             UserRepository userRepository,
+                             AuthenticationService authenticationService
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -81,6 +86,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.quizAnswerRepository = quizAnswerRepository;
         this.lessonProgressRepository = lessonProgressRepository;
         this.userRepository = userRepository;
+        this.authenticationService = authenticationService;
     }
 
     @Override
@@ -88,6 +94,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.findByInstructorId(instructorId);
     }
 
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public List<Course> findByInstructorUsername(String username) {
         return courseRepository.findByInstructorUsername(username);
@@ -206,6 +213,20 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.save(course);
     }
 
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @Override
+    public List<LearnerResponse> getLearnersByCourseId(Long courseId) {
+        List<CourseEnrollment> enrollments = courseEnrollmentRepository.findByCourseId(courseId);
+        return enrollments.stream().map(enrollment -> {
+            LearnerResponse response = LearnerResponse.fromEntity(enrollment);
+            UserResponse userResponse = authenticationService.getUserByEmail(enrollment.getUser().getUsername());
+            response.setLearner(userResponse);
+            return response;
+        })
+                .sorted(Comparator.comparing(LearnerResponse::getCompletedAt).reversed())
+                .toList();
+    }
+
     @Override
     public List<CourseForUpdateResponse> getAllCoursesByAdmin() {
         List<Course> courses = courseRepository.findAll();
@@ -214,6 +235,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public CourseModuleValidationResponse validateCourseSection(Long courseId) {
         Course course = courseRepository.findById(courseId)
@@ -276,6 +298,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return new CourseModuleValidationResponse(errors.isEmpty(), errors);
     }
 
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public void updateCourseStatus(Long courseId, CourseUpdateRequest request) {
         Course course = courseRepository.findById(courseId)

@@ -37,6 +37,8 @@ public class DummyDataConfig {
     TestCaseRepository testCaseRepository;
     NotificationRepository notificationRepository;
     UserNotificationRepository userNotificationRepository;
+    ReportReasonRepository reportReasonRepository;
+    UserReportRepository userReportRepository;
 
     String password = "pass";
     String adminPassword = "admin";
@@ -104,6 +106,37 @@ public class DummyDataConfig {
                             .instructorStatus(InstructorStatus.APPROVED)
                             .teachingCredentials(certInstructor)
                             .role(UserRole.INSTRUCTOR)
+                            .build(),
+                    User.builder()
+                            .username("john.doe@gmail.com")
+                            .password(passwordEncoder.encode(password))
+                            .name("John Doe")
+                            .role(UserRole.INSTRUCTOR)
+                            .instructorStatus(InstructorStatus.PENDING)
+                            .isVerified(true)
+                            .build(),
+                    User.builder()
+                            .username("jane.smith@gmail.com")
+                            .password(passwordEncoder.encode(password))
+                            .name("Jane Smith")
+                            .role(UserRole.INSTRUCTOR)
+                            .instructorStatus(InstructorStatus.PENDING)
+                            .isVerified(true)
+                            .build(),
+                    User.builder()
+                            .username("support@codeverse.com")
+                            .password(passwordEncoder.encode(password))
+                            .name("Support Staff")
+                            .role(UserRole.ADMIN)
+                            .isVerified(true)
+                            .build(),
+                    User.builder()
+                            .username("instructor@gmail.com")
+                            .password(passwordEncoder.encode(password))
+                            .name("instructor Smith")
+                            .role(UserRole.INSTRUCTOR)
+                            .instructorStatus(InstructorStatus.REJECTED)
+                            .isVerified(true)
                             .build()
             );
             userRepository.saveAll(instructors);
@@ -498,7 +531,7 @@ public class DummyDataConfig {
                 theories.add(Theory.builder()
                         .lesson(lesson)
                         .title(lesson.getTitle() + " - Theory")
-                        .content("<b>Lesson 1</b><p>Theory:</p><video src=\"https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/editor%2F1%2FReact%20in%20100%20Seconds.mp4?alt=media&token=bebd1795-5387-4656-a2cb-0cf241ec11d8\" controls=\"true\"></video>")
+                        .content("https://firebasestorage.googleapis.com/v0/b/codeverse-7830f.firebasestorage.app/o/theories%2F376%2F52c7b32f-fc26-4383-9f08-656f1d8b062e_Theory.html?alt=media")
                         .build());
             }
             theoryRepository.saveAll(theories);
@@ -889,6 +922,77 @@ public class DummyDataConfig {
                             .build()
             );
             userNotificationRepository.saveAll(userNotifications);
+
+            List<ReportReason> reasons = List.of(
+                    ReportReason.builder().title("Spam or Scam").description("User is posting spam, advertising, or attempting to scam others.").build(),
+                    ReportReason.builder().title("Harassment").description("User is harassing, threatening, or bullying others.").build(),
+                    ReportReason.builder().title("Inappropriate Content").description("User is sharing inappropriate, offensive, or explicit content.").build(),
+                    ReportReason.builder().title("Impersonation").description("User is pretending to be someone else.").build(),
+                    ReportReason.builder().title("Other").description("Other reasons not listed above.").build()
+            );
+            reportReasonRepository.saveAll(reasons);
+
+
+            List<ReportReason> reportReasons = reportReasonRepository.findAll();
+            List<UserReport> reports = List.of(
+                    UserReport.builder()
+                            .reporter(instructors.get(2))
+                            .reportedUser(instructors.get(3))
+                            .reason(reportReasons.get(1))
+                            .customReason("Sent multiple threatening messages.")
+                            .evidenceUrl(certInstructor)
+                            .status(ReportStatus.REVIEWED)
+                            .adminNote("User has been warned.")
+                            .createdAt(LocalDateTime.now().minusDays(3))
+                            .reviewedAt(LocalDateTime.now().minusDays(1))
+                            .build(),
+
+                    UserReport.builder()
+                            .reporter(instructors.get(3))
+                            .reportedUser(instructors.get(2))
+                            .reason(reportReasons.get(2))
+                            .evidenceUrl(certInstructor)
+                            .customReason("Posted inappropriate jokes during lesson.")
+                            .status(ReportStatus.REJECTED)
+                            .adminNote("Content was reviewed and not deemed a violation.")
+                            .createdAt(LocalDateTime.now().minusDays(5))
+                            .reviewedAt(LocalDateTime.now().minusDays(4))
+                            .build(),
+
+                    UserReport.builder()
+                            .reporter(instructors.get(4))
+                            .reportedUser(instructors.get(2))
+                            .reason(reportReasons.get(0))
+                            .evidenceUrl(certInstructor)
+                            .customReason("Repeatedly invited learners to Telegram crypto group.")
+                            .status(ReportStatus.REVIEWED)
+                            .adminNote("Account suspended for 3 days.")
+                            .createdAt(LocalDateTime.now().minusDays(7))
+                            .reviewedAt(LocalDateTime.now().minusDays(6))
+                            .build(),
+
+                    UserReport.builder()
+                            .reporter(instructors.get(3))
+                            .reportedUser(instructors.get(4))
+                            .reason(reportReasons.get(3))
+                            .evidenceUrl(certInstructor)
+                            .customReason("Pretending to be another instructor in discussion.")
+                            .status(ReportStatus.PENDING)
+                            .createdAt(LocalDateTime.now().minusHours(20))
+                            .build(),
+
+                    UserReport.builder()
+                            .reporter(instructors.get(2))
+                            .reportedUser(instructors.get(4))
+                            .reason(reportReasons.get(4))
+                            .customReason("Suspicious behavior during live coding session.")
+                            .evidenceUrl(certInstructor)
+                            .status(ReportStatus.PENDING)
+                            .createdAt(LocalDateTime.now().minusMinutes(90))
+                            .build()
+            );
+
+            userReportRepository.saveAll(reports);
 
             log.info("Dummy data has been initialized successfully");
             log.info("Additional dummy data has been initialized successfully");

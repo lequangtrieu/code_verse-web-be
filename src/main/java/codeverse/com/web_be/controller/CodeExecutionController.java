@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class CodeExecutionController {
                     Map.of("clientId", "17cae29a485c6f8d4cd8ec8b23c1798d", "clientSecret", "fec9dbfcb68a4bf36aa05caa01188ccfd5fa81652ad1fe6cca0d01685b9fde34"),
                     Map.of("clientId", "7cc607cedddb0ac80e1f5c29ba578adc", "clientSecret", "fda43bd8cec73856bc18a0fa011823f21f5bb67a06e1f6f7c2b0dfe85d8aee12"),
                     Map.of("clientId", "73c9be18b31bf13564a7d18230b3f09", "clientSecret", "8b08c342573c726f8e130eb1f0bada98b4c43082824a139e0adabe8887676340")
-                    );
+            );
 
             RestTemplate restTemplate = new RestTemplate();
 
@@ -65,7 +66,7 @@ public class CodeExecutionController {
                         "clientId", creds.get("clientId"),
                         "clientSecret", creds.get("clientSecret"),
                         "script", request.getCode(),
-                        "stdin", request.getInput() == null ? "" : request.getInput(),
+                        "stdin", request.getInput() == null ? "" : convertInput(request.getInput()),
                         "language", language,
                         "versionIndex", versionIndex
                 );
@@ -112,6 +113,12 @@ public class CodeExecutionController {
                     "error", "Unexpected error: " + e.getMessage()
             ));
         }
+    }
+
+    private String convertInput(String rawInput) {
+        return Arrays.stream(rawInput.split("#@ip!"))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.joining("\n"));
     }
 
     private String convertLanguageName(String inputLang) {

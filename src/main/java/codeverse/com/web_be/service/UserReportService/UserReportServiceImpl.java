@@ -1,6 +1,8 @@
 package codeverse.com.web_be.service.UserReportService;
 
+import codeverse.com.web_be.dto.request.ReportRequest.UpdateUserReportRequest;
 import codeverse.com.web_be.dto.request.ReportRequest.UserReportRequest;
+import codeverse.com.web_be.dto.response.UserReportResponse;
 import codeverse.com.web_be.entity.DiscussionMessage;
 import codeverse.com.web_be.entity.ReportReason;
 import codeverse.com.web_be.entity.User;
@@ -12,11 +14,14 @@ import codeverse.com.web_be.repository.DiscussionMessageRepository;
 import codeverse.com.web_be.repository.ReportReasonRepository;
 import codeverse.com.web_be.repository.UserReportRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,4 +67,38 @@ public class UserReportServiceImpl implements IUserReportService {
         return userReportRepository.save(report);
     }
 
+    @Override
+    public List<UserReportResponse> getAllReports() {
+        List<UserReport> reports = userReportRepository.findAll();
+
+        return reports.stream().map(report -> UserReportResponse.builder()
+                .id(report.getId())
+                .reporterId(report.getReporter().getId())
+                .reporterUsername(report.getReporter().getUsername())
+                .reportedUserId(report.getReportedUser().getId())
+                .reportedUsername(report.getReportedUser().getUsername())
+                .reasonId(report.getReason().getId())
+                .reasonTitle(report.getReason().getTitle())
+                .customReason(report.getCustomReason())
+                .evidenceUrl(report.getEvidenceUrl())
+                .status(report.getStatus())
+                .createdAt(report.getCreatedAt())
+                .messageId(report.getMessage() != null ? report.getMessage().getId() : null)
+                .adminNote(report.getAdminNote())
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void updateReport(Long reportId, UpdateUserReportRequest request) {
+        UserReport report = userReportRepository.findById(reportId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_EXISTED));
+
+        report.setStatus(request.getStatus());
+        report.setAdminNote(request.getAdminNote());
+        report.setReviewedAt(LocalDateTime.now());
+
+        userReportRepository.save(report);
+    }
 }

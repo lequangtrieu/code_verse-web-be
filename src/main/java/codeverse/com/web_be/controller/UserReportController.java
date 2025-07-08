@@ -1,14 +1,20 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.ReportRequest.UpdateUserReportRequest;
 import codeverse.com.web_be.dto.request.ReportRequest.UserReportRequest;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
+import codeverse.com.web_be.dto.response.UserReportResponse;
 import codeverse.com.web_be.entity.UserReport;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.UserReportService.IUserReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user-reports")
@@ -41,5 +47,19 @@ public class UserReportController {
                 .result(report)
                 .message("Report submitted successfully.")
                 .build();
+    }
+
+    @GetMapping("list-report")
+    public List<UserReportResponse> getAllReports() {
+        return userReportService.getAllReports();
+    }
+
+    @PatchMapping("admin-review/{id}")
+    public ResponseEntity<?> updateReport(
+            @PathVariable Long id,
+            @RequestBody UpdateUserReportRequest request
+    ) {
+        userReportService.updateReport(id, request);
+        return ResponseEntity.ok().build();
     }
 }

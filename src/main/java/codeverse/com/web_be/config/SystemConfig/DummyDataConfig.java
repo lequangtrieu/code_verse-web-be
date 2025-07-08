@@ -35,6 +35,8 @@ public class DummyDataConfig {
     LessonProgressRepository lessonProgressRepository;
     ExerciseTaskRepository exerciseTaskRepository;
     TestCaseRepository testCaseRepository;
+    NotificationRepository notificationRepository;
+    UserNotificationRepository userNotificationRepository;
     ReportReasonRepository reportReasonRepository;
     UserReportRepository userReportRepository;
 
@@ -849,6 +851,77 @@ public class DummyDataConfig {
                             .build()
             );
             courseRepository.saveAll(additionalCourses);
+
+            List<Notification> notifications = List.of(
+                    Notification.builder()
+                            .title("System Maintain")
+                            .content("CodeVerse is in maintenance from 30/7 to 1/8. Please notice that you cannot log in during this period.")
+                            .createdBy(instructors.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    Notification.builder()
+                            .title("System Maintain")
+                            .content("CodeVerse is in maintenance from 30/3 to 1/4. Please notice that you cannot log in during this period.")
+                            .createdBy(instructors.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    Notification.builder()
+                            .title("System Maintain")
+                            .content("CodeVerse is in maintenance from 30/12 to 1/1. Please notice that you cannot log in during this period.")
+                            .createdBy(instructors.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
+            notificationRepository.saveAll(notifications);
+
+            List<UserNotification> userNotifications = List.of(
+                    UserNotification.builder()
+                            .user(instructors.get(2))
+                            .notification(notifications.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(3))
+                            .notification(notifications.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(4))
+                            .notification(notifications.get(0))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(2))
+                            .notification(notifications.get(1))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(3))
+                            .notification(notifications.get(1))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(4))
+                            .notification(notifications.get(1))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(2))
+                            .notification(notifications.get(2))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(3))
+                            .notification(notifications.get(2))
+                            .createdAt(LocalDateTime.now())
+                            .build(),
+                    UserNotification.builder()
+                            .user(instructors.get(4))
+                            .notification(notifications.get(2))
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
+            userNotificationRepository.saveAll(userNotifications);
 
             List<ReportReason> reasons = List.of(
                     ReportReason.builder().title("Spam or Scam").description("User is posting spam, advertising, or attempting to scam others.").build(),

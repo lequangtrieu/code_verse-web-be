@@ -61,17 +61,16 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
         for (QuizQuestionCreateRequest request : requests) {
             QuizQuestion question = quizMapper.quizQuestionCreateRequestToQuizQuestion(request);
             question.setLesson(lesson);
-            QuizQuestion savedQuestion = quizQuestionRepository.save(question);
 
             List<QuizAnswer> answers = request.getAnswers().stream()
-                    .map(answerDto -> {
-                        QuizAnswer answer = quizMapper.quizAnswerCreateRequestToQuizAnswer(answerDto);
-                        answer.setQuestion(savedQuestion);
+                    .map(answerRes -> {
+                        QuizAnswer answer = quizMapper.quizAnswerCreateRequestToQuizAnswer(answerRes);
+                        answer.setQuestion(question);
                         return answer;
-                    })
-                    .toList();
+                    }).toList();
 
-            quizAnswerRepository.saveAll(answers);
+            question.setAnswers(answers);
+            quizQuestionRepository.save(question);
         }
     }
 

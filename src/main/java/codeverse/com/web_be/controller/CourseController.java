@@ -4,20 +4,19 @@ import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseEnrollmentResponse.CourseEnrollmentStatusDTO;
-import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
-import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleForUpdateResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.MonthlyLearnerStatisticResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.CourseEnrollment;
 import codeverse.com.web_be.mapper.CourseMapper;
-import codeverse.com.web_be.mapper.CourseModuleMapper;
+import codeverse.com.web_be.service.CourseEnrollmentService.ICourseEnrollmentService;
 import codeverse.com.web_be.repository.CourseEnrollmentRepository;
 import codeverse.com.web_be.service.CourseService.ICourseService;
-import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -34,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseController {
     private final ICourseService courseService;
-    private final ICourseModuleService courseModuleService;
+    private final ICourseEnrollmentService courseEnrollmentService;
     private final CourseMapper courseMapper;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
 
@@ -84,6 +83,24 @@ public class CourseController {
         CourseForUpdateResponse response = courseMapper.courseToCourseForUpdateResponse(course);
         return ApiResponse.<CourseForUpdateResponse>builder()
                 .result(response)
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @GetMapping("/{courseId}/learners")
+    public ApiResponse<List<LearnerResponse>> getLearnersByCourse(@PathVariable Long courseId) {
+        List<LearnerResponse> responses = courseService.getLearnersByCourseId(courseId);
+        return ApiResponse.<List<LearnerResponse>>builder()
+                .result(responses)
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @GetMapping("/monthly-stats/instructor")
+    public ApiResponse<List<MonthlyLearnerStatisticResponse>> getMonthlyStatistics(@RequestParam String username){
+        List<MonthlyLearnerStatisticResponse> responses = courseEnrollmentService.getMonthlyStats(username);
+        return ApiResponse.<List<MonthlyLearnerStatisticResponse>>builder()
+                .result(responses)
                 .code(HttpStatus.OK.value())
                 .build();
     }

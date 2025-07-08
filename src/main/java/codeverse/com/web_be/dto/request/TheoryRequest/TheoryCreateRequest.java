@@ -12,5 +12,5 @@ import org.springframework.web.multipart.MultipartFile;
 public class TheoryCreateRequest {
     private Long lessonId;
     private String title = "";
-    private MultipartFile contentFile;
+    private String content;
 }

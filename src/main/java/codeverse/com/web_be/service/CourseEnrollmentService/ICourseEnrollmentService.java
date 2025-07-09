@@ -11,4 +11,5 @@ public interface ICourseEnrollmentService extends IGenericService<CourseEnrollme
     List<CourseEnrollment> findByUserId(Long userId);
     Optional<CourseEnrollment> findByUserIdAndCourseId(Long userId, Long courseId);
     List<MonthlyLearnerStatisticResponse> getMonthlyStats(String username);
+    Float getUserCompletionPercentage(Long userId, Long courseId);
 }

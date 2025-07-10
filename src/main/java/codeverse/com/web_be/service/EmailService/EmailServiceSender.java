@@ -10,6 +10,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -139,4 +140,39 @@ public class EmailServiceSender {
         helper.setText(htmlContent, true);
         emailSender.send(message);
     }
+
+    @Async
+    public void sendWithdrawalVerificationEmail(String toEmail, String token, BigDecimal amount) throws MessagingException {
+        String subject = "Verify Your Instructor Withdrawal Request";
+
+        String verificationLink = "http://localhost:8080/api/withdrawals/verify?token=" + token;
+
+        String htmlContent = """
+    <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #333; text-align: center;">Withdrawal Verification</h2>
+        <p style="font-size: 16px; color: #555;">You recently requested a withdrawal with the following amount:</p>
+        <div style="text-align: center; font-size: 18px; font-weight: bold; background: #f4f4f4; padding: 10px; border-radius: 5px; margin: 10px 0;">
+            %s ₫
+        </div>
+        <p style="font-size: 16px; color: #555;">To complete this request, please verify by clicking the button below:</p>
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="%s"
+               style="background-color: #28a745; color: #fff; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">
+               Verify Withdrawal Request
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #777;">If you did not make this request, please disregard this email.</p>
+        <hr style="border: none; border-top: 1px solid #ddd;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. All rights reserved.</p>
+    </div>
+    """.formatted(amount.toPlainString(), verificationLink);
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setTo(toEmail);
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
 }

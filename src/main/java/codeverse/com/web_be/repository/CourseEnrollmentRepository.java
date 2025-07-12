@@ -33,4 +33,8 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             """)
     List<MonthlyLearnerStatisticResponse> findMonthlyEnrollmentStatsByInstructorId(@Param("instructorId") Long instructorId);
 
+    @Query("SELECT pt.completionPercentage FROM CourseEnrollment pt " +
+            "WHERE pt.course.id = :courseId AND pt.user.id = :userId")
+    Float getCompletionPercentage(@Param("courseId") Long courseId, @Param("userId") Long userId);
+
 }

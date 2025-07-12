@@ -41,4 +41,10 @@ public class CourseEnrollmentServiceImpl extends GenericServiceImpl<CourseEnroll
         User instructor = functionHelper.getActiveUserByUsername(username);
         return courseEnrollmentRepository.findMonthlyEnrollmentStatsByInstructorId(instructor.getId());
     }
+
+    @Override
+    public Float getUserCompletionPercentage(Long userId, Long courseId) {
+        Float result = courseEnrollmentRepository.getCompletionPercentage(courseId, userId);
+        return result != null ? result : 0f;
+    }
 }

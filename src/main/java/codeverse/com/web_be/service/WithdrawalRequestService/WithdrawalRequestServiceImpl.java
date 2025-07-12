@@ -64,7 +64,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
         withdrawalRepo.save(entity);
 
-        emailSender.sendWithdrawalVerificationEmail(instructor.getUsername(), verifyToken, request.getAmount());
+        emailSender.sendWithdrawalVerificationEmail(instructor.getUsername(), verifyToken, request.getAmount(), instructorId);
 
         return toDTO(entity);
     }

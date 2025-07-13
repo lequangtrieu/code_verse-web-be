@@ -909,7 +909,7 @@ public class DummyDataConfig {
             List<WithdrawalRequest> dummyWithdrawals = List.of(
                     WithdrawalRequest.builder()
                             .instructor(instructor)
-                            .amount(new BigDecimal("100000"))
+                            .amount(new BigDecimal("30000"))
                             .status(WithdrawalStatus.APPROVED)
                             .createdAt(LocalDateTime.now().minusDays(15))
                             .reviewedAt(LocalDateTime.now().minusDays(13))

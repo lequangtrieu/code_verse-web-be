@@ -81,6 +81,23 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     }
 
     @Override
+    public UserResponse updateQrCode(MultipartFile file) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        String qrUrl = null;
+        if (file != null && !file.isEmpty()) {
+            qrUrl = firebaseStorageService.uploadImage(file);
+        }
+
+        user.setQrCodeUrl(qrUrl); // 👈 Gán vào trường QR
+        User updatedUser = userRepository.save(user);
+        return userMapper.userToUserResponse(updatedUser);
+    }
+
+    @Override
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }

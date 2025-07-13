@@ -72,6 +72,14 @@ public class UserController {
                 .build();
     }
 
+    @PutMapping("/updateQrCode")
+    public ApiResponse<UserResponse> updateQrCode(@RequestParam("file") MultipartFile file) {
+        UserResponse updatedUser = userService.updateQrCode(file);
+        return ApiResponse.<UserResponse>builder()
+                .result(updatedUser)
+                .build();
+    }
+
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserCreationRequest request) {
         User userToCreate = userMapper.userRequestToUser(request);

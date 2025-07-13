@@ -107,7 +107,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
             throw new AppException(ErrorCode.WITHDRAWAL_UNAUTHORIZED_CANCEL);
         }
 
-        request.setStatus(WithdrawalStatus.REJECTED);
+        request.setStatus(WithdrawalStatus.CANCELLED);
         request.setAdminNote("Cancelled by instructor");
         withdrawalRepo.save(request);
     }

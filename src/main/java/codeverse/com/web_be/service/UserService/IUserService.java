@@ -23,4 +23,5 @@ public interface IUserService extends IGenericService<User, Long> {
     List<UserDetailResponse> getInactiveInstructors();
     void activateInstructor(Long userId);
     void deactivateInstructor(Long userId);
+    UserResponse updateQrCode(MultipartFile file);
 }

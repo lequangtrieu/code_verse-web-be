@@ -185,4 +185,13 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         user.setInstructorStatus(InstructorStatus.REJECTED);
         userRepository.save(user);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public List<UserResponse> getActiveUsers() {
+        List<User> activeUsers = userRepository.findByIsDeletedFalseAndIsVerifiedTrue();
+        return activeUsers.stream()
+                .map(userMapper::userToUserResponse)
+                .toList();
+    }
 }

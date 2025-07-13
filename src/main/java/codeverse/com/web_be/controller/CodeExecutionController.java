@@ -14,15 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,8 +34,8 @@ public class CodeExecutionController {
             String language = convertLanguageName(request.getLanguage());
             String versionIndex = getVersionIndex(language);
 
-            List<Map<String, String>> credentialsList = List.of(
-                    Map.of("clientId", "bbb818b20e36927c1e4987bbe30bcaa1", "clientSecret", "9c457e85f69ee0226d3959dd9aa9e1eb21fff57ffe7d427196caf104022627ce"),
+            List<Map<String, String>> credentialsList = new ArrayList<>(List.of(
+                    Map.of("clientId", "bbb818b20e36927c1e4987bbe30bcaa1", "clientSecret", "6339b7b551404c059c18d77bbd71de78d50ced17174ac3ab797edc7dd86e17ec"),
                     Map.of("clientId", "ae2b51a5522d0f58cd09cddebb4c58a6", "clientSecret", "593e01831cdd9673d0a8ab02bbc35c8130e27add74c84afffc5412309b9456bc"),
                     Map.of("clientId", "c0afa9758fd7e14891882a980bcb2877", "clientSecret", "36a60b7977814f407511c6dbebc5e9267d0d60cde49b7c3ea9c435e2b6e77f69"),
                     Map.of("clientId", "7d4e8a8232f4dc97640933cc0389576b", "clientSecret", "5bd9e9108fc745d9d3f22ab6399ad52dbe18edaee39bbb1faef31bf4ea6b99ba"),
@@ -55,17 +47,18 @@ public class CodeExecutionController {
                     Map.of("clientId", "17cae29a485c6f8d4cd8ec8b23c1798d", "clientSecret", "fec9dbfcb68a4bf36aa05caa01188ccfd5fa81652ad1fe6cca0d01685b9fde34"),
                     Map.of("clientId", "7cc607cedddb0ac80e1f5c29ba578adc", "clientSecret", "fda43bd8cec73856bc18a0fa011823f21f5bb67a06e1f6f7c2b0dfe85d8aee12"),
                     Map.of("clientId", "73c9be18b31bf13564a7d18230b3f09", "clientSecret", "8b08c342573c726f8e130eb1f0bada98b4c43082824a139e0adabe8887676340")
-                    );
+            ));
+
+            Collections.shuffle(credentialsList);
 
             RestTemplate restTemplate = new RestTemplate();
-
 
             for (Map<String, String> creds : credentialsList) {
                 Map<String, Object> jdoodleRequest = Map.of(
                         "clientId", creds.get("clientId"),
                         "clientSecret", creds.get("clientSecret"),
                         "script", request.getCode(),
-                        "stdin", request.getInput() == null ? "" : request.getInput(),
+                        "stdin", request.getInput() == null ? "" : convertInput(request.getInput()),
                         "language", language,
                         "versionIndex", versionIndex
                 );
@@ -112,6 +105,12 @@ public class CodeExecutionController {
                     "error", "Unexpected error: " + e.getMessage()
             ));
         }
+    }
+
+    private String convertInput(String rawInput) {
+        return Arrays.stream(rawInput.split("#@ip!"))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.joining("\n"));
     }
 
     private String convertLanguageName(String inputLang) {

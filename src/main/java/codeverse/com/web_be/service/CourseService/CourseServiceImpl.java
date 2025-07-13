@@ -15,17 +15,20 @@ import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.CodeLanguage;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import codeverse.com.web_be.enums.LessonType;
+import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import codeverse.com.web_be.service.NotificationService.INotificationService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +53,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final LessonProgressRepository lessonProgressRepository;
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
+    private final INotificationService notificationService;
 
     public CourseServiceImpl(CourseRepository courseRepository,
                              CategoryRepository categoryRepository,
@@ -67,7 +71,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              QuizAnswerRepository quizAnswerRepository,
                              LessonProgressRepository lessonProgressRepository,
                              UserRepository userRepository,
-                             AuthenticationService authenticationService
+                             AuthenticationService authenticationService,
+                             INotificationService notificationService
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -87,6 +92,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.lessonProgressRepository = lessonProgressRepository;
         this.userRepository = userRepository;
         this.authenticationService = authenticationService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -305,6 +311,27 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         course.setStatus(request.getStatus());
+        courseRepository.save(course);
+
+        List<User> admins = userRepository.findAll().stream()
+                .filter(u -> u.getRole().equals(UserRole.ADMIN))
+                .toList();
+
+        notificationService.notifyUsers(
+                admins,
+                course.getInstructor(),
+                "New Course",
+                "Course " + course.getTitle() + " created by " +
+                        course.getInstructor().getName() + " is waiting for approval."
+        );
+    }
+
+    @Override
+    public void updateCourseDiscount(Long courseId, BigDecimal discount) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        course.setDiscount(discount);
         courseRepository.save(course);
     }
 

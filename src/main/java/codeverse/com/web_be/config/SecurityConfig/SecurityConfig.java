@@ -42,7 +42,8 @@ public class SecurityConfig {
             "/category/**",
             "/health",
             "/api/ratings/**",
-            "/course/authorOther/**"
+            "/course/authorOther/**",
+            "/ws/**"
     };
 
 

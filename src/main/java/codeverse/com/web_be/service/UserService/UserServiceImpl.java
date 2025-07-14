@@ -1,9 +1,7 @@
 package codeverse.com.web_be.service.UserService;
 
-import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
-import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
@@ -15,15 +13,11 @@ import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.repository.UserRepository;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.GenericServiceImpl;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -82,6 +76,23 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
             avatar = firebaseStorageService.uploadImage(file);
         }
         user.setAvatar(avatar);
+        User updatedUser = userRepository.save(user);
+        return userMapper.userToUserResponse(updatedUser);
+    }
+
+    @Override
+    public UserResponse updateQrCode(MultipartFile file) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        String qrUrl = null;
+        if (file != null && !file.isEmpty()) {
+            qrUrl = firebaseStorageService.uploadImage(file);
+        }
+
+        user.setQrCodeUrl(qrUrl); // 👈 Gán vào trường QR
         User updatedUser = userRepository.save(user);
         return userMapper.userToUserResponse(updatedUser);
     }
@@ -173,5 +184,14 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         user.setInstructorStatus(InstructorStatus.REJECTED);
         userRepository.save(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public List<UserResponse> getActiveUsers() {
+        List<User> activeUsers = userRepository.findByIsDeletedFalseAndIsVerifiedTrue();
+        return activeUsers.stream()
+                .map(userMapper::userToUserResponse)
+                .toList();
     }
 }

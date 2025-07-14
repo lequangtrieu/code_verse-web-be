@@ -13,7 +13,9 @@ import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.service.IGenericService;
+import jakarta.mail.MessagingException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ICourseService extends IGenericService<Course, Long> {
@@ -45,10 +47,11 @@ public interface ICourseService extends IGenericService<Course, Long> {
     CourseModuleValidationResponse validateCourseSection(Long courseId);
 
     void updateCourseStatus(Long courseId, CourseUpdateRequest request);
+    void updateCourseDiscount(Long courseId, BigDecimal discount);
 
     CourseDetailDTO getCourseDetails(Long courseId, Long userId);
 
-    String submitCodeHandler(CodeRequestDTO request);
+    String submitCodeHandler(CodeRequestDTO request) throws MessagingException;
 
     List<SimpleCourseCardDto> getAuthorCourses(Long instructorId, Long excludedCourseId);
 

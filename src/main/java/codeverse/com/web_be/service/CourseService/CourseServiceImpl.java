@@ -15,17 +15,22 @@ import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.CodeLanguage;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import codeverse.com.web_be.enums.LessonType;
+import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
+import codeverse.com.web_be.service.EmailService.EmailServiceSender;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import codeverse.com.web_be.service.NotificationService.INotificationService;
+import jakarta.mail.MessagingException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +55,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     private final LessonProgressRepository lessonProgressRepository;
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
+    private final INotificationService notificationService;
+    private final EmailServiceSender emailService;
 
     public CourseServiceImpl(CourseRepository courseRepository,
                              CategoryRepository categoryRepository,
@@ -67,7 +74,9 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                              QuizAnswerRepository quizAnswerRepository,
                              LessonProgressRepository lessonProgressRepository,
                              UserRepository userRepository,
-                             AuthenticationService authenticationService
+                             AuthenticationService authenticationService,
+                             EmailServiceSender emailService,
+                             INotificationService notificationService
     ) {
         super(courseRepository);
         this.courseRepository = courseRepository;
@@ -87,6 +96,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         this.lessonProgressRepository = lessonProgressRepository;
         this.userRepository = userRepository;
         this.authenticationService = authenticationService;
+        this.notificationService = notificationService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -218,11 +229,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     public List<LearnerResponse> getLearnersByCourseId(Long courseId) {
         List<CourseEnrollment> enrollments = courseEnrollmentRepository.findByCourseId(courseId);
         return enrollments.stream().map(enrollment -> {
-            LearnerResponse response = LearnerResponse.fromEntity(enrollment);
-            UserResponse userResponse = authenticationService.getUserByEmail(enrollment.getUser().getUsername());
-            response.setLearner(userResponse);
-            return response;
-        })
+                    LearnerResponse response = LearnerResponse.fromEntity(enrollment);
+                    UserResponse userResponse = authenticationService.getUserByEmail(enrollment.getUser().getUsername());
+                    response.setLearner(userResponse);
+                    return response;
+                })
                 .sorted(Comparator.comparing(LearnerResponse::getCompletedAt).reversed())
                 .toList();
     }
@@ -306,6 +317,27 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
         course.setStatus(request.getStatus());
         courseRepository.save(course);
+
+        List<User> admins = userRepository.findAll().stream()
+                .filter(u -> u.getRole().equals(UserRole.ADMIN))
+                .toList();
+
+        notificationService.notifyUsers(
+                admins,
+                course.getInstructor(),
+                "New Course",
+                "Course " + course.getTitle() + " created by " +
+                        course.getInstructor().getName() + " is waiting for approval."
+        );
+    }
+
+    @Override
+    public void updateCourseDiscount(Long courseId, BigDecimal discount) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        course.setDiscount(discount);
+        courseRepository.save(course);
     }
 
 
@@ -374,7 +406,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     }
 
     @Override
-    public String submitCodeHandler(CodeRequestDTO request) {
+    public String submitCodeHandler(CodeRequestDTO request) throws MessagingException {
         Long userId = request.getUserId();
         Long lessonId = request.getLessonId();
 
@@ -400,6 +432,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             if (lessonProgress.getExpGained() == null) {
                 lessonProgress.setExpGained(lesson.getExpReward());
             }
+            lessonProgress.setLesson(lesson);
         }
 
         CodeSubmission submission = lessonProgress.getCodeSubmission();
@@ -420,8 +453,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
         lessonProgress.setStatus(LessonProgressStatus.PASSED);
 
-        lessonProgressRepository.save(lessonProgress);
-        return "submitted";
+        lessonProgressRepository.saveAndFlush(lessonProgress);
+        return updateCourseEnrollmentProgress(userId, lesson.getCourseModule().getCourse().getId()) ? "completed": "submitted";
     }
 
     @Override
@@ -432,5 +465,50 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     @Override
     public List<SimpleCourseCardDto> getPopularCourses() {
         return courseRepository.findPopularCourses(PageRequest.of(0, 5));
+    }
+
+    private boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
+        CourseEnrollment enrollment = courseEnrollmentRepository
+                .findByUserIdAndCourseId(userId, courseId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId).orElseThrow();
+                    Course course = courseRepository.findById(courseId).orElseThrow();
+                    return CourseEnrollment.builder()
+                            .user(user)
+                            .course(course)
+                            .completionPercentage(0f)
+                            .totalExpGained(0)
+                            .build();
+                });
+
+        List<Lesson> allLessons = lessonRepository.findByCourseModule_Course_Id(courseId);
+        int totalLessons = allLessons.size();
+
+        List<LessonProgress> passedProgresses = lessonProgressRepository
+                .findByUserIdAndCourseIdAndStatus(userId, courseId, LessonProgressStatus.PASSED);
+
+        int passedCount = passedProgresses.size();
+        int totalExp = passedProgresses.stream()
+                .mapToInt(p -> p.getExpGained() != null ? p.getExpGained() : 0)
+                .sum();
+
+        float percent = totalLessons == 0 ? 0f : (float) passedCount * 100 / totalLessons;
+
+        enrollment.setCompletionPercentage(percent);
+        enrollment.setTotalExpGained(totalExp);
+
+        boolean justCompleted = false;
+        if (percent == 100f && enrollment.getCompletedAt() == null) {
+            enrollment.setCompletedAt(LocalDateTime.now());
+            justCompleted = true;
+
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new RuntimeException("Course not found"));
+
+            emailService.sendCourseCompletionEmail(enrollment.getUser(), course);
+        }
+
+        courseEnrollmentRepository.save(enrollment);
+        return justCompleted;
     }
 }

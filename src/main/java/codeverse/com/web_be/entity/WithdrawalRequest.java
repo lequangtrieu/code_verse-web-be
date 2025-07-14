@@ -1,11 +1,8 @@
 package codeverse.com.web_be.entity;
 
-import codeverse.com.web_be.enums.RequestStatus;
+import codeverse.com.web_be.enums.WithdrawalStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,12 +23,12 @@ public class WithdrawalRequest {
     @JoinColumn(name = "instructor_id", nullable = false)
     private User instructor;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private RequestStatus status = RequestStatus.PENDING;
+    private WithdrawalStatus status = WithdrawalStatus.NEED_VERIFY;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -39,8 +36,11 @@ public class WithdrawalRequest {
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
-    @Column(name = "admin_note")
+    @Column(name = "admin_note", columnDefinition = "TEXT")
     private String adminNote;
+
+    @Column(name = "verify_token")
+    private String verifyToken;
 
     @PrePersist
     protected void onCreate() {

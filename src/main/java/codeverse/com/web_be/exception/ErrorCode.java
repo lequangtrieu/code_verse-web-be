@@ -32,6 +32,13 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS(1023, "You are not allowed to access these cart items.", HttpStatus.FORBIDDEN),
     INVALID_REPORT_REASON(1024, "Report reason does not exist", HttpStatus.BAD_REQUEST),
     INSTRUCTOR_NOT_ACTIVE(102, "INSTRUCTOR IS NOT ACTIVE BY ADMIN.", HttpStatus.BAD_REQUEST),
+    WITHDRAWAL_REQUEST_ALREADY_EXISTS(2001, "You already have a pending or unverified withdrawal request.", HttpStatus.BAD_REQUEST),
+    WITHDRAWAL_AMOUNT_TOO_LOW(2002, "Withdrawal amount must be at least 50,000 VND.", HttpStatus.BAD_REQUEST),
+    WITHDRAWAL_INVALID_STATUS(2003, "Request is not in a valid status for this operation.", HttpStatus.BAD_REQUEST),
+    WITHDRAWAL_NOT_FOUND(2004, "Withdrawal request not found.", HttpStatus.NOT_FOUND),
+    WITHDRAWAL_UNAUTHORIZED_CANCEL(2005, "You are not authorized to cancel this withdrawal request.", HttpStatus.FORBIDDEN),
+    WITHDRAWAL_INVALID_TOKEN(2006, "Invalid or expired withdrawal verification token.", HttpStatus.BAD_REQUEST),
+    REQUEST_NOT_EXISTED(2007, "Request not found", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

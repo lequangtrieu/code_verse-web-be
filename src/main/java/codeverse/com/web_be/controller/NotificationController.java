@@ -1,5 +1,6 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.NotificationRequest.NotificationCreateRequest;
 import codeverse.com.web_be.dto.response.NotificationResponse.NotificationResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.service.NotificationService.INotificationService;
@@ -15,11 +16,20 @@ import java.util.List;
 public class NotificationController {
     private final INotificationService notificationService;
 
-    @GetMapping("/history")
-    public ApiResponse<List<NotificationResponse>> getNotificationsReceivedByUserId(@RequestParam String username) {
+    @GetMapping("/history/received")
+    public ApiResponse<List<NotificationResponse>> getNotificationsReceivedByUser(@RequestParam String username) {
         List<NotificationResponse> notifications = notificationService.getNotificationsReceivedByUser(username);
         return ApiResponse.<List<NotificationResponse>>builder()
                 .result(notifications)
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @GetMapping("/history/sent")
+    public ApiResponse<List<NotificationResponse>> getNotificationsSentByUser() {
+        List<NotificationResponse> responses = notificationService.getAllNotificationsSentByAdmin();
+        return ApiResponse.<List<NotificationResponse>>builder()
+                .result(responses)
                 .code(HttpStatus.OK.value())
                 .build();
     }
@@ -45,6 +55,15 @@ public class NotificationController {
         return ApiResponse.builder()
                 .result(notificationService.getUnreadNotificationsCountByUser(username))
                 .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @PostMapping
+    public ApiResponse<NotificationResponse> createNotification(@RequestBody NotificationCreateRequest request) {
+        NotificationResponse response = notificationService.createNotification(request);
+        return ApiResponse.<NotificationResponse>builder()
+                .result(response)
+                .code(HttpStatus.CREATED.value())
                 .build();
     }
 }

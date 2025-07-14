@@ -19,4 +19,5 @@ public class LessonProgressDTO {
     private LessonProgressStatus status;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
+    private boolean statusDone;
 }

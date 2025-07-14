@@ -2,6 +2,7 @@ package codeverse.com.web_be.controller;
 
 
 import codeverse.com.web_be.dto.request.CourseRatingRequest.CourseRatingRequestDto;
+import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingDto;
 import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingResponseDto;
 import codeverse.com.web_be.service.CourseRatingService.CourseRatingService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,23 @@ public class CourseRatingController {
     @GetMapping("/course/{courseId}")
     public ResponseEntity<CourseRatingResponseDto> getRatingsByCourse(@PathVariable Long courseId) {
         return ResponseEntity.ok(courseRatingService.getRatingsByCourse(courseId));
+    }
+
+    @GetMapping("/course/{courseId}/user/{userId}")
+    public ResponseEntity<CourseRatingDto> getUserRatingForCourse(
+            @PathVariable Long courseId,
+            @PathVariable Long userId
+    ) {
+        return ResponseEntity.ok(courseRatingService.getUserRatingForCourse(courseId, userId));
+    }
+
+    @PutMapping("/{ratingId}")
+    public ResponseEntity<String> updateRating(
+            @PathVariable Long ratingId,
+            @RequestBody CourseRatingRequestDto requestDto
+    ) {
+        courseRatingService.updateRating(ratingId, requestDto);
+        return ResponseEntity.ok("Rating updated successfully.");
     }
 
 }

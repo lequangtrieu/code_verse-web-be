@@ -1,6 +1,5 @@
 package codeverse.com.web_be.controller;
 
-import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.request.UserRequest.LockUserRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationByAdminRequest;
 import codeverse.com.web_be.dto.request.UserRequest.UserCreationRequest;
@@ -9,7 +8,6 @@ import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
-import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.service.UserService.IUserService;
 import lombok.AccessLevel;
@@ -41,6 +39,15 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/active")
+    public ApiResponse<List<UserResponse>> getActiveUsers() {
+        List<UserResponse> responses = userService.getActiveUsers();
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(responses)
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return userService.findById(id)
@@ -67,6 +74,14 @@ public class UserController {
     @PutMapping("/updateAvatar")
     public ApiResponse<UserResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
         UserResponse updatedUser = userService.updateAvatar(file);
+        return ApiResponse.<UserResponse>builder()
+                .result(updatedUser)
+                .build();
+    }
+
+    @PutMapping("/updateQrCode")
+    public ApiResponse<UserResponse> updateQrCode(@RequestParam("file") MultipartFile file) {
+        UserResponse updatedUser = userService.updateQrCode(file);
         return ApiResponse.<UserResponse>builder()
                 .result(updatedUser)
                 .build();

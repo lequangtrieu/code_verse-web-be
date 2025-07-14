@@ -2,6 +2,7 @@ package codeverse.com.web_be.repository;
 
 import codeverse.com.web_be.dto.response.LessonProgressDTO.LessonProgressDTO;
 import codeverse.com.web_be.entity.LessonProgress;
+import codeverse.com.web_be.enums.LessonProgressStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,4 +33,16 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
     List<LessonProgressDTO> findByUserIdAndLessonIdQuery(@Param("userId") Long userId, @Param("lessonId") Long lessonId);
 
     List<LessonProgress> findAllByUserIdAndLessonId(Long userId, Long lessonId);
+
+    @Query("""
+                SELECT lp FROM LessonProgress lp
+                WHERE lp.user.id = :userId
+                  AND lp.lesson.courseModule.course.id = :courseId
+                  AND lp.status = :status
+            """)
+    List<LessonProgress> findByUserIdAndCourseIdAndStatus(
+            @Param("userId") Long userId,
+            @Param("courseId") Long courseId,
+            @Param("status") LessonProgressStatus status
+    );
 } 

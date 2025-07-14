@@ -10,11 +10,10 @@ import codeverse.com.web_be.entity.Lesson;
 import codeverse.com.web_be.entity.QuizAnswer;
 import codeverse.com.web_be.entity.QuizQuestion;
 import codeverse.com.web_be.mapper.QuizMapper;
-import codeverse.com.web_be.repository.LessonProgressRepository;
-import codeverse.com.web_be.repository.LessonRepository;
-import codeverse.com.web_be.repository.QuizAnswerRepository;
-import codeverse.com.web_be.repository.QuizQuestionRepository;
+import codeverse.com.web_be.repository.*;
+import codeverse.com.web_be.service.EmailService.EmailServiceSender;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import jakarta.mail.MessagingException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,17 +30,24 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
     private final QuizAnswerRepository quizAnswerRepository;
     private final QuizMapper quizMapper;
     private final LessonProgressRepository lessonProgressRepository;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
+    private final EmailServiceSender emailService;
 
     public QuizServiceImpl(LessonRepository lessonRepository,
                            QuizQuestionRepository quizQuestionRepository,
                            QuizAnswerRepository quizAnswerRepository,
-                           QuizMapper quizMapper, LessonProgressRepository lessonProgressRepository) {
+                           QuizMapper quizMapper, LessonProgressRepository lessonProgressRepository,
+                           CourseEnrollmentRepository courseEnrollmentRepository,
+                           EmailServiceSender emailService) {
         super(quizQuestionRepository);
         this.lessonRepository = lessonRepository;
         this.quizQuestionRepository = quizQuestionRepository;
         this.quizAnswerRepository = quizAnswerRepository;
         this.quizMapper = quizMapper;
         this.lessonProgressRepository = lessonProgressRepository;
+        this.courseEnrollmentRepository = courseEnrollmentRepository;
+        this.emailService = emailService;
+
     }
 
     public void savequizBankByLessonId(Long lessonId, List<QuizQuestionCreateRequest> requests) {
@@ -148,7 +154,7 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
 
     @Override
     @Transactional
-    public LessonProgressDTO submitQuiz(Long userId, Long lessonId) {
+    public LessonProgressDTO submitQuiz(Long userId, Long lessonId) throws MessagingException {
         List<LessonProgress> attempts = lessonProgressRepository
                 .findAllAttemptsOrderByStartedDesc(userId, lessonId);
 
@@ -157,18 +163,15 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
         }
 
         LessonProgress lessonProgress = attempts.get(0);
-
-        // Chỉ cho submit nếu đang trong trạng thái PENDING
         if (lessonProgress.getStatus() != LessonProgressStatus.PENDING) {
             throw new RuntimeException("This quiz attempt has already been submitted.");
         }
 
-        lessonProgress.setStatus(LessonProgressStatus.FAILED); // Vì hết giờ
+        lessonProgress.setStatus(LessonProgressStatus.FAILED);
         lessonProgress.setExpGained(0);
         lessonProgress.setCompletedAt(LocalDateTime.now());
-
-        lessonProgressRepository.save(lessonProgress);
-
+        lessonProgressRepository.saveAndFlush(lessonProgress);
+        boolean completed = updateCourseEnrollmentProgress(userId, lessonProgress.getLesson().getId());
         return LessonProgressDTO.builder()
                 .id(lessonProgress.getId())
                 .userId(lessonProgress.getUser().getId())
@@ -177,11 +180,12 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
                 .status(lessonProgress.getStatus())
                 .startedAt(lessonProgress.getStartedAt())
                 .completedAt(lessonProgress.getCompletedAt())
+                .statusDone(completed)
                 .build();
     }
 
     @Override
-    public LessonProgressDTO submitQuizPer(Long userId, Long lessonId, Integer score) {
+    public LessonProgressDTO submitQuizPer(Long userId, Long lessonId, Integer score) throws MessagingException {
         List<LessonProgress> attempts = lessonProgressRepository
                 .findAllAttemptsOrderByStartedDesc(userId, lessonId);
 
@@ -191,11 +195,17 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
 
         LessonProgress lessonProgress = attempts.get(0);
 
-        lessonProgress.setExpGained(score);
-        lessonProgress.setStatus(score >= 80 ? LessonProgressStatus.PASSED : LessonProgressStatus.FAILED);
+        boolean passed = score >= 80;
+        Integer reward = lessonProgress.getLesson().getExpReward();
+        if (reward == null || reward < 0) reward = 0;
+
+        lessonProgress.setExpGained(passed ? reward : 0);
+        lessonProgress.setStatus(passed ? LessonProgressStatus.PASSED : LessonProgressStatus.FAILED);
         lessonProgress.setCompletedAt(LocalDateTime.now());
 
-        lessonProgressRepository.save(lessonProgress);
+        lessonProgressRepository.saveAndFlush(lessonProgress);
+
+        boolean completed = updateCourseEnrollmentProgress(userId, lessonId);
 
         return LessonProgressDTO.builder()
                 .id(lessonProgress.getId())
@@ -205,6 +215,7 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
                 .status(lessonProgress.getStatus())
                 .startedAt(lessonProgress.getStartedAt())
                 .completedAt(lessonProgress.getCompletedAt())
+                .statusDone(completed)
                 .build();
     }
 
@@ -225,4 +236,46 @@ public class QuizServiceImpl extends GenericServiceImpl<QuizQuestion, Long> impl
         }
         return responses;
     }
+
+    private boolean updateCourseEnrollmentProgress(Long userId, Long lessonId) throws MessagingException {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+        Course course = lesson.getCourseModule().getCourse();
+
+        CourseEnrollment enrollment = courseEnrollmentRepository
+                .findByUserIdAndCourseId(userId, course.getId())
+                .orElse(null);
+
+        if (enrollment != null) {
+            List<Lesson> allLessons = lessonRepository.findByCourseModule_Course_Id(course.getId());
+            int totalLessons = allLessons.size();
+
+            List<LessonProgress> passedProgresses = lessonProgressRepository
+                    .findByUserIdAndCourseIdAndStatus(userId, course.getId(), LessonProgressStatus.PASSED);
+
+            int passedLessons = passedProgresses.size();
+            int totalExp = passedProgresses.stream()
+                    .mapToInt(lp -> lp.getExpGained() != null ? lp.getExpGained() : 0)
+                    .sum();
+
+            float completionPercentage = totalLessons == 0 ? 0 : (passedLessons * 100f / totalLessons);
+
+            enrollment.setCompletionPercentage(completionPercentage);
+            enrollment.setTotalExpGained(totalExp);
+
+            boolean justCompleted = passedLessons == totalLessons && enrollment.getCompletedAt() == null;
+
+            if (justCompleted) {
+                enrollment.setCompletedAt(LocalDateTime.now());
+                emailService.sendCourseCompletionEmail(enrollment.getUser(), course);
+            }
+
+            courseEnrollmentRepository.save(enrollment);
+            return justCompleted;
+        }
+
+        return false;
+    }
+
 }

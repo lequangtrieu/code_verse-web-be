@@ -60,12 +60,21 @@ public class QuizController {
         try {
             LessonProgress updatedProgress = quizService.startQuiz(userId, lessonId);
 
-            return ResponseEntity.ok(
-                    ApiResponse.<LessonProgress>builder()
-                            .code(HttpStatus.OK.value())
-                            .message("Quiz started successfully")
-                            .result(updatedProgress)
-                            .build()
+            LessonProgressDTO dto = LessonProgressDTO.builder()
+                    .id(updatedProgress.getId())
+                    .userId(updatedProgress.getUser().getId())
+                    .lessonId(updatedProgress.getLesson().getId())
+                    .expGained(updatedProgress.getExpGained())
+                    .status(updatedProgress.getStatus())
+                    .startedAt(updatedProgress.getStartedAt())
+                    .completedAt(updatedProgress.getCompletedAt())
+                    .build();
+
+            return ResponseEntity.ok(ApiResponse.<LessonProgressDTO>builder()
+                    .code(HttpStatus.OK.value())
+                    .message("Quiz started successfully")
+                    .result(dto)
+                    .build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -97,7 +106,7 @@ public class QuizController {
     }
 
     @PutMapping("/submitPer/{userId}/{lessonId}")
-    public ResponseEntity<?> submitQuizPer(@PathVariable Long userId, @PathVariable Long lessonId,@RequestBody Map<String, Integer> payload) {
+    public ResponseEntity<?> submitQuizPer(@PathVariable Long userId, @PathVariable Long lessonId, @RequestBody Map<String, Integer> payload) {
         try {
             Integer score = payload.get("score");
             LessonProgressDTO quizProgressDTO = quizService.submitQuizPer(userId, lessonId, score);

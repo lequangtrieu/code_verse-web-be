@@ -17,6 +17,7 @@ import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.service.CourseEnrollmentService.ICourseEnrollmentService;
 import codeverse.com.web_be.repository.CourseEnrollmentRepository;
 import codeverse.com.web_be.service.CourseService.ICourseService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -184,12 +185,12 @@ public class CourseController {
     }
 
     @PostMapping("/submitCode")
-    public ApiResponse<?> submitCodeHandler(@RequestBody CodeRequestDTO request) {
-        courseService.submitCodeHandler(request);
+    public ApiResponse<?> submitCodeHandler(@RequestBody CodeRequestDTO request) throws MessagingException {
+        String message = courseService.submitCodeHandler(request);
         return ApiResponse.<Long>builder()
                 .result(request.getLessonId())
                 .code(HttpStatus.OK.value())
-                .message("Submit code successfully")
+                .message(message)
                 .build();
     }
 

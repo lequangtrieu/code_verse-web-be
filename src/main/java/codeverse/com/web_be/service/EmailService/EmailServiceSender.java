@@ -139,4 +139,43 @@ public class EmailServiceSender {
         helper.setText(htmlContent, true);
         emailSender.send(message);
     }
+
+    @Async
+    public void sendCourseCompletionEmail(User user, Course course) throws MessagingException {
+        String subject = "🏆 Congratulations on Completing Your Course!";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fdfdfd;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/2278/2278992.png" alt="Trophy Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #1677ff;">Congratulations, %s! 🎉</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            You’ve successfully completed the course:
+        </p>
+        <h3 style="color: #333; text-align: center; font-size: 20px;">%s</h3>
+        <p style="font-size: 16px; color: #555; margin-top: 20px;">
+            We’re proud of your dedication and effort. Completing a course is a big achievement — keep pushing your learning journey forward!
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://localhost:3000/"
+               style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
+               Continue Learning
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            Need help or want to share your feedback? We’re just an email away.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Keep growing 🌱</p>
+    </div>
+    """, user.getName(), course.getTitle());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+        helper.setTo(user.getUsername()); // username là email
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
 }

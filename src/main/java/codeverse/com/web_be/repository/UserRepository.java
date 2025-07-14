@@ -15,5 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.role = 'INSTRUCTOR' AND u.instructorStatus = 'PENDING'")
     List<User> findInactiveInstructors();
     List<User> findByIsDeletedFalseAndIsVerifiedTrue();
+    long countByInstructorStatus(codeverse.com.web_be.enums.InstructorStatus status);
 }
 

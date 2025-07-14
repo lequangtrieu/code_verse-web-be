@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 @Configuration
 @RequiredArgsConstructor
@@ -1096,6 +1098,38 @@ public class DummyDataConfig {
                             .build()
             );
             courseEnrollmentRepository.saveAll(enrollments);
+
+
+            List<User> users = userRepository.findAll();
+            List<User> learners = users.stream()
+                    .filter(u -> u.getRole() == UserRole.LEARNER)
+                    .collect(Collectors.toList());
+
+            Random random = new Random();
+
+            for (int i = 0; i < 20; i++) {
+                User learner = learners.get(random.nextInt(learners.size()));
+                Course course = courses.get(random.nextInt(courses.size()));
+
+                BigDecimal price = BigDecimal.valueOf(50000 + random.nextInt(50000));
+                LocalDateTime orderDate = LocalDateTime.now().minusDays(random.nextInt(365));
+
+                Order order = Order.builder()
+                        .user(learner)
+                        .status(OrderStatus.PAID)
+                        .totalAmount(price)
+                        .orderDate(orderDate)
+                        .build();
+
+                OrderItem item = OrderItem.builder()
+                        .order(order)
+                        .course(course)
+                        .priceAtPurchase(price)
+                        .build();
+
+                order.setOrderItems(List.of(item));
+                orderRepository.save(order);
+            }
 
 
             log.info("Dummy data has been initialized successfully");

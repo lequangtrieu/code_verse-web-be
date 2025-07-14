@@ -18,8 +18,7 @@ import java.util.Map;
 @RequestMapping("/ai")
 @RequiredArgsConstructor
 public class AIController {
-       private final String GROQ_API_KEY = "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";
-//     private final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
+     private final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
 
 
     @PostMapping("/feedback")

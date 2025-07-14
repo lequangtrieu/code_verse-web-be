@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 @Configuration
 @RequiredArgsConstructor
@@ -39,6 +41,7 @@ public class DummyDataConfig {
     UserNotificationRepository userNotificationRepository;
     ReportReasonRepository reportReasonRepository;
     UserReportRepository userReportRepository;
+    OrderRepository orderRepository;
 
     String password = "pass";
     String adminPassword = "admin";
@@ -993,6 +996,48 @@ public class DummyDataConfig {
             );
 
             userReportRepository.saveAll(reports);
+
+            List<User> users = userRepository.findAll();
+            List<User> learners = users.stream()
+                    .filter(u -> u.getRole() == UserRole.LEARNER)
+                    .collect(Collectors.toList());
+
+            Random random = new Random();
+
+            for (int i = 0; i < 20; i++) {
+                User learner = learners.get(random.nextInt(learners.size()));
+                Course course = courses.get(random.nextInt(courses.size()));
+
+                BigDecimal price = BigDecimal.valueOf(50000 + random.nextInt(50000));
+                LocalDateTime orderDate = LocalDateTime.now().minusDays(random.nextInt(365));
+
+                Order order = Order.builder()
+                        .user(learner)
+                        .status(OrderStatus.PAID)
+                        .totalAmount(price)
+                        .orderDate(orderDate)
+                        .build();
+
+                OrderItem item = OrderItem.builder()
+                        .order(order)
+                        .course(course)
+                        .priceAtPurchase(price)
+                        .build();
+
+                order.setOrderItems(List.of(item));
+                orderRepository.save(order);
+
+                CourseEnrollment enrollment = CourseEnrollment.builder()
+                        .user(learner)
+                        .course(course)
+                        .completionPercentage(random.nextFloat() * 100)
+                        .totalExpGained(100 + random.nextInt(500))
+                        .completedAt(orderDate.plusDays(random.nextInt(30)))
+                        .build();
+
+                courseEnrollmentRepository.save(enrollment);
+            }
+
 
             log.info("Dummy data has been initialized successfully");
             log.info("Additional dummy data has been initialized successfully");

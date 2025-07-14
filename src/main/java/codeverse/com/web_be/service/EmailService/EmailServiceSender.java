@@ -48,7 +48,7 @@ public class EmailServiceSender {
     @Async
     public void sendVerificationEmail(String email, String token) throws MessagingException {
         String subject = "Verify Your Email - Welcome to Our Service";
-        String verificationLink = "http://localhost:8080/codeVerse/auth/verify-email/" + token;
+        String verificationLink = "https://code-verse-web-be.onrender.com/codeVerse/auth/verify-email/" + token;
 
         String htmlContent = """
         <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
@@ -86,7 +86,7 @@ public class EmailServiceSender {
             <p style="font-size: 16px; color: #555;">We’re excited to have you start learning with us. This is your chance to explore, grow, and become better at your craft.</p>
             <p style="font-size: 16px; color: #555;">To access the course, simply login to your account and navigate to "My Courses".</p>
             <div style="text-align: center; margin: 20px 0;">
-                <a href="http://localhost:3000/"
+                <a href="https://code-verse-web-fe.vercel.app/course"
                    style="background-color: #4da6ff; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;">
                    Go to My Courses
                 </a>
@@ -124,7 +124,7 @@ public class EmailServiceSender {
             <ul style="padding-left: 20px;">%s</ul>
             <p style="font-size: 16px; color: #555;">We hope you enjoy your learning journey. To start learning, just log in and go to "My Courses".</p>
             <div style="text-align: center; margin: 20px 0;">
-                <a href="http://localhost:3000/"
+                <a href="https://code-verse-web-fe.vercel.app/course"
                    style="background-color: #4da6ff; color: white; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;">
                    Go to My Courses
                 </a>
@@ -151,7 +151,7 @@ public class EmailServiceSender {
         String formattedAmount = currencyFormat.format(amount) + " vnd?";
 
         String verificationLink = String.format(
-                "http://localhost:8080/codeVerse/api/instructors/%d/withdrawals/verify?token=%s",
+                "https://code-verse-web-be.onrender.com/codeVerse/api/instructors/%d/withdrawals/verify?token=%s",
                 instructorId, token
         );
 
@@ -202,7 +202,7 @@ public class EmailServiceSender {
             We’re proud of your dedication and effort. Completing a course is a big achievement — keep pushing your learning journey forward!
         </p>
         <div style="text-align: center; margin: 30px 0;">
-            <a href="http://localhost:3000/"
+            <a href="https://code-verse-web-fe.vercel.app/course"
                style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
                Continue Learning
             </a>

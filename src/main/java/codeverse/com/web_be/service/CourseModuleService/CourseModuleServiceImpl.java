@@ -75,25 +75,6 @@ public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Lo
 
     @Override
     public List<CourseModuleMoreInfoDTO> getCourseModuleMoreInfoDTOList(Long courseId) {
-        List<CourseModule> courseModules = courseModuleRepository.findByCourseId(courseId);
-
-        List<CourseModuleMoreInfoDTO> courseModuleMoreInfoDTOList = new ArrayList<>();
-
-        for (CourseModule courseModule : courseModules) {
-            Integer totalDuration = 0;
-            List<Lesson> lessons = lessonRepository.findByCourseModuleIdOrderByOrderIndexAsc(courseModule.getId());
-
-            for (Lesson lesson : lessons) {
-                totalDuration += lesson.getDuration();
-            }
-
-            CourseModuleMoreInfoDTO courseModuleMoreInfoDTO = new CourseModuleMoreInfoDTO();
-            courseModuleMoreInfoDTO.setCourseModule(courseModule);
-            courseModuleMoreInfoDTO.setLessons(lessons);
-            courseModuleMoreInfoDTO.setTotalDuration(totalDuration);
-
-            courseModuleMoreInfoDTOList.add(courseModuleMoreInfoDTO);
-        }
-        return courseModuleMoreInfoDTOList;
+        return null;
     }
 }

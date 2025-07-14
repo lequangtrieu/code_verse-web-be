@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,9 @@ public class DummyDataConfig {
     UserNotificationRepository userNotificationRepository;
     ReportReasonRepository reportReasonRepository;
     UserReportRepository userReportRepository;
+    WithdrawalRequestRepository withdrawalRequestRepository;
     OrderRepository orderRepository;
+    OrderItemRepository orderItemRepository;
 
     String password = "pass";
     String adminPassword = "admin";
@@ -100,6 +103,15 @@ public class DummyDataConfig {
                             .name("Lê Văn Độ")
                             .isVerified(true)
                             .role(UserRole.LEARNER)
+                            .build(),
+                    User.builder()
+                            .username("trieulqde160447@fpt.edu.vn")
+                            .password(passwordEncoder.encode(password))
+                            .name("Lê Quang Triêu Instructor")
+                            .isVerified(true)
+                            .instructorStatus(InstructorStatus.APPROVED)
+                            .teachingCredentials(certInstructor)
+                            .role(UserRole.INSTRUCTOR)
                             .build(),
                     User.builder()
                             .username("hienlt@gmail.com")
@@ -997,6 +1009,97 @@ public class DummyDataConfig {
 
             userReportRepository.saveAll(reports);
 
+            // Dummy Withdrawal Requests cho instructor[4]
+            User instructor = instructors.get(4);
+
+            List<WithdrawalRequest> dummyWithdrawals = List.of(
+                    WithdrawalRequest.builder()
+                            .instructor(instructor)
+                            .amount(new BigDecimal("30000"))
+                            .status(WithdrawalStatus.APPROVED)
+                            .createdAt(LocalDateTime.now().minusDays(15))
+                            .reviewedAt(LocalDateTime.now().minusDays(13))
+                            .adminNote("Approved quickly")
+                            .build(),
+                    WithdrawalRequest.builder()
+                            .instructor(instructor)
+                            .amount(new BigDecimal("50000"))
+                            .status(WithdrawalStatus.REJECTED)
+                            .createdAt(LocalDateTime.now().minusDays(10))
+                            .reviewedAt(LocalDateTime.now().minusDays(9))
+                            .adminNote("Minimum withdrawal amount not met")
+                            .build(),
+                    WithdrawalRequest.builder()
+                            .instructor(instructor)
+                            .amount(new BigDecimal("250000"))
+                            .status(WithdrawalStatus.PENDING)
+                            .createdAt(LocalDateTime.now().minusDays(3))
+                            .build(),
+                    WithdrawalRequest.builder()
+                            .instructor(instructor)
+                            .amount(new BigDecimal("120000"))
+                            .status(WithdrawalStatus.NEED_VERIFY)
+                            .createdAt(LocalDateTime.now().minusDays(1))
+                            .verifyToken(UUID.randomUUID().toString())
+                            .build()
+            );
+
+            withdrawalRequestRepository.saveAll(dummyWithdrawals);
+
+            // Dummy Orders & OrderItems & Enrollments
+            User learner1 = instructors.get(2);
+            User learner2 = instructors.get(3);
+            Course course1 = courses.get(0);
+            Course course2 = courses.get(1);
+
+            List<Order> orders = List.of(
+                    Order.builder()
+                            .user(learner1)
+                            .status(OrderStatus.PAID)
+                            .orderDate(LocalDateTime.now().minusDays(5))
+                            .totalAmount(course1.getPrice())
+                            .build(),
+                    Order.builder()
+                            .user(learner2)
+                            .status(OrderStatus.PAID)
+                            .orderDate(LocalDateTime.now().minusDays(2))
+                            .totalAmount(course2.getPrice())
+                            .build()
+            );
+            orderRepository.saveAll(orders);
+
+            List<OrderItem> orderItems = List.of(
+                    OrderItem.builder()
+                            .order(orders.get(0))
+                            .course(course1)
+                            .priceAtPurchase(course1.getPrice())
+                            .build(),
+                    OrderItem.builder()
+                            .order(orders.get(1))
+                            .course(course2)
+                            .priceAtPurchase(course2.getPrice())
+                            .build()
+            );
+            orderItemRepository.saveAll(orderItems);
+
+            List<CourseEnrollment> enrollments = List.of(
+                    CourseEnrollment.builder()
+                            .user(learner1)
+                            .course(course1)
+                            .completionPercentage(100f)
+                            .totalExpGained(500)
+                            .completedAt(LocalDateTime.now().minusDays(1))
+                            .build(),
+                    CourseEnrollment.builder()
+                            .user(learner2)
+                            .course(course2)
+                            .completionPercentage(60f)
+                            .totalExpGained(300)
+                            .build()
+            );
+            courseEnrollmentRepository.saveAll(enrollments);
+
+
             List<User> users = userRepository.findAll();
             List<User> learners = users.stream()
                     .filter(u -> u.getRole() == UserRole.LEARNER)
@@ -1026,16 +1129,6 @@ public class DummyDataConfig {
 
                 order.setOrderItems(List.of(item));
                 orderRepository.save(order);
-
-                CourseEnrollment enrollment = CourseEnrollment.builder()
-                        .user(learner)
-                        .course(course)
-                        .completionPercentage(random.nextFloat() * 100)
-                        .totalExpGained(100 + random.nextInt(500))
-                        .completedAt(orderDate.plusDays(random.nextInt(30)))
-                        .build();
-
-                courseEnrollmentRepository.save(enrollment);
             }
 
 

@@ -42,7 +42,7 @@ public class AuthenticationController {
                     text: 'Your email has been successfully verified. You can now log in.',
                     confirmButtonText: 'Go to Login'
                 }).then(() => {
-                    window.location.href = 'http://localhost:3000';
+                    window.location.href = 'https://code-verse-web-fe.vercel.app/';
                 });
             </script>
             </body>
@@ -60,9 +60,8 @@ public class AuthenticationController {
                     icon: 'error',
                     title: 'Verification Failed',
                     text: 'The verification link is invalid or expired.',
-                    confirmButtonText: 'Resend Verification Email'
                 }).then(() => {
-                    window.location.href = 'https://your-frontend-domain/resend-verification';
+                    window.location.href = 'https://code-verse-web-fe.vercel.app/';
                 });
             </script>
             </body>

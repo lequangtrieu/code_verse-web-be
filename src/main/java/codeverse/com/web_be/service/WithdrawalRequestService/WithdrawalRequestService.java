@@ -7,7 +7,7 @@ import jakarta.mail.MessagingException;
 import java.util.List;
 
 public interface WithdrawalRequestService {
-    WithdrawalRequestDTO createRequest(Long instructorId, WithdrawalRequestCreateRequest request) throws MessagingException;
+    WithdrawalRequestDTO createRequest(Long instructorId, WithdrawalRequestCreateRequest request);
     List<WithdrawalRequestDTO> getMyRequests(Long instructorId);
     void verifyWithdrawal(String token);
     void cancelRequest(Long requestId, Long instructorId);

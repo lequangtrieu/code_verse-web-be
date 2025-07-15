@@ -3,7 +3,6 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.request.WithdrawalRequest.WithdrawalRequestCreateRequest;
 import codeverse.com.web_be.dto.response.WithdrawalResponse.WithdrawalRequestDTO;
 import codeverse.com.web_be.service.WithdrawalRequestService.WithdrawalRequestService;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,7 @@ public class WithdrawalRequestController {
     @PostMapping("/create")
     public ResponseEntity<WithdrawalRequestDTO> createRequest(
             @PathVariable("instructorId") Long instructorId,
-            @RequestBody WithdrawalRequestCreateRequest request) throws MessagingException {
+            @RequestBody WithdrawalRequestCreateRequest request) {
         return ResponseEntity.ok(withdrawalService.createRequest(instructorId, request));
     }
 

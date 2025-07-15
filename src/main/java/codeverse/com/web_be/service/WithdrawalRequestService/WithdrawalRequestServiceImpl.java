@@ -32,7 +32,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
     @Override
     @Transactional
-    public WithdrawalRequestDTO createRequest(Long instructorId, WithdrawalRequestCreateRequest request) throws MessagingException {
+    public WithdrawalRequestDTO createRequest(Long instructorId, WithdrawalRequestCreateRequest request) {
         User instructor = userRepo.findById(instructorId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -64,7 +64,11 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
         withdrawalRepo.save(entity);
 
-        emailSender.sendWithdrawalVerificationEmail(instructor.getUsername(), verifyToken, request.getAmount(), instructorId);
+        try {
+            emailSender.sendWithdrawalVerificationEmail(instructor.getUsername(), verifyToken, request.getAmount(), instructorId);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
 
         return toDTO(entity);
     }

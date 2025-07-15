@@ -49,7 +49,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
             throw new AppException(ErrorCode.WITHDRAWAL_REQUEST_ALREADY_EXISTS);
         }
 
-        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.valueOf(50000)) < 0) {
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.valueOf(20000)) < 0) {
             throw new AppException(ErrorCode.WITHDRAWAL_AMOUNT_TOO_LOW);
         }
 

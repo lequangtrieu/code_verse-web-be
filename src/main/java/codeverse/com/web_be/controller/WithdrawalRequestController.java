@@ -34,7 +34,7 @@ public class WithdrawalRequestController {
     }
 
     // Xác minh yêu cầu rút tiền bằng token từ email
-    @GetMapping("/instructors/{instructorId}/withdrawals/verify")
+    @GetMapping("/verify")
     public ResponseEntity<String> verifyWithdrawal(@RequestParam("token") String token, @PathVariable String instructorId) {
         try {
             withdrawalService.verifyWithdrawal(token);

@@ -2,7 +2,9 @@ package codeverse.com.web_be.service.DashboardService;
 
 import codeverse.com.web_be.dto.response.DashboardResponse.DashboardOverviewDTO;
 import codeverse.com.web_be.dto.response.DashboardResponse.RevenueByTimeDTO;
+import codeverse.com.web_be.dto.response.DashboardResponse.UserRoleStatDTO;
 import codeverse.com.web_be.enums.InstructorStatus;
+import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -79,5 +81,13 @@ public class DashboardServiceImpl implements IDashboardService {
             result.add(new RevenueByTimeDTO("Q" + quarter + "-" + year, total));
         }
         return result;
+    }
+
+    @Override
+    public List<UserRoleStatDTO> getUserRoleStats() {
+        List<Object[]> results = userRepository.countUsersByRole();
+        return results.stream()
+                .map(obj -> new UserRoleStatDTO((UserRole) obj[0], (Long) obj[1]))
+                .toList();
     }
 }

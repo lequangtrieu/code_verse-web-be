@@ -2,6 +2,7 @@ package codeverse.com.web_be.service.DashboardService;
 
 import codeverse.com.web_be.dto.response.DashboardResponse.DashboardOverviewDTO;
 import codeverse.com.web_be.dto.response.DashboardResponse.RevenueByTimeDTO;
+import codeverse.com.web_be.dto.response.DashboardResponse.UserRoleStatDTO;
 
 import java.util.List;
 
@@ -13,4 +14,6 @@ public interface IDashboardService {
     List<RevenueByTimeDTO> getRevenueByMonth();
 
     List<RevenueByTimeDTO> getRevenueByQuarter();
+
+    List<UserRoleStatDTO> getUserRoleStats();
 }

@@ -69,11 +69,15 @@ public class FirebaseConfig {
     //         throw new RuntimeException("Failed to initialize Firebase", e);
     //     }
     // }
-    
+
     @PostConstruct
     public void initializeFirebase() {
         try {
-            byte[] encryptedData = Files.readAllBytes(new File(credentials).toPath());
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(credentials);
+            if (inputStream == null) {
+                throw new RuntimeException("Firebase credentials file not found in classpath: " + credentials);
+            }
+            byte[] encryptedData = inputStream.readAllBytes();
             byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
             if (!new String(header).equals("Salted__")) {
                 throw new RuntimeException("File not formatted AES OpenSSL");

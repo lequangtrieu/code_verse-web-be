@@ -2,8 +2,10 @@ package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.WithdrawalRequest.WithdrawalRequestCreateRequest;
 import codeverse.com.web_be.dto.response.WithdrawalResponse.WithdrawalRequestDTO;
+import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.service.WithdrawalRequestService.WithdrawalRequestService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,10 +34,57 @@ public class WithdrawalRequestController {
     }
 
     // Xác minh yêu cầu rút tiền bằng token từ email
-    @GetMapping("/verify")
+    @GetMapping("/instructors/{instructorId}/withdrawals/verify")
     public ResponseEntity<String> verifyWithdrawal(@RequestParam("token") String token, @PathVariable String instructorId) {
-        withdrawalService.verifyWithdrawal(token);
-        return ResponseEntity.ok("Verification successful.");
+        try {
+            withdrawalService.verifyWithdrawal(token);
+
+            String htmlSuccess = """
+        <!DOCTYPE html>
+        <html>
+        <head><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head>
+        <body>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Verification Successful!',
+                text: 'Your withdrawal request has been verified.',
+                confirmButtonText: 'Go to Dashboard'
+            }).then(() => {
+                window.location.href = 'https://code-verse-web-fe.vercel.app/instructor-panel/manageBalance';
+            });
+        </script>
+        </body>
+        </html>
+        """;
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "text/html")
+                    .body(htmlSuccess);
+
+        } catch (AppException e) {
+            String htmlError = """
+        <!DOCTYPE html>
+        <html>
+        <head><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head>
+        <body>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Verification Failed',
+                text: 'The verification link is invalid or expired.',
+            }).then(() => {
+                window.location.href = 'https://code-verse-web-fe.vercel.app/instructor-panel/manageBalance';
+            });
+        </script>
+        </body>
+        </html>
+        """;
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .header("Content-Type", "text/html")
+                    .body(htmlError);
+        }
     }
 
     // Hủy yêu cầu rút tiền

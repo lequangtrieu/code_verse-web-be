@@ -17,47 +17,47 @@ public class FirebaseConfig {
     @Value("${firebase.bucket-name}")
     private String bucketName;
 
-//     @Value("${firebase.credentials}")
-//     private String credentials;
+    @Value("${firebase.credentials}")
+    private String credentials;
 
-    @PostConstruct
-    public void initializeFirebase() {
-        try {
-            String base64Config = System.getenv("FIREBASE_CONFIG_BASE64");
-            if (base64Config == null || base64Config.isEmpty()) {
-                throw new RuntimeException("FIREBASE_CONFIG_BASE64 not set");
-            }
-            byte[] encryptedData = Base64.getDecoder().decode(base64Config);
-            InputStream serviceAccount = new ByteArrayInputStream(encryptedData);
+    // @PostConstruct
+    // public void initializeFirebase() {
+    //     try {
+    //         String base64Config = System.getenv("FIREBASE_CONFIG_BASE64");
+    //         if (base64Config == null || base64Config.isEmpty()) {
+    //             throw new RuntimeException("FIREBASE_CONFIG_BASE64 not set");
+    //         }
+    //         byte[] encryptedData = Base64.getDecoder().decode(base64Config);
+    //         InputStream serviceAccount = new ByteArrayInputStream(encryptedData);
 
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setStorageBucket(bucketName)
-                    .build();
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize Firebase", e);
-        }
-    }
+    //         FirebaseOptions options = FirebaseOptions.builder()
+    //                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+    //                 .setStorageBucket(bucketName)
+    //                 .build();
+    //         if (FirebaseApp.getApps().isEmpty()) {
+    //             FirebaseApp.initializeApp(options);
+    //         }
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("Failed to initialize Firebase", e);
+    //     }
+    // }
 
-//    @PostConstruct
-//    public void initializeFirebase() {
-//        try {
-//            byte[] encryptedData = Base64.getDecoder().decode(credentials);
-//            InputStream serviceAccount = new ByteArrayInputStream(encryptedData);
-//
-//            FirebaseOptions options = FirebaseOptions.builder()
-//                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-//                    .setStorageBucket(bucketName)
-//                    .build();
-//            if (FirebaseApp.getApps().isEmpty()) {
-//                FirebaseApp.initializeApp(options);
-//            }
-//        } catch (Exception e) {
-//            throw new RuntimeException("Failed to initialize Firebase", e);
-//        }
-//    }
+   @PostConstruct
+   public void initializeFirebase() {
+       try {
+           byte[] encryptedData = Base64.getDecoder().decode(credentials);
+           InputStream serviceAccount = new ByteArrayInputStream(encryptedData);
+
+           FirebaseOptions options = FirebaseOptions.builder()
+                   .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                   .setStorageBucket(bucketName)
+                   .build();
+           if (FirebaseApp.getApps().isEmpty()) {
+               FirebaseApp.initializeApp(options);
+           }
+       } catch (Exception e) {
+           throw new RuntimeException("Failed to initialize Firebase", e);
+       }
+   }
 
 }

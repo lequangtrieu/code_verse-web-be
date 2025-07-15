@@ -34,6 +34,7 @@ public class SecurityConfig {
             "/auth/userDetail",
             "/auth/resetPassword",
             "/api/test",
+            "/api/ratings/**",
     };
 
     private final String[] PUBLIC_ENDPOINTS_GET = {

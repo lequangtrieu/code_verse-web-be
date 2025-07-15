@@ -42,7 +42,7 @@ public class AuthenticationController {
                     text: 'Your email has been successfully verified. You can now log in.',
                     confirmButtonText: 'Go to Login'
                 }).then(() => {
-                    window.location.href = 'http://localhost:3000';
+                    window.location.href = 'https://code-verse-web-fe.vercel.app/';
                 });
             </script>
             </body>

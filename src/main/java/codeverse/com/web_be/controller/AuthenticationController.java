@@ -60,9 +60,8 @@ public class AuthenticationController {
                     icon: 'error',
                     title: 'Verification Failed',
                     text: 'The verification link is invalid or expired.',
-                    confirmButtonText: 'Resend Verification Email'
                 }).then(() => {
-                    window.location.href = 'https://your-frontend-domain/resend-verification';
+                    window.location.href = 'https://code-verse-web-fe.vercel.app/';
                 });
             </script>
             </body>

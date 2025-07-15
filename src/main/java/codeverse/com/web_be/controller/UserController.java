@@ -73,6 +73,7 @@ public class UserController {
 
     @PutMapping("/updateAvatar")
     public ApiResponse<UserResponse> updateAvatar(@RequestParam("file") MultipartFile file) {
+        System.out.println("vao lan dau tien controller");
         UserResponse updatedUser = userService.updateAvatar(file);
         return ApiResponse.<UserResponse>builder()
                 .result(updatedUser)

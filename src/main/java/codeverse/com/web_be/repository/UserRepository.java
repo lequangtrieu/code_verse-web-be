@@ -16,5 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findInactiveInstructors();
     List<User> findByIsDeletedFalseAndIsVerifiedTrue();
     long countByInstructorStatus(codeverse.com.web_be.enums.InstructorStatus status);
+    @Query("SELECT u.role, COUNT(u) FROM User u GROUP BY u.role")
+    List<Object[]> countUsersByRole();
 }
 

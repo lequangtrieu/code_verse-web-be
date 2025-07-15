@@ -156,6 +156,20 @@ public class DummyDataConfig {
             );
             userRepository.saveAll(instructors);
 
+            List<User> learnersDummy = new ArrayList<>();
+            for (int i = 1; i <= 20; i++) {
+                learnersDummy.add(User.builder()
+                        .username("learner" + i + "@gmail.com")
+                        .password(passwordEncoder.encode(password))
+                        .name("Learner " + i)
+                        .role(UserRole.LEARNER)
+                        .isVerified(true)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build());
+            }
+            userRepository.saveAll(learnersDummy);
+
             // Tạo courses
             List<Course> courses = List.of(
                     Course.builder()
@@ -1099,13 +1113,34 @@ public class DummyDataConfig {
             );
             courseEnrollmentRepository.saveAll(enrollments);
 
+            List<CourseEnrollment> additionalEnrollments = new ArrayList<>();
+            Random random = new Random();
+            Course[] courseArray = new Course[]{course1, course2}; // Hoặc thêm nhiều course nếu bạn có
+
+            for (int i = 0; i < learnersDummy.size(); i++) {
+                User learner = learnersDummy.get(i);
+                Course randomCourse = courseArray[random.nextInt(courseArray.length)];
+
+                CourseEnrollment enrollment = CourseEnrollment.builder()
+                        .user(learner)
+                        .course(randomCourse)
+                        .completionPercentage(50f + random.nextInt(51)) // Random từ 50% đến 100%
+                        .totalExpGained(100 + random.nextInt(500)) // Random EXP từ 100 đến 600
+                        .completedAt(random.nextBoolean() ? LocalDateTime.now().minusDays(random.nextInt(30)) : null)
+                        .build();
+
+                additionalEnrollments.add(enrollment);
+            }
+
+            courseEnrollmentRepository.saveAll(additionalEnrollments);
+
 
             List<User> users = userRepository.findAll();
             List<User> learners = users.stream()
                     .filter(u -> u.getRole() == UserRole.LEARNER)
                     .collect(Collectors.toList());
 
-            Random random = new Random();
+//            Random random = new Random();
 
             for (int i = 0; i < 20; i++) {
                 User learner = learners.get(random.nextInt(learners.size()));

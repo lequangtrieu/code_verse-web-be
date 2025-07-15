@@ -25,21 +25,59 @@ public class FirebaseConfig {
     @Value("${firebase.bucket-name}")
     private String bucketName;
 
-//     @Value("${firebase.credentials}")
-//     private String credentials;
+    @Value("${firebase.credentials}")
+    private String credentials;
 
     private static final String PASSWORD = "codeverse";
+
+    // @PostConstruct
+    // public void initializeFirebase() {
+    //     try {
+    //         String base64Config = System.getenv("FIREBASE_CONFIG_BASE64");
+    //         if (base64Config == null || base64Config.isEmpty()) {
+    //             throw new RuntimeException("FIREBASE_CONFIG_BASE64 not set");
+    //         }
+
+    //         byte[] encryptedData = Base64.getDecoder().decode(base64Config);
+
+    //         byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
+    //         if (!new String(header).equals("Salted__")) {
+    //             throw new RuntimeException("File not formatted AES OpenSSL");
+    //         }
+
+    //         byte[] salt = Arrays.copyOfRange(encryptedData, 8, 16);
+    //         byte[] cipherText = Arrays.copyOfRange(encryptedData, 16, encryptedData.length);
+
+    //         byte[][] keyAndIV = deriveKeyAndIV(PASSWORD.getBytes(), salt);
+    //         SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
+    //         IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
+
+    //         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+    //         cipher.init(Cipher.DECRYPT_MODE, key, iv);
+
+    //         byte[] decrypted = cipher.doFinal(cipherText);
+    //         InputStream serviceAccount = new ByteArrayInputStream(decrypted);
+
+    //         FirebaseOptions options = FirebaseOptions.builder()
+    //                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+    //                 .setStorageBucket(bucketName)
+    //                 .build();
+    //         if (FirebaseApp.getApps().isEmpty()) {
+    //             FirebaseApp.initializeApp(options);
+    //         }
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("Failed to initialize Firebase", e);
+    //     }
+    // }
 
     @PostConstruct
     public void initializeFirebase() {
         try {
-            String base64Config = System.getenv("FIREBASE_CONFIG_BASE64");
-            if (base64Config == null || base64Config.isEmpty()) {
-                throw new RuntimeException("FIREBASE_CONFIG_BASE64 not set");
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(credentials);
+            if (inputStream == null) {
+                throw new RuntimeException("Firebase credentials file not found in classpath: " + credentials);
             }
-
-            byte[] encryptedData = Base64.getDecoder().decode(base64Config);
-
+            byte[] encryptedData = inputStream.readAllBytes();
             byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
             if (!new String(header).equals("Salted__")) {
                 throw new RuntimeException("File not formatted AES OpenSSL");
@@ -69,40 +107,6 @@ public class FirebaseConfig {
             throw new RuntimeException("Failed to initialize Firebase", e);
         }
     }
-    
-//     @PostConstruct
-//     public void initializeFirebase() {
-//         try {
-//             byte[] encryptedData = Files.readAllBytes(new File(credentials).toPath());
-//             byte[] header = Arrays.copyOfRange(encryptedData, 0, 8);
-//             if (!new String(header).equals("Salted__")) {
-//                 throw new RuntimeException("File not formatted AES OpenSSL");
-//             }
-//
-//             byte[] salt = Arrays.copyOfRange(encryptedData, 8, 16);
-//             byte[] cipherText = Arrays.copyOfRange(encryptedData, 16, encryptedData.length);
-//
-//             byte[][] keyAndIV = deriveKeyAndIV(PASSWORD.getBytes(), salt);
-//             SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
-//             IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
-//
-//             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-//             cipher.init(Cipher.DECRYPT_MODE, key, iv);
-//
-//             byte[] decrypted = cipher.doFinal(cipherText);
-//             InputStream serviceAccount = new ByteArrayInputStream(decrypted);
-//
-//             FirebaseOptions options = FirebaseOptions.builder()
-//                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-//                     .setStorageBucket(bucketName)
-//                     .build();
-//             if (FirebaseApp.getApps().isEmpty()) {
-//                 FirebaseApp.initializeApp(options);
-//             }
-//         } catch (Exception e) {
-//             throw new RuntimeException("Failed to initialize Firebase", e);
-//         }
-//     }
 
     private static byte[][] deriveKeyAndIV(byte[] password, byte[] salt) throws Exception {
         final int keyLength = 32;

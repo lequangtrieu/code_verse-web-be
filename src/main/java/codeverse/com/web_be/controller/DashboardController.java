@@ -2,6 +2,7 @@ package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.response.DashboardResponse.DashboardOverviewDTO;
 import codeverse.com.web_be.dto.response.DashboardResponse.RevenueByTimeDTO;
+import codeverse.com.web_be.dto.response.DashboardResponse.UserRoleStatDTO;
 import codeverse.com.web_be.service.DashboardService.IDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,5 +35,10 @@ public class DashboardController {
     @GetMapping("/revenue/quarterly")
     public ResponseEntity<List<RevenueByTimeDTO>> getQuarterlyRevenue() {
         return ResponseEntity.ok(dashboardService.getRevenueByQuarter());
+    }
+
+    @GetMapping("/user-role-stats")
+    public ResponseEntity<List<UserRoleStatDTO>> getUserRoleStats() {
+        return ResponseEntity.ok(dashboardService.getUserRoleStats());
     }
 }

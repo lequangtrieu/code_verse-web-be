@@ -12,10 +12,7 @@ import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.*;
-import codeverse.com.web_be.enums.CodeLanguage;
-import codeverse.com.web_be.enums.LessonProgressStatus;
-import codeverse.com.web_be.enums.LessonType;
-import codeverse.com.web_be.enums.UserRole;
+import codeverse.com.web_be.enums.*;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
@@ -309,7 +306,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return new CourseModuleValidationResponse(errors.isEmpty(), errors);
     }
 
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("hasRole('INSTRUCTOR') or hasRole('ADMIN')")
     @Override
     public void updateCourseStatus(Long courseId, CourseUpdateRequest request) {
         Course course = courseRepository.findById(courseId)
@@ -322,13 +319,24 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                 .filter(u -> u.getRole().equals(UserRole.ADMIN))
                 .toList();
 
-        notificationService.notifyUsers(
-                admins,
-                course.getInstructor(),
-                "New Course",
-                "Course " + course.getTitle() + " created by " +
-                        course.getInstructor().getName() + " is waiting for approval."
-        );
+        if(request.getStatus().equals(CourseStatus.PENDING)){
+            notificationService.notifyUsers(
+                    admins,
+                    course.getInstructor(),
+                    "New Course",
+                    "Course " + course.getTitle() + " created by " +
+                            course.getInstructor().getName() + " is waiting for approval."
+            );
+        }
+        if(request.getStatus().equals(CourseStatus.PUBLISHED)){
+            notificationService.notifyUsers(
+                    List.of(course.getInstructor()),
+                    admins.get(0),
+                    "Your Course has been published!",
+                    "Course " + course.getTitle() + " has been published."
+            );
+        }
+
     }
 
     @Override

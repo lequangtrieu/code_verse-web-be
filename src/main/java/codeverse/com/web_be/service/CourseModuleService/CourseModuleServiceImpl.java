@@ -31,7 +31,7 @@ public class CourseModuleServiceImpl extends GenericServiceImpl<CourseModule, Lo
         this.lessonRepository = lessonRepository;
     }
 
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PreAuthorize("hasRole('INSTRUCTOR') or hasRole('ADMIN')")
     @Override
     public List<CourseModuleResponse> getCourseModuleListByCourseId(Long courseId) {
         List<CourseModule> sections = courseModuleRepository.findByCourseId(courseId);

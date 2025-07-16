@@ -13,6 +13,7 @@ import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.repository.UserRepository;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class UserServiceImpl extends GenericServiceImpl<User, Long> implements IUserService {
 
     private final UserRepository userRepository;
@@ -72,8 +74,14 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         String avatar = null;
-        if(file != null && !file.isEmpty()) {
-            avatar = firebaseStorageService.uploadImage(file);
+        if (file != null && !file.isEmpty()) {
+            System.out.println("vao dieu kien rat xau");
+            try {
+                avatar = firebaseStorageService.uploadImage(file);
+            } catch (Exception e) {
+                log.error("🔥 Failed to upload avatar to Firebase", e);
+                throw new RuntimeException("Avatar upload failed", e);
+            }
         }
         user.setAvatar(avatar);
         User updatedUser = userRepository.save(user);

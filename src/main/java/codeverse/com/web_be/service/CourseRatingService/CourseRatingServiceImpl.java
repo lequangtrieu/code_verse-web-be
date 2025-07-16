@@ -80,6 +80,7 @@ public class CourseRatingServiceImpl implements CourseRatingService {
 
         List<ReviewItem> reviewItems = ratings.stream()
                 .map(r -> ReviewItem.builder()
+                        .id(r.getId())
                         .username(r.getUser().getUsername())
                         .userAvatar(r.getUser().getAvatar())
                         .rating(r.getRating())

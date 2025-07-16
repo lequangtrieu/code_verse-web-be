@@ -11,6 +11,5 @@ public class TimeZoneConfig {
     @PostConstruct
     public void setTimeZone() {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-        System.out.println("Default timezone set to Asia/Ho_Chi_Minh");
     }
 }

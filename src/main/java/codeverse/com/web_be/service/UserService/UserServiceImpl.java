@@ -75,7 +75,6 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         String avatar = null;
         if (file != null && !file.isEmpty()) {
-            System.out.println("vao dieu kien rat xau");
             try {
                 avatar = firebaseStorageService.uploadImage(file);
             } catch (Exception e) {

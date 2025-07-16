@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class ReviewItem {
+    private Long id;
     private String username;
     private String userAvatar;
     private float rating;

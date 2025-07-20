@@ -5,13 +5,17 @@ import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.BadgeType;
 import codeverse.com.web_be.enums.InstructorStatus;
 import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.mapper.UserMapper;
+import codeverse.com.web_be.repository.CodeSubmissionRepository;
+import codeverse.com.web_be.repository.CourseEnrollmentRepository;
 import codeverse.com.web_be.repository.UserRepository;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
+import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -21,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,13 +37,19 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final FirebaseStorageService firebaseStorageService;
+    private final FunctionHelper functionHelper;
+    private final CourseEnrollmentRepository courseEnrollmentRepository;
+    private final CodeSubmissionRepository codeSubmissionRepository;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService, FunctionHelper functionHelper, CourseEnrollmentRepository courseEnrollmentRepository, CodeSubmissionRepository codeSubmissionRepository) {
         super(userRepository);
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.firebaseStorageService = firebaseStorageService;
+        this.functionHelper = functionHelper;
+        this.courseEnrollmentRepository = courseEnrollmentRepository;
+        this.codeSubmissionRepository = codeSubmissionRepository;
     }
 
     public UserResponse getMyInfo() {
@@ -48,7 +59,9 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         User user = userRepository.findByUsername(name)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        return userMapper.userToUserResponse(user);
+        UserResponse response = userMapper.userToUserResponse(user);
+        response.setBadges(getBadgesByUser(user));
+        return response;
     }
 
     @Override
@@ -200,5 +213,14 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         return activeUsers.stream()
                 .map(userMapper::userToUserResponse)
                 .toList();
+    }
+
+    @Override
+    public List<BadgeType> getBadgesByUser(User learner) {
+        List<BadgeType> badges = new ArrayList<>();
+        if(!learner.getIsDeleted() && learner.getIsVerified()) badges.add(BadgeType.NEW_LEARNER);
+        if(courseEnrollmentRepository.existsByUserId(learner.getId())) badges.add(BadgeType.FIRST_COURSE);
+        if(codeSubmissionRepository.countByUserId(learner.getId()) >= 10) badges.add(BadgeType.TEN_CODE);
+        return badges;
     }
 }

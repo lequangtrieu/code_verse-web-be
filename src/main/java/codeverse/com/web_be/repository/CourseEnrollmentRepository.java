@@ -56,4 +56,9 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
 """)
     List<RankingDTO> getUserRankingSince(@Param("startTime") LocalDateTime startTime);
 
+    @Query("SELECT ce FROM CourseEnrollment ce " +
+            "WHERE ce.user.id = :userId AND ce.completionPercentage = :percentage")
+    List<CourseEnrollment> findByUserIdAndCompletionPercentage(
+            @Param("userId") Long userId,
+            @Param("percentage") Float percentage);
 }

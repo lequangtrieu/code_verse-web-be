@@ -1,5 +1,6 @@
 package codeverse.com.web_be.service.CourseEnrollmentService;
 
+import codeverse.com.web_be.dto.response.CourseEnrollmentResponse.CertificateInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.MonthlyLearnerStatisticResponse;
 import codeverse.com.web_be.dto.response.RankingResponse.RankingDTO;
 import codeverse.com.web_be.entity.CourseEnrollment;
@@ -18,4 +19,6 @@ public interface ICourseEnrollmentService extends IGenericService<CourseEnrollme
     List<RankingDTO> getUserExpRanking(int limit);
     List<RankingDTO> getUserRankingSince(LocalDateTime startTime, int limit);
     List<RankingDTO> getUserExpRankingByPeriod(PeriodType periodType, int limit);
+    List<CourseEnrollment> getCompletedCoursesByUserId(Long userId);
+    CertificateInfoDTO getCertificateInfo(Long userId, Long courseId);
 }

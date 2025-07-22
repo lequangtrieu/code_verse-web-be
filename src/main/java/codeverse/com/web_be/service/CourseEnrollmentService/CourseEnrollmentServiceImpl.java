@@ -1,5 +1,6 @@
 package codeverse.com.web_be.service.CourseEnrollmentService;
 
+import codeverse.com.web_be.dto.response.CourseEnrollmentResponse.CertificateInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.MonthlyLearnerStatisticResponse;
 import codeverse.com.web_be.dto.response.RankingResponse.RankingDTO;
 import codeverse.com.web_be.entity.CourseEnrollment;
@@ -98,4 +99,28 @@ public class CourseEnrollmentServiceImpl extends GenericServiceImpl<CourseEnroll
                 .limit(limit)
                 .toList();
     }
+
+    @Override
+    public List<CourseEnrollment> getCompletedCoursesByUserId(Long userId) {
+        return courseEnrollmentRepository
+                .findByUserIdAndCompletionPercentage(userId, 100f);
+    }
+    @Override
+    public CertificateInfoDTO getCertificateInfo(Long userId, Long courseId) {
+        CourseEnrollment enrollment = courseEnrollmentRepository
+                .findByUserIdAndCourseId(userId, courseId)
+                .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+
+        if (enrollment.getCompletionPercentage() < 100.0f) {
+            throw new RuntimeException("Course not completed");
+        }
+
+        return new CertificateInfoDTO(
+                enrollment.getUser().getUsername(),
+                enrollment.getCourse().getTitle(),
+                enrollment.getCourse().getInstructor().getUsername(),
+                enrollment.getUpdatedAt()
+        );
+    }
+
 }

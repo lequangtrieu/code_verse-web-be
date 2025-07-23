@@ -3,6 +3,7 @@ package codeverse.com.web_be.service.CourseRatingService;
 import codeverse.com.web_be.dto.request.CourseRatingRequest.CourseRatingRequestDto;
 import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingDto;
 import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingResponseDto;
+import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingStatisticsResponse;
 import codeverse.com.web_be.dto.response.CourseRatingResponse.ReviewItem;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.CourseRating;
@@ -10,7 +11,10 @@ import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.repository.CourseRatingRepository;
 import codeverse.com.web_be.repository.CourseRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +31,7 @@ public class CourseRatingServiceImpl implements CourseRatingService {
     private final CourseRatingRepository courseRatingRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final FunctionHelper functionHelper;
 
     @Override
     @Transactional
@@ -96,6 +101,16 @@ public class CourseRatingServiceImpl implements CourseRatingService {
                 .reviews(reviewItems)
                 .build();
     }
+
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @Override
+    public List<CourseRatingStatisticsResponse> getAllCourseRatingStatistics() {
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        User instructor = functionHelper.getActiveUserByUsername(name);
+        return courseRatingRepository.findAllGroupedByCourseAndYear(instructor.getId());
+    }
+
     @Override
     public CourseRatingDto getUserRatingForCourse(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)

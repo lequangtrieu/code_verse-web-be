@@ -1,9 +1,12 @@
 package codeverse.com.web_be.dto.response.UserResponse;
 
+import codeverse.com.web_be.enums.BadgeType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,5 +25,6 @@ public class UserResponse {
     String phoneNumber;
     String teachingCredentials;
     String educationalBackground;
+    List<BadgeType> badges = new ArrayList<>();
     LocalDateTime createdAt;
 }

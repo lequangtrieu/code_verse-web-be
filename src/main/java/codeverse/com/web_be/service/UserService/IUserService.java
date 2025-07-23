@@ -5,6 +5,7 @@ import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.BadgeType;
 import codeverse.com.web_be.service.IGenericService;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,4 +26,5 @@ public interface IUserService extends IGenericService<User, Long> {
     void deactivateInstructor(Long userId);
     List<UserResponse> getActiveUsers();
     UserResponse updateQrCode(MultipartFile file);
+    List<BadgeType> getBadgesByUser(User learner);
 }

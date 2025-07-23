@@ -47,7 +47,8 @@ public class SecurityConfig {
             "/ws/**",
             "/course/authorOther/**",
             "/api/instructors/*/withdrawals/verify",
-            "/api/ranking/**"
+            "/api/ranking/**",
+            "/api/enrollment/**",
     };
 
 

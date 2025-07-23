@@ -13,4 +13,5 @@ public class CompletedCourseDTO {
     private String instructorName;
     private Float completionPercentage;
     private LocalDateTime completedAt;
+    private String mail;
 }

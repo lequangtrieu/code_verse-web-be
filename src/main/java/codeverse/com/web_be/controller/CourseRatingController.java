@@ -4,10 +4,15 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.request.CourseRatingRequest.CourseRatingRequestDto;
 import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingDto;
 import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingResponseDto;
+import codeverse.com.web_be.dto.response.CourseRatingResponse.CourseRatingStatisticsResponse;
+import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.service.CourseRatingService.CourseRatingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ratings")
@@ -45,6 +50,15 @@ public class CourseRatingController {
     ) {
         courseRatingService.updateRating(ratingId, requestDto);
         return ResponseEntity.ok("Rating updated successfully.");
+    }
+
+    @GetMapping("/statistics")
+    public ApiResponse<List<CourseRatingStatisticsResponse>> getAllRatingStatistics(){
+        List<CourseRatingStatisticsResponse> stats = courseRatingService.getAllCourseRatingStatistics();
+        return ApiResponse.<List<CourseRatingStatisticsResponse>>builder()
+                .result(stats)
+                .code(HttpStatus.OK.value())
+                .build();
     }
 
 }

@@ -17,6 +17,8 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
 
     List<CourseEnrollment> findByCourseId(Long courseId);
 
+    boolean existsByUserId(Long userId);
+
     @Query("""
                 SELECT new codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.MonthlyLearnerStatisticResponse(
                     c.id,

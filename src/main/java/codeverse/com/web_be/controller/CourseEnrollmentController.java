@@ -47,7 +47,8 @@ public class CourseEnrollmentController {
                         ce.getCourse().getTitle(),
                         ce.getCourse().getInstructor().getUsername(),
                         ce.getCompletionPercentage(),
-                        ce.getUpdatedAt()
+                        ce.getUpdatedAt(),
+                        ce.getUser().getUsername()
                 ))
                 .toList();
 

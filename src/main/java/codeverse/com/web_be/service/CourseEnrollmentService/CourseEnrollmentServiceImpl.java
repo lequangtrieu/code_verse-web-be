@@ -105,6 +105,7 @@ public class CourseEnrollmentServiceImpl extends GenericServiceImpl<CourseEnroll
         return courseEnrollmentRepository
                 .findByUserIdAndCompletionPercentage(userId, 100f);
     }
+
     @Override
     public CertificateInfoDTO getCertificateInfo(Long userId, Long courseId) {
         CourseEnrollment enrollment = courseEnrollmentRepository
@@ -121,6 +122,11 @@ public class CourseEnrollmentServiceImpl extends GenericServiceImpl<CourseEnroll
                 enrollment.getCourse().getInstructor().getUsername(),
                 enrollment.getUpdatedAt()
         );
+    }
+
+    @Override
+    public boolean isUserEnrolled(Long courseId, String username) {
+        return courseEnrollmentRepository.existsByUserUsernameAndCourseId(username, courseId);
     }
 
 }

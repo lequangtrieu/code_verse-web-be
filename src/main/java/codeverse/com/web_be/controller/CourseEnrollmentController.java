@@ -63,4 +63,13 @@ public class CourseEnrollmentController {
         CertificateInfoDTO dto = courseEnrollmentService.getCertificateInfo(userId, courseId);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/is-enrolled")
+    public ResponseEntity<Boolean> isUserEnrolled(
+            @RequestParam Long courseId,
+            @RequestParam String username
+    ) {
+        boolean isEnrolled = courseEnrollmentService.isUserEnrolled(courseId, username);
+        return ResponseEntity.ok(isEnrolled);
+    }
 }

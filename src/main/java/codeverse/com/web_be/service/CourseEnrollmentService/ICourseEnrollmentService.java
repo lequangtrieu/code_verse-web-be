@@ -21,4 +21,5 @@ public interface ICourseEnrollmentService extends IGenericService<CourseEnrollme
     List<RankingDTO> getUserExpRankingByPeriod(PeriodType periodType, int limit);
     List<CourseEnrollment> getCompletedCoursesByUserId(Long userId);
     CertificateInfoDTO getCertificateInfo(Long userId, Long courseId);
+    boolean isUserEnrolled(Long courseId, String username);
 }

@@ -4,12 +4,9 @@ import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
+import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardDto;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseDetailDTO;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseForUpdateResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseProgressResponse;
-import codeverse.com.web_be.dto.response.CourseResponse.CourseResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.service.IGenericService;
@@ -22,6 +19,9 @@ public interface ICourseService extends IGenericService<Course, Long> {
     List<Course> findByInstructorId(Long instructorId);
 
     List<Course> findByInstructorUsername(String username);
+    List<Course> findTrainingByInstructor();
+    TrainingResponse findTrainingById(Long id);
+    void updateTraining(Long id, CourseCreateRequest request);
 
     List<CourseResponse> getAllCourses();
 

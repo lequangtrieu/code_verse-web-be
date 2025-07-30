@@ -3,6 +3,7 @@ package codeverse.com.web_be.controller;
 import codeverse.com.web_be.dto.request.CodeRequest.CodeRequestDTO;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseCreateRequest;
 import codeverse.com.web_be.dto.request.CourseRequest.CourseUpdateRequest;
+import codeverse.com.web_be.dto.request.LessonRequest.LessonCreateRequest;
 import codeverse.com.web_be.dto.response.CourseEnrollmentResponse.CourseEnrollmentStatusDTO;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleValidationResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
@@ -10,13 +11,19 @@ import codeverse.com.web_be.dto.response.CourseResponse.Course.SimpleCourseCardD
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseDetailResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.MonthlyLearnerStatisticResponse;
+import codeverse.com.web_be.dto.response.LessonResponse.LessonResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.CourseEnrollment;
+import codeverse.com.web_be.entity.CourseModule;
+import codeverse.com.web_be.entity.Lesson;
+import codeverse.com.web_be.enums.LessonType;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.service.CourseEnrollmentService.ICourseEnrollmentService;
 import codeverse.com.web_be.repository.CourseEnrollmentRepository;
+import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
 import codeverse.com.web_be.service.CourseService.ICourseService;
+import codeverse.com.web_be.service.LessonService.ILessonService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -26,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,6 +45,8 @@ public class CourseController {
     private final ICourseEnrollmentService courseEnrollmentService;
     private final CourseMapper courseMapper;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
+    private final ICourseModuleService courseModuleService;
+    private final ILessonService lessonService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CourseResponse>>> getAllCourses() {
@@ -54,7 +64,17 @@ public class CourseController {
         return ApiResponse.<List<CourseForUpdateResponse>>builder()
                 .result(courseService.findByInstructorUsername(username).stream()
                         .map(courseMapper::courseToCourseForUpdateResponse)
-                        .collect(Collectors.toList()))
+                        .toList())
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @GetMapping("/training/instructor")
+    public ApiResponse<List<CourseForUpdateResponse>> getAllTrainingsInstructor() {
+        return ApiResponse.<List<CourseForUpdateResponse>>builder()
+                .result(courseService.findTrainingByInstructor().stream()
+                        .map(courseMapper::courseToCourseForUpdateResponse)
+                        .toList())
                 .code(HttpStatus.OK.value())
                 .build();
     }
@@ -64,6 +84,14 @@ public class CourseController {
         Course updatedCourse = courseService.updateCourse(id, request);
         return ApiResponse.<CourseResponse>builder()
                 .result(courseMapper.courseToCourseResponse(updatedCourse))
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @PutMapping(value = "training//{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<?> updateTraining(@PathVariable Long id, @ModelAttribute CourseCreateRequest request) {
+        courseService.updateTraining(id, request);
+        return ApiResponse.builder()
                 .code(HttpStatus.OK.value())
                 .build();
     }
@@ -83,6 +111,15 @@ public class CourseController {
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
         CourseForUpdateResponse response = courseMapper.courseToCourseForUpdateResponse(course);
         return ApiResponse.<CourseForUpdateResponse>builder()
+                .result(response)
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
+    @GetMapping("/training/{id}/for-instructor")
+    public ApiResponse<TrainingResponse> getTrainingById(@PathVariable Long id) {
+        TrainingResponse response = courseService.findTrainingById(id);
+        return ApiResponse.<TrainingResponse>builder()
                 .result(response)
                 .code(HttpStatus.OK.value())
                 .build();
@@ -112,6 +149,31 @@ public class CourseController {
 
         return ApiResponse.<CourseResponse>builder()
                 .result(courseMapper.courseToCourseResponse(courseCreated))
+                .code(HttpStatus.CREATED.value())
+                .build();
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/training")
+    public ApiResponse<?> createTraining(@ModelAttribute CourseCreateRequest course) {
+        Course courseCreated = courseService.createCourse(course);
+        CourseModule module = CourseModule.builder()
+                .course(courseCreated)
+                .title("Training Module")
+                .orderIndex(1)
+                .build();
+        module = courseModuleService.save(module);
+
+        LessonResponse lesson = lessonService.createLesson(LessonCreateRequest.builder()
+                .courseModuleId(module.getId())
+                .title("Training Lesson")
+                .orderIndex(1)
+                .lessonType(LessonType.CODE)
+                .duration(10)
+                .expReward(course.getExpReward())
+                .build());
+        return ApiResponse.builder()
+                .result(Map.of("lessonId", lesson.getId(),
+                        "courseId", courseCreated.getId()))
                 .code(HttpStatus.CREATED.value())
                 .build();
     }

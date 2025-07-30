@@ -4,5 +4,6 @@ public enum CourseStatus {
     DRAFT,
     PENDING,
     PUBLISHED,
-    HIDDEN
+    TRAINING_DRAFT,
+    TRAINING_PUBLISHED
 }

@@ -26,4 +26,6 @@ public class CourseCreateRequest {
     private BigDecimal price = BigDecimal.ZERO;
     @Builder.Default
     private CourseStatus status = CourseStatus.DRAFT;
+    @Builder.Default
+    private Integer expReward = 0;
 }

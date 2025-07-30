@@ -25,6 +25,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -105,9 +106,61 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public List<Course> findByInstructorUsername(String username) {
-        return courseRepository.findByInstructorUsername(username);
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        System.out.println("Name:" + name);
+        return courseRepository.findByInstructorUsername(name)
+                .stream()
+                .filter(course -> !course.getStatus().equals(CourseStatus.TRAINING_DRAFT)
+                                && !course.getStatus().equals(CourseStatus.TRAINING_PUBLISHED))
+                .toList();
     }
 
+    @Override
+    public List<Course> findTrainingByInstructor() {
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        return courseRepository.findByInstructorUsername(name)
+                .stream()
+                .filter(course -> course.getStatus().equals(CourseStatus.TRAINING_DRAFT)
+                        || course.getStatus().equals(CourseStatus.TRAINING_PUBLISHED))
+                .toList();
+    }
+
+    @Override
+    public TrainingResponse findTrainingById(Long id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        Lesson lesson = lessonRepository.findFirstByCourseModule_Course_IdOrderByCourseModule_OrderIndexAscOrderIndexAsc(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+        return TrainingResponse.builder()
+                .courseId(course.getId())
+                .title(course.getTitle())
+                .level(String.valueOf(course.getLevel()))
+                .language(String.valueOf(course.getLanguage()))
+                .status(String.valueOf(course.getStatus()))
+                .expReward(lesson.getExpReward())
+                .lessonId(lesson.getId())
+                .build();
+    }
+
+    @Override
+    public void updateTraining(Long id, CourseCreateRequest request) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        course.setTitle(request.getTitle());
+        course.setLevel(request.getLevel());
+        course.setLanguage(request.getLanguage());
+        courseRepository.save(course);
+
+        Lesson lesson = lessonRepository.findFirstByCourseModule_Course_IdOrderByCourseModule_OrderIndexAscOrderIndexAsc(course.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+
+        lesson.setExpReward(request.getExpReward());
+        lessonRepository.save(lesson);
+    }
 
     @Override
     public List<CourseResponse> getCoursesByLearnerId(Long userId) {
@@ -153,7 +206,9 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     public Course createCourse(CourseCreateRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        User instructor = functionHelper.getActiveUserByUsername(request.getInstructor());
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        User instructor = functionHelper.getActiveUserByUsername(name);
 
         String thumbnailUrl = null;
         if (request.getImageFile() != null && !request.getImageFile().isEmpty()) {
@@ -239,6 +294,8 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
     public List<CourseForUpdateResponse> getAllCoursesByAdmin() {
         List<Course> courses = courseRepository.findAll();
         return courses.stream()
+                .filter(course -> !course.getStatus().equals(CourseStatus.TRAINING_DRAFT)
+                        && !course.getStatus().equals(CourseStatus.TRAINING_PUBLISHED))
                 .map(courseMapper::courseToCourseForUpdateResponse)
                 .collect(Collectors.toList());
     }

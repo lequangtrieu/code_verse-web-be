@@ -59,6 +59,12 @@ public class CourseController {
         );
     }
 
+    @GetMapping("/training/published")
+    public ResponseEntity<List<CourseResponse>> getAllPublishedTrainings() {
+        List<CourseResponse> trainings = courseService.getPublishedTrainings();
+        return ResponseEntity.ok(trainings);
+    }
+
     @GetMapping("/instructor")
     public ApiResponse<List<CourseForUpdateResponse>> getAllCoursesInstructor(@RequestParam String username) {
         return ApiResponse.<List<CourseForUpdateResponse>>builder()

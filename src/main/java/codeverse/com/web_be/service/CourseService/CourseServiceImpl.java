@@ -201,6 +201,13 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.selectAllCourses();
     }
 
+    @Override
+    public List<CourseResponse> getPublishedTrainings() {
+        return courseRepository.findByStatus(CourseStatus.TRAINING_PUBLISHED).stream()
+                .map(courseMapper::courseToCourseResponse)
+                .toList();
+    }
+
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @Override
     public Course createCourse(CourseCreateRequest request) {

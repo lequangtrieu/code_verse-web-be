@@ -18,11 +18,11 @@ import java.util.Map;
 @RequestMapping("/ai")
 @RequiredArgsConstructor
 public class AIController {
-     private final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
+    private final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
 
 
     @PostMapping("/feedback")
-    public ResponseEntity<?> getAIFeedback(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> getAIFeedback(@RequestBody Map<String, Object> body) {
         String prompt = generatePrompt(body);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -42,60 +42,96 @@ public class AIController {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(groqRequest, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                "https://api.groq.com/openai/v1/chat/completions", request, Map.class
+                "https://api.groq.com/openai/v1/chat/completions",
+                request,
+                Map.class
         );
 
-        Map<String, Object> contentMap = (Map<String, Object>) ((Map<String, Object>)
-                ((List<?>) response.getBody().get("choices")).get(0)).get("message");
+        Map<String, Object> contentMap = (Map<String, Object>)
+                ((Map<String, Object>) ((List<?>) response.getBody().get("choices")).get(0)).get("message");
 
         return ResponseEntity.ok(Map.of("suggestion", contentMap.get("content")));
     }
 
-    private String generatePrompt(Map<String, String> body) {
-        String exerciseTitle = body.getOrDefault("exerciseTitle", "");
-        String exerciseTasks = body.getOrDefault("exerciseTasks", "");
+    private String generatePrompt(Map<String, Object> body) {
+        String exerciseTitle = (String) body.getOrDefault("exerciseTitle", "");
+        String exerciseTasks = (String) body.getOrDefault("exerciseTasks", "");
+        String exerciseDescription = (String) body.getOrDefault("exerciseDescription", "");
+        String language = (String) body.getOrDefault("language", "");
+        String code = (String) body.getOrDefault("code", "");
+        String input = (String) body.getOrDefault("input", "");
+        String expected = (String) body.getOrDefault("expected", "");
+        String actual = (String) body.getOrDefault("actual", "");
 
         return String.format("""
-                        I am building an online code learning platform where learners write code in an online editor.
-                        The code is executed using the JDoodle API (a cloud-based compiler), and we test it using specific test cases.
-                        
-                        Each coding exercise comes with a description and a list of required tasks that the learner must fulfill.
-                        
-                        Exercise title:
-                        %s
-                        
-                        Tasks to complete:
-                        %s
-                        
-                        One of the test cases has failed during code execution.
-                        
-                        ---------------------
-                        Programming language: %s
-                        Learner's code:
-                        %s
-                        ---------------------
-                        
-                        Test case details:
-                        Input:
-                        %s
-                        
-                        Expected output:
-                        %s
-                        
-                        Actual output:
-                        %s
-                        
-                        Please help analyze why this test case failed, and suggest how to fix the code.
-                        Make sure your explanation is clear and targeted for beginners.
-                        If possible, provide a corrected version of the code.
-                        """,
+            You are an AI assistant integrated into **CodeVerse**, an online platform where learners solve coding challenges directly in the browser.
+
+            🧪 Our system uses **JDoodle**, a stateless cloud-based compiler that runs code with:
+            • Raw input (via standard input methods only)
+            • Raw output (compared exactly to expected output)
+
+            ⚠️ IMPORTANT: JDoodle does **not** support interactive prompts. Therefore:
+            • ❌ DO NOT suggest any prompt-based code like `print("Enter your name:")`, `cout << "Input:"`, etc.
+            • ✅ Learners MUST read input using proper standard input syntax for their language (e.g., `Scanner` in Java, `input()` in Python, `cin` in C++).
+            • ✅ Learners MUST produce output that **exactly matches** the expected output, without extra print statements or comments.
+            • ❌ DO NOT hardcode input values like `a = 8` or `if (a == 12)` — code must work for ANY input.
+
+            ---------------------
+            🎯 Exercise Title:
+            %s
+
+            📄 Description:
+            %s
+
+            ✅ Required Tasks:
+            %s
+
+            ---------------------
+            💻 Language: %s
+
+            👨‍🎓 Learner's Submitted Code:
+            %s
+
+            🧪 Test Case:
+            • Input: %s
+            • Expected Output: %s
+            • Actual Output: %s
+
+            ---------------------
+            🔍 This test case FAILED — your task is to help the learner fix the problem.
+
+            Please act as a **strict AI code reviewer** and follow these rules:
+
+            1. Determine if the code is valid:
+               - ✅ If it's algorithmic, uses input-reading correctly, and produces correct output → respond with:
+                 [RESULT]: PASS
+               - ❌ If it contains hardcoded logic (e.g., `a = 5`, `if (a == 12)`), extra prompts, or only works for specific inputs → respond with:
+                 [RESULT]: FAIL
+
+            2. After the [RESULT], clearly explain WHY the code passes or fails.
+
+            3. If the result is FAIL, you MUST provide a corrected version of the code using a code block (```), and ensure that:
+               • It reads input properly based on the language (e.g., `Scanner`, `input()`, `cin`)
+               • It works for ANY valid input
+               • It has NO extra prompts or unnecessary output
+
+            4. If the result is PASS, you MAY show a clean version of the code again (optional).
+
+            🛑 Your response MUST start with:
+            [RESULT]: PASS
+            or
+            [RESULT]: FAIL
+
+            Be clear, consistent, and always follow the platform's execution rules.
+            """,
                 exerciseTitle,
+                exerciseDescription,
                 exerciseTasks,
-                body.get("language"),
-                body.get("code"),
-                body.get("input"),
-                body.get("expected"),
-                body.get("actual")
+                language,
+                code,
+                input,
+                expected,
+                actual
         );
     }
 }

@@ -5,6 +5,7 @@ import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.LessonProgress;
+import codeverse.com.web_be.enums.CourseStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -199,4 +200,5 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "ORDER BY (SELECT COUNT(e) FROM CourseEnrollment e WHERE e.course = c) DESC")
     List<SimpleCourseCardDto> findPopularCourses(Pageable pageable);
 
+    List<Course> findByStatus(CourseStatus status);
 }

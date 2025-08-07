@@ -24,6 +24,7 @@ public interface ICourseService extends IGenericService<Course, Long> {
     void updateTraining(Long id, CourseCreateRequest request);
 
     List<CourseResponse> getAllCourses();
+    List<CourseResponse> getPublishedTrainings();
 
     Course createCourse(CourseCreateRequest request);
 

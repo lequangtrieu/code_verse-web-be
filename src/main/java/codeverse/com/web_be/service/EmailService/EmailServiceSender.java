@@ -2,6 +2,7 @@ package codeverse.com.web_be.service.EmailService;
 
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.entity.WithdrawalRequest;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,132 @@ public class EmailServiceSender {
         helper.setSubject(subject);
         helper.setText(htmlContent, true);
 
+        emailSender.send(message);
+    }
+
+    @Async
+    public void sendImportedUserWelcomeEmail(User user) throws MessagingException {
+        String subject = "🎉 Welcome to CodeVerse! Your Account Is Ready";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fdfdfd;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/4202/4202842.png" alt="Welcome Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #1677ff;">Welcome to CodeVerse, %s!</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            We’re excited to have you onboard. An account has been created for you on CodeVerse.
+        </p>
+        <p style="font-size: 16px; color: #555; text-align: center;">
+            You can now log in securely using your Google account.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="https://code-verse-web-fe.vercel.app/"
+               style="background-color: #4285F4; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
+               Go to our Homepage
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            If you have any questions, feel free to <a href="mailto:dolvapple@gmail.com">contact our support team</a>.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Learn. Grow. Succeed.</p>
+    </div>
+    """, user.getName());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(user.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
+    @Async
+    public void sendInstructorApprovalEmail(User user) throws MessagingException {
+        String subject = "🎓 Congratulations! You're Now an Instructor on CodeVerse";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #f0f8ff;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Instructor Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #1677ff;">Welcome to the Instructor Community, %s!</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            Your request to become an instructor on <strong>CodeVerse</strong> has been approved.
+        </p>
+        <p style="font-size: 16px; color: #555; text-align: center;">
+            You now have access to create and manage your own courses. We’re so excited!
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="https://code-verse-web-fe.vercel.app/"
+               style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
+               Start with us
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            Have questions? <a href="mailto:dolvapple@gmail.com">Contact our support team</a>.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Inspire and educate.</p>
+    </div>
+    """, user.getName());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(user.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
+    @Async
+    public void sendInstructorRejectionEmail(User user) throws MessagingException {
+        String subject = "⚠️ Instructor Registration Request Denied";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fff8f8;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Rejected Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #d32f2f;">Instructor Registration Unsuccessful</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            Dear %s,
+        </p>
+        <p style="font-size: 16px; color: #555;">
+            Thank you for your interest in becoming an instructor on <strong>CodeVerse</strong>. Unfortunately, your request has not been approved at this time.
+        </p>
+        <p style="font-size: 16px; color: #555;">
+            You’re welcome to continue using our platform as a learner, and you may apply again in the future if your circumstances change.
+        </p>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            Have questions? <a href="mailto:dolvapple@gmail.com">Reach out to our team</a>.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Keep learning 🌱</p>
+    </div>
+    """, user.getName());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(user.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
         emailSender.send(message);
     }
 
@@ -183,6 +310,53 @@ public class EmailServiceSender {
         emailSender.send(message);
     }
 
+    @Async
+    public void sendWithdrawalConfirmationEmail(WithdrawalRequest request) throws MessagingException {
+        String subject = "💰 Withdrawal Request Approved — Please Confirm";
+
+        String confirmationLink = "https://code-verse-web-be.onrender.com/codeVerse/api/instructors/" + request.getInstructor().getId() + "/withdrawals/" + request.getId() + "/confirm";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fdfdfd;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/138/138292.png" alt="Withdrawal Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #1677ff;">Withdrawal Approved</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            Dear %s,
+        </p>
+        <p style="font-size: 16px; color: #555;">
+            Your withdrawal request has been approved.
+        </p>
+        <p style="font-size: 16px; color: #555;">
+            To proceed, please confirm the withdrawal by clicking the button below:
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="%s"
+               style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
+               Confirm Withdrawal
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            The Admin Team would be informed about your confirmation.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Secure and trusted.</p>
+    </div>
+    """, request.getInstructor().getName(), confirmationLink);
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(request.getInstructor().getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
 
     @Async
     public void sendCourseCompletionEmail(User user, Course course) throws MessagingException {
@@ -222,4 +396,91 @@ public class EmailServiceSender {
         helper.setText(htmlContent, true);
         emailSender.send(message);
     }
+
+    @Async
+    public void sendUserBannedEmail(User user) throws MessagingException {
+        String subject = "🚫 Account Banned Due to Multiple Reports";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fff8f8;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Ban Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #d32f2f;">Your Account Has Been Banned</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            Dear %s,
+        </p>
+        <p style="font-size: 16px; color: #555; margin-top: 10px;">
+            We regret to inform you that your account has been banned due to receiving multiple reports regarding violations of our community guidelines.
+        </p>
+        <p style="font-size: 16px; color: #555;">
+            This action was taken after careful consideration to ensure the safety and integrity of our platform.
+        </p>
+        <p style="font-size: 16px; color: #555; margin-top: 20px;">
+            If you believe this was a mistake or would like to appeal the ban, you may reply directly to this email with an explanation or request for review.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Your digital space for learning.</p>
+    </div>
+    """, user.getName());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(user.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
+    @Async
+    public void sendUserUnbannedEmail(User user) throws MessagingException {
+        String subject = "✅ Your Account Has Been Reinstated";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #f7fff7;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Unban Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #388e3c;">Welcome Back, %s! 🎉</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            Your account has been successfully reinstated.
+        </p>
+        <p style="font-size: 16px; color: #555; margin-top: 20px;">
+            After a thorough review, we’ve lifted the ban on your account. You now have full access to all platform features again.
+        </p>
+        <p style="font-size: 16px; color: #555;">
+            We appreciate your patience and encourage you to continue following our community guidelines to ensure a positive experience for all users.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="https://code-verse-web-fe.vercel.app"
+               style="background-color: #388e3c; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
+               Go to Dashboard
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            Have questions? Just reply to this email and we’ll be happy to help.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Welcome back 🌱</p>
+    </div>
+    """, user.getName());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(user.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
 }

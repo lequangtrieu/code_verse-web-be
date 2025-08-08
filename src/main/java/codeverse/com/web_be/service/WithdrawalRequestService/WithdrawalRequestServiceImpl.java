@@ -11,6 +11,7 @@ import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.UserRepository;
 import codeverse.com.web_be.repository.WithdrawalRequestRepository;
 import codeverse.com.web_be.service.EmailService.EmailServiceSender;
+import codeverse.com.web_be.service.NotificationService.INotificationService;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     private final WithdrawalRequestRepository withdrawalRepo;
     private final UserRepository userRepo;
     private final EmailServiceSender emailSender;
+    private final INotificationService notificationService;
 
     @Override
     @Transactional
@@ -66,6 +68,11 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
         try {
             emailSender.sendWithdrawalVerificationEmail(instructor.getUsername(), verifyToken, request.getAmount(), instructorId);
+            List<User> admins = userRepo.findAll().stream()
+                    .filter(u -> u.getRole().equals(UserRole.ADMIN))
+                    .toList();
+            notificationService.notifyUsers(admins, instructor, "New Withdrawal Request",
+                    "<p>" + instructor.getName() + " has sent a  withdrawal request.<p/>");
         } catch (MessagingException e) {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
@@ -113,6 +120,20 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
         request.setStatus(WithdrawalStatus.CANCELLED);
         request.setAdminNote("Cancelled by instructor");
+        withdrawalRepo.save(request);
+    }
+
+    @Override
+    @Transactional
+    public void confirmWithdrawal(Long requestId) {
+        WithdrawalRequest request = withdrawalRepo.findById(requestId)
+                .orElseThrow(() -> new AppException(ErrorCode.REQUEST_NOT_EXISTED));
+
+        if (request.getStatus() != WithdrawalStatus.APPROVED) {
+            throw new IllegalStateException("Only approved requests can be confirmed");
+        }
+
+        request.setStatus(WithdrawalStatus.CONFIRMED);
         withdrawalRepo.save(request);
     }
 

@@ -94,7 +94,7 @@ public class CourseController {
                 .build();
     }
 
-    @PutMapping(value = "training//{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "training/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<?> updateTraining(@PathVariable Long id, @ModelAttribute CourseCreateRequest request) {
         courseService.updateTraining(id, request);
         return ApiResponse.builder()

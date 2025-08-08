@@ -95,5 +95,58 @@ public class WithdrawalRequestController {
         withdrawalService.cancelRequest(requestId, instructorId);
         return ResponseEntity.ok("Request has been cancelled.");
     }
+
+    @GetMapping("/{id}/confirm")
+    public ResponseEntity<String> confirmWithdrawal(@PathVariable Long id) {
+        try {
+            withdrawalService.confirmWithdrawal(id);
+
+            String htmlSuccess = """
+        <!DOCTYPE html>
+        <html>
+        <head><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head>
+        <body>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Confirmation Successful!',
+                text: 'Your withdrawal has been confirmed. The process will be finalized shortly.',
+                confirmButtonText: 'Go to Dashboard'
+            }).then(() => {
+                window.location.href = 'https://code-verse-web-fe.vercel.app/instructor-panel/manageBalance';
+            });
+        </script>
+        </body>
+        </html>
+        """;
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "text/html")
+                    .body(htmlSuccess);
+
+        } catch (AppException e) {
+            String htmlError = """
+        <!DOCTYPE html>
+        <html>
+        <head><script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script></head>
+        <body>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Confirmation Failed',
+                text: 'The confirmation link is invalid or this request has already been processed.',
+            }).then(() => {
+                window.location.href = 'https://code-verse-web-fe.vercel.app/instructor-panel/manageBalance';
+            });
+        </script>
+        </body>
+        </html>
+        """;
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .header("Content-Type", "text/html")
+                    .body(htmlError);
+        }
+    }
 }
 

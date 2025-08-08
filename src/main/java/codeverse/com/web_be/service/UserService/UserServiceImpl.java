@@ -14,9 +14,12 @@ import codeverse.com.web_be.mapper.UserMapper;
 import codeverse.com.web_be.repository.CodeSubmissionRepository;
 import codeverse.com.web_be.repository.CourseEnrollmentRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.EmailService.EmailServiceSender;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.GenericServiceImpl;
+import codeverse.com.web_be.service.NotificationService.INotificationService;
+import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,8 +43,10 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     private final FunctionHelper functionHelper;
     private final CourseEnrollmentRepository courseEnrollmentRepository;
     private final CodeSubmissionRepository codeSubmissionRepository;
+    private final EmailServiceSender emailSender;
+    private final INotificationService notificationService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService, FunctionHelper functionHelper, CourseEnrollmentRepository courseEnrollmentRepository, CodeSubmissionRepository codeSubmissionRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService, FunctionHelper functionHelper, CourseEnrollmentRepository courseEnrollmentRepository, CodeSubmissionRepository codeSubmissionRepository, EmailServiceSender emailSender, INotificationService notificationService) {
         super(userRepository);
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -50,6 +55,8 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         this.functionHelper = functionHelper;
         this.courseEnrollmentRepository = courseEnrollmentRepository;
         this.codeSubmissionRepository = codeSubmissionRepository;
+        this.emailSender = emailSender;
+        this.notificationService = notificationService;
     }
 
     public UserResponse getMyInfo() {
@@ -150,6 +157,13 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setIsDeleted(lock); // true = locked
         userRepository.save(user);
+
+        try {
+            if(lock) emailSender.sendUserBannedEmail(user);
+            else emailSender.sendUserUnbannedEmail(user);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -166,7 +180,14 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         // Mã hóa password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setIsVerified(true);  // User tạo từ admin import mặc định verified
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        try {
+            emailSender.sendImportedUserWelcomeEmail(user);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+        return user;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -194,6 +215,12 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         user.setInstructorStatus(InstructorStatus.APPROVED);
         userRepository.save(user);
+
+        try {
+            emailSender.sendInstructorApprovalEmail(user);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -204,6 +231,12 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         user.setInstructorStatus(InstructorStatus.REJECTED);
         userRepository.save(user);
+
+        try {
+            emailSender.sendInstructorRejectionEmail(user);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")

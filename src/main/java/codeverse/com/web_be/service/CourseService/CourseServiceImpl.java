@@ -396,8 +396,16 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             notificationService.notifyUsers(
                     List.of(course.getInstructor()),
                     admins.get(0),
-                    "Your Course has been published!",
+                    "✅ Your Course has been published!",
                     "Course " + course.getTitle() + " has been published."
+            );
+        }
+        if(request.getStatus().equals(CourseStatus.DRAFT)){
+            notificationService.notifyUsers(
+                    List.of(course.getInstructor()),
+                    admins.get(0),
+                    "❌ Your Course has been rejected!",
+                    "Course " + course.getTitle() + " has been rejected."
             );
         }
 

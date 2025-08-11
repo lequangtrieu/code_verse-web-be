@@ -1,12 +1,10 @@
 package codeverse.com.web_be.repository;
 
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.MonthlyLearnerStatisticResponse;
-import codeverse.com.web_be.dto.response.RankingResponse.RankingDTO;
 import codeverse.com.web_be.entity.CourseEnrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,22 +37,6 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     @Query("SELECT pt.completionPercentage FROM CourseEnrollment pt " +
             "WHERE pt.course.id = :courseId AND pt.user.id = :userId")
     Float getCompletionPercentage(@Param("courseId") Long courseId, @Param("userId") Long userId);
-
-    @Query("SELECT new codeverse.com.web_be.dto.response.RankingResponse.RankingDTO(u.id, u.username, u.avatar, SUM(ce.totalExpGained)) " +
-            "FROM CourseEnrollment ce JOIN ce.user u " +
-            "GROUP BY u.id, u.username, u.avatar " +
-            "ORDER BY SUM(ce.totalExpGained) DESC")
-    List<RankingDTO> getUserRanking();
-
-    @Query("""
-    SELECT new codeverse.com.web_be.dto.response.RankingResponse.RankingDTO(u.id, u.username, u.avatar, SUM(ce.totalExpGained))
-    FROM CourseEnrollment ce
-    JOIN ce.user u
-    WHERE ce.updatedAt >= :startTime
-    GROUP BY u.id, u.username, u.avatar
-    ORDER BY SUM(ce.totalExpGained) DESC
-""")
-    List<RankingDTO> getUserRankingSince(@Param("startTime") LocalDateTime startTime);
 
     @Query("SELECT ce FROM CourseEnrollment ce " +
             "WHERE ce.user.id = :userId AND ce.completionPercentage = :percentage")

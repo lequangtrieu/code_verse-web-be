@@ -1,14 +1,12 @@
 package codeverse.com.web_be.controller;
 
+import codeverse.com.web_be.dto.request.CategoryRequest.CategoryRequest;
 import codeverse.com.web_be.dto.response.CategoryResponse.CategoryResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
 import codeverse.com.web_be.service.CategoryService.CategoryServiceImpl;
-import codeverse.com.web_be.service.CourseService.CourseServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,6 +24,22 @@ public class CategoryController {
                         .message("Success")
                         .build()
         );
+    }
+
+    @PostMapping("")
+    public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryRequest request) {
+        return ResponseEntity.ok(categoryService.createCategory(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id, @RequestBody CategoryRequest request) {
+        return ResponseEntity.ok(categoryService.updateCategory(id, request));
+    }
+
+    @PutMapping("/{id}/delete")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

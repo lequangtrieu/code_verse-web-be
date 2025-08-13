@@ -32,4 +32,17 @@ public interface WithdrawalRequestRepository extends JpaRepository<WithdrawalReq
             @Param("startDate") LocalDateTime start,
             @Param("endDate") LocalDateTime end
     );
+
+    @Query("SELECT w.instructor.id, COUNT(w.id), COALESCE(SUM(w.amount), 0) " +
+            "FROM WithdrawalRequest w " +
+            "WHERE w.status = codeverse.com.web_be.enums.WithdrawalStatus.APPROVED " +
+            "GROUP BY w.instructor.id")
+    List<Object[]> getApprovedWithdrawals();
+
+    @Query("SELECT w.instructor.id, COALESCE(SUM(w.amount), 0) " +
+            "FROM WithdrawalRequest w " +
+            "WHERE w.status = codeverse.com.web_be.enums.WithdrawalStatus.PENDING " +
+            "GROUP BY w.instructor.id")
+    List<Object[]> getPendingWithdrawals();
+
 }

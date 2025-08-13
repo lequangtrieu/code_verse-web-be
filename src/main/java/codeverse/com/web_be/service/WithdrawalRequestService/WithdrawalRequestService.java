@@ -11,4 +11,5 @@ public interface WithdrawalRequestService {
     List<WithdrawalRequestDTO> getMyRequests(Long instructorId);
     void verifyWithdrawal(String token);
     void cancelRequest(Long requestId, Long instructorId);
+    void confirmWithdrawal(Long requestId);
 }

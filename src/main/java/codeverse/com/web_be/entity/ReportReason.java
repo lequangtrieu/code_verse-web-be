@@ -19,4 +19,7 @@ public class ReportReason {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Builder.Default
+    private Boolean active = true;
 }

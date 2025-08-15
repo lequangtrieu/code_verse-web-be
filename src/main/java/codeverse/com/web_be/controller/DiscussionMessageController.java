@@ -93,7 +93,7 @@ public class DiscussionMessageController {
                     user,
                     "Discussion Reply",
                     "<p>" + user.getName() + " has replied to your comment. " +
-                            "<a href=\"http://localhost:3000/course/" +
+                            "<a href=\"https://code-verse-web-fe.vercel.app/course/" +
                             lesson.getCourseModule().getCourse().getId() +
                             "/learn?lesson=" + lesson.getId()
                             + "&commentId=" + reply.getId()

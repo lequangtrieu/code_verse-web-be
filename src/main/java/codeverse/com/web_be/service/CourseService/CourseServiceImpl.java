@@ -390,7 +390,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                     "New Course",
                     "<p>Course " + course.getTitle() + " created by " +
                             course.getInstructor().getName() + " is waiting for approval. " +
-                            "<a href=\"http://localhost:3000/admin-panel/courses/" +
+                            "<a href=\"https://code-verse-web-fe.vercel.app/admin-panel/courses/" +
                             course.getId() + "\">View Course >></a></p>"
             );
         }

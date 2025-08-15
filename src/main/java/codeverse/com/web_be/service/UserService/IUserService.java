@@ -27,4 +27,6 @@ public interface IUserService extends IGenericService<User, Long> {
     List<UserResponse> getActiveUsers();
     UserResponse updateQrCode(MultipartFile file);
     List<BadgeType> getBadgesByUser(User learner);
+    String getTrainingStatus(Long userId);
+    String getLessonProgressStatus(Long userId);
 }

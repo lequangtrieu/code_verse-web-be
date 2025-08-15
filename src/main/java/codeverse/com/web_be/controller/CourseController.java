@@ -32,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -242,6 +243,15 @@ public class CourseController {
                 .code(HttpStatus.OK.value())
                 .build();
     }
+
+    @PatchMapping("/{courseId}/discount/{discount}")
+    public ApiResponse updateCourseDiscount(@PathVariable Long courseId, @PathVariable BigDecimal discount) {
+        courseService.updateCourseDiscount(courseId, discount);
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .build();
+    }
+
     @GetMapping("/{userId}/{courseId}/lesson")
     public ApiResponse<CourseDetailDTO> getCourseDetails(@PathVariable Long courseId, @PathVariable Long userId) {
         CourseDetailDTO courseDetail = courseService.getCourseDetails(courseId, userId);

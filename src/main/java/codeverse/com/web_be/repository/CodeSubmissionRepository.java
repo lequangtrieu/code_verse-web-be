@@ -12,4 +12,16 @@ public interface CodeSubmissionRepository extends JpaRepository<CodeSubmission, 
             "JOIN cs.lessonProgress lp " +
             "WHERE lp.user.id = :userId")
     long countByUserId(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT COUNT(cs)
+        FROM CodeSubmission cs
+        JOIN cs.lessonProgress lp
+        JOIN lp.lesson l
+        JOIN l.courseModule cm
+        JOIN cm.course c
+        WHERE lp.user.id = :userId
+          AND c.status = 'TRAINING_PUBLISHED'
+    """)
+    long countTrainingCodeSubmissionsByUserId(@Param("userId") Long userId);
 }

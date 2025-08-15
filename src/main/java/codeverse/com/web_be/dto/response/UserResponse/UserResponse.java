@@ -26,5 +26,7 @@ public class UserResponse {
     String teachingCredentials;
     String educationalBackground;
     List<BadgeType> badges = new ArrayList<>();
+    String trainingStatus;
+    String lessonProgressStatus;
     LocalDateTime createdAt;
 }

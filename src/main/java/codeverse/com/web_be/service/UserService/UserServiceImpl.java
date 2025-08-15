@@ -43,8 +43,9 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     private final INotificationService notificationService;
     private final CourseRepository courseRepository;
     private final LessonProgressRepository lessonProgressRepository;
+    private final LessonRepository lessonRepository;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService, FunctionHelper functionHelper, CourseEnrollmentRepository courseEnrollmentRepository, CodeSubmissionRepository codeSubmissionRepository, EmailServiceSender emailSender, INotificationService notificationService, CourseRepository courseRepository, LessonProgressRepository lessonProgressRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService, FunctionHelper functionHelper, CourseEnrollmentRepository courseEnrollmentRepository, CodeSubmissionRepository codeSubmissionRepository, EmailServiceSender emailSender, INotificationService notificationService, CourseRepository courseRepository, LessonProgressRepository lessonProgressRepository, LessonRepository lessonRepository) {
         super(userRepository);
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -57,6 +58,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         this.notificationService = notificationService;
         this.courseRepository = courseRepository;
         this.lessonProgressRepository = lessonProgressRepository;
+        this.lessonRepository = lessonRepository;
     }
 
     public UserResponse getMyInfo() {
@@ -268,7 +270,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     @Override
     public String getLessonProgressStatus(Long userId) {
         return lessonProgressRepository.countByUserIdAndStatus(userId, LessonProgressStatus.PASSED) +
-                "/" + lessonProgressRepository.countByUserId(userId);
+                "/" + lessonRepository.countLessonsByUserId(userId);
     }
 
 }

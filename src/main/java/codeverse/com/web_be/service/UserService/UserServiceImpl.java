@@ -5,15 +5,11 @@ import codeverse.com.web_be.dto.request.UserRequest.UserUpdateRequest;
 import codeverse.com.web_be.dto.response.UserResponse.UserDetailResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.User;
-import codeverse.com.web_be.enums.BadgeType;
-import codeverse.com.web_be.enums.InstructorStatus;
-import codeverse.com.web_be.enums.UserRole;
+import codeverse.com.web_be.enums.*;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.mapper.UserMapper;
-import codeverse.com.web_be.repository.CodeSubmissionRepository;
-import codeverse.com.web_be.repository.CourseEnrollmentRepository;
-import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.EmailService.EmailServiceSender;
 import codeverse.com.web_be.service.FirebaseService.FirebaseStorageService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
@@ -45,8 +41,10 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     private final CodeSubmissionRepository codeSubmissionRepository;
     private final EmailServiceSender emailSender;
     private final INotificationService notificationService;
+    private final CourseRepository courseRepository;
+    private final LessonProgressRepository lessonProgressRepository;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService, FunctionHelper functionHelper, CourseEnrollmentRepository courseEnrollmentRepository, CodeSubmissionRepository codeSubmissionRepository, EmailServiceSender emailSender, INotificationService notificationService) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper, FirebaseStorageService firebaseStorageService, FunctionHelper functionHelper, CourseEnrollmentRepository courseEnrollmentRepository, CodeSubmissionRepository codeSubmissionRepository, EmailServiceSender emailSender, INotificationService notificationService, CourseRepository courseRepository, LessonProgressRepository lessonProgressRepository) {
         super(userRepository);
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -57,6 +55,8 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         this.codeSubmissionRepository = codeSubmissionRepository;
         this.emailSender = emailSender;
         this.notificationService = notificationService;
+        this.courseRepository = courseRepository;
+        this.lessonProgressRepository = lessonProgressRepository;
     }
 
     public UserResponse getMyInfo() {
@@ -68,6 +68,8 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         UserResponse response = userMapper.userToUserResponse(user);
         response.setBadges(getBadgesByUser(user));
+        response.setTrainingStatus(getTrainingStatus(user.getId()));
+        response.setLessonProgressStatus(getLessonProgressStatus(user.getId()));
         return response;
     }
 
@@ -256,4 +258,17 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         if(codeSubmissionRepository.countByUserId(learner.getId()) >= 10) badges.add(BadgeType.TEN_CODE);
         return badges;
     }
+
+    @Override
+    public String getTrainingStatus(Long userId) {
+        return codeSubmissionRepository.countTrainingCodeSubmissionsByUserId(userId) +
+                "/" + courseRepository.countByStatus(CourseStatus.TRAINING_PUBLISHED);
+    }
+
+    @Override
+    public String getLessonProgressStatus(Long userId) {
+        return lessonProgressRepository.countByUserIdAndStatus(userId, LessonProgressStatus.PASSED) +
+                "/" + lessonProgressRepository.countByUserId(userId);
+    }
+
 }

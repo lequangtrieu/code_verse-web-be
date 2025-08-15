@@ -3,6 +3,7 @@ package codeverse.com.web_be.repository;
 import codeverse.com.web_be.dto.response.LessonProgressDTO.LessonProgressDTO;
 import codeverse.com.web_be.dto.response.RankingResponse.RankingDTO;
 import codeverse.com.web_be.entity.LessonProgress;
+import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -68,4 +69,8 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
             @Param("passed") LessonProgressStatus passed,
             Pageable pageable
     );
-} 
+
+    long countByUserIdAndStatus(Long userId, LessonProgressStatus status);
+    long countByUserId(Long userId);
+}
+}

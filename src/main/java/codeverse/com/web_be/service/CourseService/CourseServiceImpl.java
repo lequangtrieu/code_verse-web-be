@@ -293,7 +293,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                     response.setLearner(userResponse);
                     return response;
                 })
-                .sorted(Comparator.comparing(LearnerResponse::getCompletedAt).reversed())
+                .sorted(Comparator.comparing(LearnerResponse::getCreatedAt).reversed())
                 .toList();
     }
 
@@ -388,8 +388,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                     admins,
                     course.getInstructor(),
                     "New Course",
-                    "Course " + course.getTitle() + " created by " +
-                            course.getInstructor().getName() + " is waiting for approval."
+                    "<p>Course " + course.getTitle() + " created by " +
+                            course.getInstructor().getName() + " is waiting for approval. " +
+                            "<a href=\"http://localhost:3000/admin-panel/courses/" +
+                            course.getId() + "\">View Course >></a></p>"
             );
         }
         if(request.getStatus().equals(CourseStatus.PUBLISHED)){

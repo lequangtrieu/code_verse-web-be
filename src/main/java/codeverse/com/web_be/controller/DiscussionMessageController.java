@@ -8,6 +8,7 @@ import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.repository.DiscussionMessageRepository;
 import codeverse.com.web_be.repository.LessonRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.NotificationService.INotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ public class DiscussionMessageController {
     private final DiscussionMessageRepository discussionRepo;
     private final LessonRepository lessonRepo;
     private final UserRepository userRepo;
+    private final INotificationService notificationService;
 
     private DiscussionMessageResponse toDto(DiscussionMessage msg) {
         if (msg.getIsDeleted()) return null;
@@ -85,6 +87,18 @@ public class DiscussionMessageController {
                 .build();
 
         discussionRepo.save(reply);
+
+        if(!Objects.equals(reply.getUser().getId(), parent.getUser().getId())) {
+            notificationService.notifyUsers(List.of(parent.getUser()),
+                    user,
+                    "Discussion Reply",
+                    "<p>" + user.getName() + " has replied to your comment. " +
+                            "<a href=\"http://localhost:3000/course/" +
+                            lesson.getCourseModule().getCourse().getId() +
+                            "/learn?lesson=" + lesson.getId()
+                            + "&commentId=" + reply.getId()
+                            + "\">View comment >></a></p>");
+        }
         return ResponseEntity.ok(toDto(reply));
     }
 

@@ -15,6 +15,7 @@ public class SignUpRequest {
     String password;
     String phoneNumber;
     MultipartFile teachingCredentials;
+    MultipartFile qrCodeUrl;
     String educationalBackground;
     String role;
 }

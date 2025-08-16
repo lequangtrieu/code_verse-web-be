@@ -212,8 +212,12 @@ public class AuthenticationService {
         UserRole role = determineUserRole(request);
 
         String teachingCredentials = null;
+        String qrCodeUrl = null;
         if (request.getTeachingCredentials() != null && !request.getTeachingCredentials().isEmpty()) {
             teachingCredentials = firebaseStorageService.uploadImage(request.getTeachingCredentials());
+        }
+        if (request.getQrCodeUrl() != null && !request.getQrCodeUrl().isEmpty()) {
+            qrCodeUrl = firebaseStorageService.uploadImage(request.getQrCodeUrl());
         }
 
         User.UserBuilder userBuilder = User.builder()
@@ -228,6 +232,7 @@ public class AuthenticationService {
         if (role == UserRole.INSTRUCTOR) {
             userBuilder.phoneNumber(request.getPhoneNumber());
             userBuilder.teachingCredentials(teachingCredentials);
+            userBuilder.qrCodeUrl(qrCodeUrl);
             userBuilder.educationalBackground(request.getEducationalBackground());
             userBuilder.instructorStatus(InstructorStatus.PENDING);
         }

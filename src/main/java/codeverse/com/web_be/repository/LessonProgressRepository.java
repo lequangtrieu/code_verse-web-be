@@ -1,13 +1,16 @@
 package codeverse.com.web_be.repository;
 
 import codeverse.com.web_be.dto.response.LessonProgressDTO.LessonProgressDTO;
+import codeverse.com.web_be.dto.response.RankingResponse.RankingDTO;
 import codeverse.com.web_be.entity.LessonProgress;
+import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.enums.LessonProgressStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import org.springframework.data.domain.Pageable;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,4 +48,27 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
             @Param("courseId") Long courseId,
             @Param("status") LessonProgressStatus status
     );
-} 
+
+    @Query("""
+  SELECT new codeverse.com.web_be.dto.response.RankingResponse.RankingDTO(
+      u.id, u.username, u.avatar,
+      SUM(COALESCE(lp.expGained, 0))
+  )
+  FROM LessonProgress lp
+  JOIN lp.user u
+  WHERE lp.completedAt IS NOT NULL
+    AND lp.status = :passed
+    AND (:start IS NULL OR lp.completedAt >= :start)
+    AND (:end   IS NULL OR lp.completedAt <  :end)
+  GROUP BY u.id, u.username, u.avatar
+  ORDER BY SUM(COALESCE(lp.expGained, 0)) DESC
+""")
+    List<RankingDTO> findUserRankingByPeriod(
+            @Param("start") LocalDateTime start,
+            @Param("end")   LocalDateTime end,
+            @Param("passed") LessonProgressStatus passed,
+            Pageable pageable
+    );
+
+    long countByUserIdAndStatus(Long userId, LessonProgressStatus status);
+}

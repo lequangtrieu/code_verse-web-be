@@ -201,4 +201,5 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<SimpleCourseCardDto> findPopularCourses(Pageable pageable);
 
     List<Course> findByStatus(CourseStatus status);
+    long countByStatus(CourseStatus status);
 }

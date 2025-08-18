@@ -2,22 +2,23 @@ package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.AISummaryRequest.AISummaryRequest;
 import codeverse.com.web_be.dto.request.AISummaryRequest.AISummaryResponse;
+import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AiCourseSuggestRequest;
 import codeverse.com.web_be.service.AIService.DeepgramService;
 import codeverse.com.web_be.service.AIService.GroqService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Safelist;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class AIController {
     private final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
     private final DeepgramService deepgramService;
     private final GroqService groqService;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @PostMapping("/feedback")
     public ResponseEntity<?> getAIFeedback(@RequestBody Map<String, Object> body) {
@@ -251,18 +253,184 @@ public class AIController {
 
     public static String toPlainText(String html) {
         if (html == null || html.isBlank()) return "";
-        // Clean potentially unsafe tags, keep basic formatting
         String safe = Jsoup.clean(html, Safelist.relaxed());
         Document doc = Jsoup.parse(safe);
-
-        // Prefer text() to keep spacing compact but readable
         String text = doc.text();
-        // Normalize spaces/newlines a bit
         text = text.replaceAll("\\s+", " ").trim();
         return text;
     }
 
     private static String safe(String s) {
         return s == null ? "" : s;
+    }
+
+    @PostMapping("/course/suggest")
+    public ResponseEntity<?> suggestCourse(@RequestBody AiCourseSuggestRequest req) {
+        try {
+            String prompt = buildPrompt(req);
+            Map<String, Object> body = new HashMap<>();
+            body.put("model", "llama3-70b-8192");
+            body.put("temperature", 0.3);
+            body.put("response_format", Map.of("type", "json_object"));
+
+            body.put("messages", List.of(
+                    Map.of("role", "system",
+                            "content", "You are an AI course designer. Return VALID JSON ONLY. No markdown, no prose."),
+                    Map.of("role", "user", "content", prompt)
+            ));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(GROQ_API_KEY);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> groqResp = restTemplate.postForEntity(
+                    "https://api.groq.com/openai/v1/chat/completions", entity, String.class);
+
+            if (!groqResp.getStatusCode().is2xxSuccessful()) {
+                return ResponseEntity.status(groqResp.getStatusCode())
+                        .body(Map.of("message", "Groq error", "raw", groqResp.getBody()));
+            }
+
+            String content = extractAssistantContent(groqResp.getBody());
+            String json = stripCodeFenceIfAny(content);
+
+            ObjectMapper mapper = new ObjectMapper();
+            Object outline = mapper.readValue(json, Object.class);
+            System.out.println(outline);
+
+            return ResponseEntity.ok(Map.of("outline", outline));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "SuggestCourse failed", "error", e.getMessage()));
+        }
+    }
+
+    private String buildPrompt(AiCourseSuggestRequest req) {
+        return String.format("""
+    Generate a JSON course outline.
+
+    Title: %s
+    Description: %s
+    Language: %s
+    Level: %s
+    CategoryId: %d
+    Paid: %s, Price: %s
+    Modules: %d
+    Lessons per module: %d
+    Time per lesson (minutes): %d
+    Exercises included: %s
+    Quiz included: %s (style=%s, questions=%d, types=%s)
+    Points per lesson: %d
+    Points per quiz question: %d
+
+    STRICT REQUIREMENTS:
+    - Return ONLY valid JSON. No explanations. No markdown fences.
+    - Follow the schema EXACTLY. Do not add extra properties.
+    - For quizzes:
+      * Each question MUST include "quizType": "SINGLE" or "MULTIPLE".
+      * Use "SINGLE" if EXACTLY ONE answer has isCorrect=true.
+      * Use "MULTIPLE" if TWO OR MORE answers have isCorrect=true.
+      * Each question MUST have at least ONE correct answer.
+      * Answers: keep 3–6 options, clear and unambiguous.
+
+    SCHEMA (example shape; populate with real content):
+    {
+      "suggestedTitle": "string",
+      "suggestedDescription": "string",
+      "modules": [
+        {
+          "title": "string",
+          "lessons": [
+            {
+              "title": "string",
+              "type": "CODE" | "EXAM",
+              "duration": %d,
+              "points": %d,
+              "objective": "string",
+              "theory": {
+                "title": "string",
+                "contentHtml": "<p>HTML allowed</p>"
+              },
+              "exercise": {
+                "title": "string",
+                "instruction": "string",
+                "tasks": ["string"],
+                "testCases": [
+                  {
+                    "input": ["line1", "line2"],   // stdin lines as array of strings
+                    "expected": "string",          // exact expected stdout
+                    "priority": "REQUIRED" | "OPTIONAL",
+                    "public": true
+                  }
+                ]
+              },
+              "quiz": {
+                "questions": [
+                  {
+                    "quizType": "SINGLE" | "MULTIPLE",
+                    "question": "string",
+                    "points": %d,
+                    "answers": [
+                      { "answer": "string", "isCorrect": true },
+                      { "answer": "string", "isCorrect": false }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+    """,
+                // ==== data binding ====
+                req.base.courseTitle,
+                req.base.courseDescription,
+                req.base.language,
+                req.base.levelId,
+                req.base.categoryId,
+                req.base.isPaid,
+                req.base.price,
+                req.structure.moduleCount,
+                req.structure.lessonsPerModule,
+                req.structure.timePerLesson,
+                req.exercises.include,
+                req.quiz.include,
+                req.quiz.style,
+                req.quiz.questionsPerQuiz,
+                req.quiz.types,
+                req.scoring.pointsPerLesson,
+                req.scoring.pointsPerQuizQuestion,
+                req.structure.timePerLesson,
+                req.scoring.pointsPerLesson,
+                req.scoring.pointsPerQuizQuestion
+        );
+    }
+
+    private String extractAssistantContent(String raw) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(raw);
+        return node.path("choices").get(0).path("message").path("content").asText();
+    }
+
+    private String stripCodeFenceIfAny(String s) {
+        if (s == null) return "";
+        String t = s.trim();
+        if (t.startsWith("```")) {
+            // remove leading ```
+            t = t.substring(3).trim();
+            // remove optional 'json'
+            if (t.toLowerCase().startsWith("json")) {
+                t = t.substring(4).trim();
+            }
+            // cut at ending ```
+            int i = t.lastIndexOf("```");
+            if (i >= 0) t = t.substring(0, i).trim();
+        }
+        return t;
     }
 }

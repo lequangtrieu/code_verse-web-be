@@ -1,4 +1,4 @@
-package codeverse.service
+package codeverse.controller
 
 import codeverse.com.web_be.controller.CategoryController
 import codeverse.com.web_be.entity.Category

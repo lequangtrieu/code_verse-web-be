@@ -38,6 +38,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -237,6 +238,21 @@ public class AuthenticationService {
             userBuilder.instructorStatus(InstructorStatus.PENDING);
         }
 
+        if (request.getPassword() == null || request.getPassword().length() < 8) {
+            throw new AppException(ErrorCode.INVALID_PASSWORD);
+        }
+        if ("INSTRUCTOR".equalsIgnoreCase(request.getRole())) {
+            if (request.getTeachingCredentials() == null) {
+                throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+            }
+            if (request.getPhoneNumber() == null || request.getPhoneNumber().isBlank()) {
+                throw new AppException(ErrorCode.INVALID_PHONE);
+            }
+        }
+        if (!isValidEmail(request.getUsername())) {
+            throw new AppException(ErrorCode.INVALID_EMAIL);
+        }
+
         User newUser = userBuilder.build();
 
         userRepository.save(newUser);
@@ -414,5 +430,14 @@ public class AuthenticationService {
             return UserRole.INSTRUCTOR;
         }
         return UserRole.LEARNER;
+    }
+
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        return pattern.matcher(email).matches();
     }
 }

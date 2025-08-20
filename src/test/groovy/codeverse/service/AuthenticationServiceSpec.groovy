@@ -1,6 +1,7 @@
 package codeverse.service
 
 import codeverse.com.web_be.dto.request.AuthenRequest.ChangePasswordRequest
+import codeverse.com.web_be.dto.request.AuthenRequest.LogoutRequest
 import codeverse.com.web_be.dto.request.AuthenRequest.SignUpRequest
 import codeverse.com.web_be.dto.request.AuthenRequest.AuthenticationRequest
 import codeverse.com.web_be.dto.response.AuthenResponse.AuthenticationResponse
@@ -468,7 +469,7 @@ class AuthenticationServiceSpec extends Specification {
         def token = service.generateToken(user, true)
 
         when:
-        service.logout(new codeverse.com.web_be.dto.request.AuthenRequest.LogoutRequest(token: token))
+        service.logout(new LogoutRequest(token: token))
 
         then:
         1 * invalidatedTokenRepository.save(_)

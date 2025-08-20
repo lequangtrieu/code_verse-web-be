@@ -520,14 +520,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         CodeSubmission submission = lessonProgress.getCodeSubmission();
         if (submission != null) {
             submission.setCode(request.getCode());
-            submission.setExecutionTime(request.getExecutionTime());
-            submission.setMemoryUsage(request.getMemoryUsage());
         } else {
             submission = CodeSubmission.builder()
                     .lessonProgress(lessonProgress)
                     .code(request.getCode())
-                    .executionTime(request.getExecutionTime())
-                    .memoryUsage(request.getMemoryUsage())
                     .build();
 
             lessonProgress.setCodeSubmission(submission);

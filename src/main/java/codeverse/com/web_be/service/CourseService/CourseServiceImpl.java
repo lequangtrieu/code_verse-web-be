@@ -549,7 +549,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.findPopularCourses(PageRequest.of(0, 5));
     }
 
-    private boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
+    protected boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
         CourseEnrollment enrollment = courseEnrollmentRepository
                 .findByUserIdAndCourseId(userId, courseId)
                 .orElseGet(() -> {

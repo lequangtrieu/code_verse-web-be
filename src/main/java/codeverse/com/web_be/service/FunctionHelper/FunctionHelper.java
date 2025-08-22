@@ -7,6 +7,12 @@ import codeverse.com.web_be.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Component
 @RequiredArgsConstructor
 public class FunctionHelper {
@@ -21,5 +27,21 @@ public class FunctionHelper {
         }
 
         return user;
+    }
+
+    public List<String> parseInputStringToList(String inputString) {
+        if (inputString == null || inputString.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<>();
+        Pattern pattern = Pattern.compile("#@ip!(.*?)#@ip!");
+        Matcher matcher = pattern.matcher(inputString);
+
+        while (matcher.find()) {
+            result.add(matcher.group(1));
+        }
+
+        return result;
     }
 }

@@ -2,25 +2,42 @@ package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.AISummaryRequest.AISummaryRequest;
 import codeverse.com.web_be.dto.request.AISummaryRequest.AISummaryResponse;
+import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AICourseModuleGenerateRequest;
+import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AITestCaseGenerateRequest;
+import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AITheoryGenerateRequest;
 import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AiCourseSuggestRequest;
+import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleCreateRequest;
+import codeverse.com.web_be.dto.request.QuizRequest.QuizQuestionCreateRequest;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.AICourseModuleResponse;
+import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
+import codeverse.com.web_be.dto.response.LessonResponse.LessonResponse;
+import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
+import codeverse.com.web_be.dto.response.TestCaseResponse.AITestCaseResponse;
+import codeverse.com.web_be.entity.Course;
+import codeverse.com.web_be.entity.CourseModule;
+import codeverse.com.web_be.entity.Lesson;
+import codeverse.com.web_be.entity.TestCase;
+import codeverse.com.web_be.repository.TestCaseRepository;
 import codeverse.com.web_be.service.AIService.DeepgramService;
 import codeverse.com.web_be.service.AIService.GroqService;
+import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
+import codeverse.com.web_be.service.CourseService.ICourseService;
+import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
+import codeverse.com.web_be.service.LessonService.ILessonService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Safelist;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ai")
@@ -30,6 +47,11 @@ public class AIController {
     private final DeepgramService deepgramService;
     private final GroqService groqService;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final ICourseService courseService;
+    private final ICourseModuleService courseModuleService;
+    private final ILessonService lessonService;
+    private final TestCaseRepository testCaseRepository;
+    private final FunctionHelper functionHelper;
 
     @PostMapping("/feedback")
     public ResponseEntity<?> getAIFeedback(@RequestBody Map<String, Object> body) {
@@ -264,6 +286,578 @@ public class AIController {
         return s == null ? "" : s;
     }
 
+    @PostMapping("/course/module-list")
+    public ApiResponse<?> generateModuleList(@RequestBody AICourseModuleGenerateRequest req){
+        try {
+            String prompt = buildModuleGeneratePrompt(req);
+            String systemPrompt = """
+                            You are an assistant that generates structured course outlines for programming courses. Return VALID JSON ONLY. No markdown, no prose.
+                            STRICT REQUIREMENTS:
+                                - Output MUST be ONLY a JSON array, nothing else.
+                                - DO NOT wrap inside an object.
+                                - DO NOT include fields like title, description, language, or level at the root.
+                                - Generate EXACTLY %d modules. Do not generate fewer or more.
+                                - DO NOT repeat the available modules and lessons.
+                                - Each module MUST have EXACTLY %d lessons inside "subLessons".
+                                - Lesson type rules:
+                                  * If a module has only 1 lesson → that lesson MUST be "CODE".
+                                  * If a module has more than 1 lesson → the last lesson MUST be "EXAM", and all previous lessons MUST be "CODE".
+                                - For each subLesson:
+                                  * "title": clear and descriptive
+                                  * "lessonType": "CODE" or "EXAM" (must follow the rules above)
+                                  * "duration": positive integer no more than 30 (minutes)
+                                  * "expReward": positive integer no more than 50 (points)
+
+                                SCHEMA (strict shape):
+                                [
+                                  {
+                                    "title": "string",
+                                    "subLessons": [
+                                      {
+                                        "title": "string",
+                                        "lessonType": "CODE" | "EXAM",
+                                        "duration": integer,
+                                        "expReward": integer
+                                      }
+                                    ]
+                                  }
+                                ]
+                            """.formatted(req.getModules(), req.getLessons());
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("model", "llama3-70b-8192");
+            body.put("temperature", 0.3);
+            body.put("response_format", Map.of("type", "json_object"));
+            body.put("messages", List.of(
+                    Map.of("role", "system", "content",
+                            systemPrompt),
+                    Map.of("role", "user", "content", prompt)
+            ));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(GROQ_API_KEY);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> groqResp = restTemplate.postForEntity(
+                    "https://api.groq.com/openai/v1/chat/completions", entity, String.class);
+
+            if (!groqResp.getStatusCode().is2xxSuccessful()) {
+                return ApiResponse.builder()
+                        .code(groqResp.getStatusCode().value())
+                        .result(Map.of("message", "Groq error", "raw", groqResp.getBody()))
+                        .build();
+            }
+
+            String content = extractAssistantContent(groqResp.getBody());
+            String json = stripCodeFenceIfAny(content);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(json);
+
+            if (root.isObject()) {
+                ArrayNode wrapper = mapper.createArrayNode();
+                wrapper.add(root);
+                root = wrapper;
+            }
+            Object modules =
+                    mapper.convertValue(root,
+                            Object.class);
+
+            return ApiResponse.builder()
+                    .code(HttpStatus.OK.value())
+                    .result(Map.of("modules", modules))
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.builder()
+                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .result(Map.of("message", "GenerateOutline failed", "error", e.getMessage()))
+                    .build();
+        }
+
+    }
+
+    private String buildModuleGeneratePrompt(AICourseModuleGenerateRequest req){
+        Course course = courseService.findById(req.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        List<CourseModuleResponse> existingModules =
+                courseModuleService.getCourseModuleListByCourseId(course.getId());
+        StringBuilder existingBuilder = new StringBuilder();
+        if (existingModules != null && !existingModules.isEmpty()) {
+            existingBuilder.append("Existing modules and lessons (DO NOT repeat these):\n");
+            for (CourseModuleResponse m : existingModules) {
+                existingBuilder.append("- Module: ").append(m.getTitle()).append("\n");
+                if (m.getLessons() != null) {
+                    for (LessonResponse l : m.getLessons()) {
+                        existingBuilder.append("   * Lesson: ").append(l.getTitle())
+                                .append(" (type=").append(l.getLessonType()).append(")\n");
+                    }
+                }
+            }
+        } else {
+            existingBuilder.append("No existing modules or lessons.\n");
+        }
+        return """
+        Generate a JSON array for course outline.
+
+        Course Info (for context only, DO NOT repeat in output):
+        - Title: %s
+        - Description: %s
+        - Language: %s
+        - Level: %s
+        
+        %s
+        """.formatted(
+                course.getTitle(),
+                course.getDescription(),
+                course.getLanguage(),
+                course.getLevel(),
+                existingBuilder.toString()
+        );
+    }
+
+    @PostMapping("/lesson/theory-draft")
+    public ApiResponse<?> generateTheory(@RequestBody AITheoryGenerateRequest req) {
+        try {
+            if (req.getLessonId() == null || req.getTheoryTitle() == null || req.getTheoryTitle().isBlank()) {
+                return ApiResponse.builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .result(Map.of("message", "lessonId and theoryTitle are required"))
+                        .build();
+            }
+
+            Lesson lesson = lessonService.findById(req.getLessonId())
+                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+            if ("EXAM".equalsIgnoreCase(lesson.getLessonType().toString())) {
+                return ApiResponse.builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .result(Map.of("message", "Theory content is not generated for EXAM lessons"))
+                        .build();
+            }
+
+            Course course = lesson.getCourseModule().getCourse();
+            CourseModule module = lesson.getCourseModule();
+
+            final int targetWords = 450;
+
+            String systemPrompt = """
+                You are a precise technical writing assistant for programming courses.
+                Return VALID HTML ONLY. No markdown, no JSON, no backticks.
+                The HTML should be an ARTICLE FRAGMENT (no <html>, <head>, <body>).
+                Allowed tags: <h1>, <h2>, <p>, <ul>, <ol>, <li>, <pre>, <code>, <b>, <em>.
+                Keep code blocks inside <pre><code>…</code></pre>. No inline styles, no scripts, no iframes, no images.
+                Aim for about %d words. Keep paragraphs short and scannable.
+                Include one or two practical code snippets in the course language when relevant (≤ ~30 lines each).
+                
+                IMPORTANT:
+                    - DO NOT insert "\\n" characters for line breaks.
+                    - Format line breaks using proper HTML tags (<p>, <br>, <li>, etc.).
+                    - Output should be continuous HTML without escaped newline characters.
+
+                CONTENT REQUIREMENTS:
+                    - If user provided EXISTING THEORY CONTENT:
+                        * The user may provide existing THEORY CONTENT, already in valid HTML format.
+                        * Carefully READ and UNDERSTAND the provided HTML before generating.
+                        * Do NOT repeat or restate it verbatim.
+                        * Write new material that COMPLEMENTS and EXPANDS it.
+                        * Maintain the same tone, technical level (%s), and teaching style.
+                        * Fill in missing explanations, add clarifying examples, or introduce related concepts.
+                        * Ensure smooth logical flow when read together with the provided content.
+                        * Ensure your generated HTML flows naturally after (or within) the given HTML.
+                    - If NO existing content is provided, generate from scratch.
+                
+                CONTENT REQUIREMENTS:
+                - Follow with a brief intro <p> explaining why this matters at the %s level and common pitfalls.
+                - Use <h2> sections to cover 2–4 core ideas or steps.
+                - Close with a short recap and 3–5 bullet points of key takeaways (<ul><li>…</li></ul>).
+                """.formatted(targetWords,
+                    course.getLevel().toString(),
+                    course.getLevel().toString());
+            System.out.println(systemPrompt);
+
+            String userPrompt = buildTheoryPrompt(course, module, lesson, req);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("model", "llama3-70b-8192");
+            body.put("temperature", 0.3);
+
+            body.put("messages", List.of(
+                    Map.of("role", "system", "content", systemPrompt),
+                    Map.of("role", "user", "content", userPrompt)
+            ));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(GROQ_API_KEY);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            ResponseEntity<String> groqResp = restTemplate.postForEntity(
+                    "https://api.groq.com/openai/v1/chat/completions", entity, String.class);
+
+            if (!groqResp.getStatusCode().is2xxSuccessful()) {
+                return ApiResponse.builder()
+                        .code(groqResp.getStatusCode().value())
+                        .result(Map.of("message", "Groq error", "raw", groqResp.getBody()))
+                        .build();
+            }
+
+            String content = extractAssistantContent(groqResp.getBody());
+            String html = stripCodeFenceIfAny(content).trim();
+
+            if (!html.startsWith("<")) {
+                html = "<p>" + escapeHtml(html) + "</p>";
+            }
+
+            return ApiResponse.builder()
+                    .code(HttpStatus.OK.value())
+                    .result(Map.of("draft", html.replaceAll(">\\s+<", "><")
+                            .trim()))
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.builder()
+                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .result(Map.of("message", "GenerateTheory failed", "error", e.getMessage()))
+                    .build();
+        }
+    }
+
+    private String buildTheoryPrompt(Course course, CourseModule module, Lesson lesson, AITheoryGenerateRequest req) {
+        String courseLang = (course.getLanguage() == null) ? "GENERAL" : course.getLanguage().toString();
+        String level = (course.getLevel() == null) ? "BEGINNER" : course.getLevel().toString();
+        String content = "";
+        if(req.getTheoryContent() != null && !req.getTheoryContent().isEmpty()) {
+            content = "- Available Theory content HTML: " + req.getTheoryContent();
+        }
+
+        return """
+            Generate theory content (HTML fragment only) for a programming course.
+
+            CONTEXT (for guidance, DO NOT echo these fields in the output):
+            - Course Title: %s
+            - Course Description: %s
+            - Course Language: %s
+            - Course Level: %s
+            - Module Title: %s
+            - Lesson Title: %s
+            - Lesson Type: %s
+            - Target Theory Title (use this as the main theme): %s
+            %s
+
+            OUTPUT:
+            - Return ONLY the HTML fragment as specified. No markdown, no JSON, no backticks.
+            """.formatted(
+                nullToEmpty(course.getTitle()),
+                nullToEmpty(course.getDescription()),
+                courseLang,
+                level,
+                nullToEmpty(module.getTitle()),
+                nullToEmpty(lesson.getTitle()),
+                nullToEmpty(lesson.getLessonType().toString()),
+                nullToEmpty(req.getTheoryTitle()),
+                content
+        );
+    }
+
+    @PostMapping("/lesson/test-case")
+    public ApiResponse<?> generateTestCases(@RequestBody AITestCaseGenerateRequest req) {
+        try {
+            if (req.getLessonId() == null || req.getTestCases() <= 0) {
+                return ApiResponse.builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .result(Map.of("message", "lessonId and testCases > 0 are required"))
+                        .build();
+            }
+
+            Lesson lesson = lessonService.findById(req.getLessonId())
+                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+            if (!"CODE".equalsIgnoreCase(lesson.getLessonType().toString())) {
+                return ApiResponse.builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .result(Map.of("message", "Test cases are only generated for CODE lessons"))
+                        .build();
+            }
+
+            Course course = lesson.getCourseModule().getCourse();
+            CourseModule module = lesson.getCourseModule();
+
+            String systemPrompt = """
+            You are an assistant that generates programming test cases.
+
+            REQUIREMENTS:
+            - Return ONLY a JSON array. No explanations, no markdown, no backticks.
+            - Each element must follow this schema:
+              {
+                "input": [ "string", "string", ... ],
+                "expectedOutput": "string"
+              }
+            - "input" is always an array of strings (representing multiple inputs).
+            - DO NOT duplicate with the available test cases.
+            - DO NOT concatenate inputs into a single string. Keep them as array elements.
+            - "expectedOutput" must be a single string.
+            - Generate EXACTLY %d test cases.
+            - VERY IMPORTANT:
+                * If the exercise or exercise tasks involve **input**, the "input" array MUST contain values.
+                * If the exercise explicitly has **no input** (e.g., just printing "Hello World"), then use "input": [].
+            - Do NOT provide explanation or code, only valid JSON.
+            - Pay close attention to the instruction and tasks: if they mention reading or entering input, "input" must not be empty.
+            - Ensure variety: include normal, edge, and error-handling cases when relevant.
+
+            EXAMPLES (do not copy content, copy only the shape):
+            [
+                {
+                    "input": ["8", "2"],
+                    "expectedOutput": "10 6 16 4"
+                },
+                {
+                    "input": ["Hello"],
+                    "expectedOutput": "Hello"
+                },
+                {
+                    "input": [],
+                    "expectedOutput": "Hello World"
+                }
+            ]
+        """.formatted(req.getTestCases());
+
+            String userPrompt = buildTestCasePrompt(course, module, lesson, req);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("model", "llama3-70b-8192");
+            body.put("temperature", 0.3);
+
+            body.put("messages", List.of(
+                    Map.of("role", "system", "content", systemPrompt),
+                    Map.of("role", "user", "content", userPrompt)
+            ));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(GROQ_API_KEY);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            ResponseEntity<String> groqResp = restTemplate.postForEntity(
+                    "https://api.groq.com/openai/v1/chat/completions", entity, String.class);
+
+            if (!groqResp.getStatusCode().is2xxSuccessful()) {
+                return ApiResponse.builder()
+                        .code(groqResp.getStatusCode().value())
+                        .result(Map.of("message", "Groq error", "raw", groqResp.getBody()))
+                        .build();
+            }
+
+            String content = extractAssistantContent(groqResp.getBody());
+            String json = stripCodeFenceIfAny(content).trim();
+
+            ObjectMapper mapper = new ObjectMapper();
+            Object result = mapper.readValue(
+                    json,
+                    Object.class
+            );
+
+            return ApiResponse.builder()
+                    .code(HttpStatus.OK.value())
+                    .result(Map.of("testCases", result))
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.builder()
+                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .result(Map.of("message", "GenerateTestCases failed", "error", e.getMessage()))
+                    .build();
+        }
+    }
+
+    private String buildTestCasePrompt(Course course, CourseModule module, Lesson lesson, AITestCaseGenerateRequest req) {
+        String courseLang = (course.getLanguage() == null) ? "GENERAL" : course.getLanguage().toString();
+        String level = (course.getLevel() == null) ? "BEGINNER" : course.getLevel().toString();
+
+        String exerciseTasks = lesson.getExercise() != null && !lesson.getExercise().getTasks().isEmpty()
+                ? lesson.getExercise().getTasks().stream()
+                .map(t -> "- " + t.getDescription())
+                .collect(Collectors.joining("\n"))
+                : "No explicit exercise tasks provided.";
+        List<TestCase> testCases = testCaseRepository.findByExerciseId(lesson.getExercise().getId())
+                .orElse(null);
+        String availableTestCases = testCases != null ? testCases.stream()
+                .map(t -> "- Input: " + functionHelper.parseInputStringToList(t.getInput()) + ". Output: " + t.getExpectedOutput())
+                .collect(Collectors.joining("\n"))
+                : "No available test cases provided.";
+
+        return """
+        Generate %d test cases for the following exercise.
+
+        CONTEXT (DO NOT repeat these fields in output):
+        - Course: %s (%s, %s level)
+        - Module: %s
+        - Lesson: %s
+        - Theory HTML (if available): %s
+        - Exercise Instruction: %s
+        - Exercise Tasks:
+        %s
+        - Existing test cases: %s
+
+        OUTPUT:
+        - JSON array only, following schema:
+          [
+            {
+              "input": ["val1", "val2"],
+              "expectedOutput": "string"
+            }
+          ]
+        """.formatted(
+                req.getTestCases(),
+                nullToEmpty(course.getTitle()), courseLang, level,
+                nullToEmpty(module.getTitle()),
+                nullToEmpty(lesson.getTitle()),
+                lesson.getTheory() != null ? lesson.getTheory().getContent() : "None",
+                lesson.getExercise() != null ? nullToEmpty(lesson.getExercise().getInstruction()) : "None",
+                exerciseTasks,
+                availableTestCases
+        );
+    }
+
+    @PostMapping("/lesson/quiz-bank/{lessonId}")
+    public ApiResponse<?> generateQuizBank(@PathVariable Long lessonId) {
+        try {
+            if (lessonId == null) {
+                return ApiResponse.builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .result(Map.of("message", "lessonId is required"))
+                        .build();
+            }
+
+            Lesson lesson = lessonService.findById(lessonId)
+                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+            if (!"EXAM".equalsIgnoreCase(lesson.getLessonType().toString())) {
+                return ApiResponse.builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .result(Map.of("message", "Quiz bank is only generated for EXAM lessons"))
+                        .build();
+            }
+
+            Course course = lesson.getCourseModule().getCourse();
+            CourseModule module = lesson.getCourseModule();
+
+            String systemPrompt = """
+        You are an assistant that generates multiple-choice quizzes.
+
+        REQUIREMENTS:
+        - Return ONLY a JSON array. No explanations, no markdown, no backticks.
+        - Must generate EXACTLY 40 distinct quiz objects.
+        - Schema:
+          {
+            "question": "string",
+            "quizType": "SINGLE" | "MULTIPLE",
+            "answers": [
+              { "answer": "string", "isCorrect": true|false }
+            ]
+          }
+        - Rules:
+          * SINGLE → exactly 1 correct answer.
+          * MULTIPLE → at least 2 correct answers.
+          * Each question must have 3–4 answer options.
+          * All questions/answers must align with provided course/module/theory.
+          * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
+          * Do NOT create duplicates or near-duplicates.
+          * Ensure clarity, correctness, and variety across the 40 questions.
+        """;
+
+            String userPrompt = buildQuizPrompt(course, module, lesson);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("model", "llama3-70b-8192");
+            body.put("temperature", 0.3);
+
+            body.put("messages", List.of(
+                    Map.of("role", "system", "content", systemPrompt),
+                    Map.of("role", "user", "content", userPrompt)
+            ));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(GROQ_API_KEY);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            ResponseEntity<String> groqResp = restTemplate.postForEntity(
+                    "https://api.groq.com/openai/v1/chat/completions", entity, String.class);
+
+            if (!groqResp.getStatusCode().is2xxSuccessful()) {
+                return ApiResponse.builder()
+                        .code(groqResp.getStatusCode().value())
+                        .result(Map.of("message", "Groq error", "raw", groqResp.getBody()))
+                        .build();
+            }
+
+            String content = extractAssistantContent(groqResp.getBody());
+            String json = stripCodeFenceIfAny(content).trim();
+
+            ObjectMapper mapper = new ObjectMapper();
+            Object quizzes = mapper.readValue(
+                    json,
+                    Object.class
+            );
+
+            return ApiResponse.builder()
+                    .code(HttpStatus.OK.value())
+                    .result(Map.of("quizBank", quizzes))
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.builder()
+                    .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .result(Map.of("message", "GenerateQuizBank failed", "error", e.getMessage()))
+                    .build();
+        }
+    }
+
+    private String buildQuizPrompt(Course course, CourseModule module, Lesson examLesson) {
+        String courseLang = (course.getLanguage() == null) ? "GENERAL" : course.getLanguage().toString();
+        String level = (course.getLevel() == null) ? "BEGINNER" : course.getLevel().toString();
+
+        List<Lesson> precedingLessons = module.getLessons().stream()
+                .filter(l -> l.getOrderIndex() < examLesson.getOrderIndex())
+                .filter(l -> "CODE".equalsIgnoreCase(l.getLessonType().toString()))
+                .toList();
+
+        StringBuilder theoryContent = new StringBuilder();
+        if (!precedingLessons.isEmpty()) {
+            precedingLessons.forEach(l -> {
+                if (l.getTheory() != null) {
+                    theoryContent.append("Lesson: ").append(l.getTitle()).append("\n");
+                    theoryContent.append(l.getTheory().getContent()).append("\n\n");
+                }
+            });
+        } else {
+            theoryContent.append("No preceding lessons. Use course/module context only.\n");
+        }
+
+        return """
+    Generate quiz questions based on the following context.
+
+    CONTEXT (Do NOT repeat these fields in output):
+    - Course: %s (%s, %s level)
+    - Module: %s
+    - Exam Lesson: %s
+    - Theory Content (from preceding lessons if any):
+    %s
+    """.formatted(
+                nullToEmpty(course.getTitle()), courseLang, level,
+                nullToEmpty(module.getTitle()),
+                nullToEmpty(examLesson.getTitle()),
+                theoryContent.toString()
+        );
+    }
+
     @PostMapping("/course/suggest")
     public ResponseEntity<?> suggestCourse(@RequestBody AiCourseSuggestRequest req) {
         try {
@@ -432,5 +1026,11 @@ public class AIController {
             if (i >= 0) t = t.substring(0, i).trim();
         }
         return t;
+    }
+
+    private String nullToEmpty(String s) { return (s == null) ? "" : s; }
+
+    private String escapeHtml(String s) {
+        return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");
     }
 }

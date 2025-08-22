@@ -14,6 +14,9 @@ public class CourseMoreInfoDTO {
     private String instructor;
     private Long instructorId;
 
+    public CourseMoreInfoDTO() {
+    }
+
     public CourseMoreInfoDTO(
             Double rating,
             Long ratingCount,

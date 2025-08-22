@@ -520,14 +520,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         CodeSubmission submission = lessonProgress.getCodeSubmission();
         if (submission != null) {
             submission.setCode(request.getCode());
-            submission.setExecutionTime(request.getExecutionTime());
-            submission.setMemoryUsage(request.getMemoryUsage());
         } else {
             submission = CodeSubmission.builder()
                     .lessonProgress(lessonProgress)
                     .code(request.getCode())
-                    .executionTime(request.getExecutionTime())
-                    .memoryUsage(request.getMemoryUsage())
                     .build();
 
             lessonProgress.setCodeSubmission(submission);
@@ -549,7 +545,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.findPopularCourses(PageRequest.of(0, 5));
     }
 
-    private boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
+    protected boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
         CourseEnrollment enrollment = courseEnrollmentRepository
                 .findByUserIdAndCourseId(userId, courseId)
                 .orElseGet(() -> {

@@ -22,10 +22,4 @@ public class CodeSubmission {
 
     @Column(columnDefinition = "TEXT")
     private String code;
-
-    @Column(name = "execution_time")
-    private Float executionTime;
-
-    @Column(name = "memory_usage")
-    private Float memoryUsage;
 }

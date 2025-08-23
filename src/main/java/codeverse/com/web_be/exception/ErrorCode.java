@@ -39,6 +39,10 @@ public enum ErrorCode {
     WITHDRAWAL_UNAUTHORIZED_CANCEL(2005, "You are not authorized to cancel this withdrawal request.", HttpStatus.FORBIDDEN),
     WITHDRAWAL_INVALID_TOKEN(2006, "Invalid or expired withdrawal verification token.", HttpStatus.BAD_REQUEST),
     REQUEST_NOT_EXISTED(2007, "Request not found", HttpStatus.NOT_FOUND),
+    INVALID_EMAIL(2008, "Invalid email format", HttpStatus.BAD_REQUEST),
+    INVALID_CREDENTIALS(2010, "Missing or invalid credentials", HttpStatus.BAD_REQUEST),
+    INVALID_PHONE(2011, "Phone number required", HttpStatus.BAD_REQUEST),
+    INVALID_NAME(2011, "Name required", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

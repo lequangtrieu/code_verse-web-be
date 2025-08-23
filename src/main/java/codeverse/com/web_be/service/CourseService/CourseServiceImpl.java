@@ -451,11 +451,19 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
                 if (Objects.equals(lesson.getLessonType(), LessonType.EXAM)) {
                     List<QuestionDTO> questionDTO = courseRepository.getQuestionByLessonId(lesson.getId());
-                    for (QuestionDTO question : questionDTO) {
-                        question.setAnswers(courseRepository.getAnswersByQuestionID(question.getId()));
-                    }
 
-                    lesson.setQuestions(questionDTO);
+                    if (questionDTO == null || questionDTO.isEmpty()) {
+                        lesson.setQuestions(Collections.emptyList());
+                    } else {
+                        Collections.shuffle(questionDTO);
+                        int limit = Math.min(15, questionDTO.size());
+                        List<QuestionDTO> picked = new ArrayList<>(questionDTO.subList(0, limit));
+
+                        for (QuestionDTO q : picked) {
+                            q.setAnswers(courseRepository.getAnswersByQuestionID(q.getId()));
+                        }
+                        lesson.setQuestions(picked);
+                    }
                 } else {
                     TheoryDTO theory = courseRepository.getTheoryByLessonId(lesson.getId());
                     ExerciseDTO exerciseDTO = courseRepository.getExerciseByLessonId(lesson.getId());
@@ -520,14 +528,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         CodeSubmission submission = lessonProgress.getCodeSubmission();
         if (submission != null) {
             submission.setCode(request.getCode());
-            submission.setExecutionTime(request.getExecutionTime());
-            submission.setMemoryUsage(request.getMemoryUsage());
         } else {
             submission = CodeSubmission.builder()
                     .lessonProgress(lessonProgress)
                     .code(request.getCode())
-                    .executionTime(request.getExecutionTime())
-                    .memoryUsage(request.getMemoryUsage())
                     .build();
 
             lessonProgress.setCodeSubmission(submission);
@@ -549,7 +553,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.findPopularCourses(PageRequest.of(0, 5));
     }
 
-    private boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
+    protected boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
         CourseEnrollment enrollment = courseEnrollmentRepository
                 .findByUserIdAndCourseId(userId, courseId)
                 .orElseGet(() -> {

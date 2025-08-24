@@ -70,6 +70,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         UserResponse response = userMapper.userToUserResponse(user);
         response.setBadges(getBadgesByUser(user));
+        response.setCompleted(getCompleted(user.getId()));
         response.setTrainingStatus(getTrainingStatus(user.getId()));
         response.setLessonProgressStatus(getLessonProgressStatus(user.getId()));
         return response;
@@ -286,6 +287,10 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     public String getLessonProgressStatus(Long userId) {
         return lessonProgressRepository.countByUserIdAndStatus(userId, LessonProgressStatus.PASSED) +
                 "/" + lessonRepository.countLessonsByUserId(userId);
+    }
+
+    public Integer getCompleted(Long userId) {
+        return courseEnrollmentRepository.countByUserIdAndCompletionPercentageGreaterThanEqual(userId, 100.0f);
     }
 
 }

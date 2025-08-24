@@ -5,6 +5,7 @@ import codeverse.com.web_be.dto.request.DiscussionRequest.DiscussionRequest;
 import codeverse.com.web_be.entity.DiscussionMessage;
 import codeverse.com.web_be.entity.Lesson;
 import codeverse.com.web_be.entity.User;
+import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.repository.DiscussionMessageRepository;
 import codeverse.com.web_be.repository.LessonRepository;
 import codeverse.com.web_be.repository.UserRepository;
@@ -95,7 +96,9 @@ public class DiscussionMessageController {
                     "<p>" + user.getName() + " has replied to your comment. " +
                             "<a href=\"https://code-verse-web-fe.vercel.app/course/" +
                             lesson.getCourseModule().getCourse().getId() +
-                            "/learn?lesson=" + lesson.getId()
+                            "/" + (parent.getUser().getRole().equals(UserRole.INSTRUCTOR)
+                            ? "view" : "learn")
+                            + "?lesson=" + lesson.getId()
                             + "&commentId=" + reply.getId()
                             + "\">View comment >></a></p>");
         }

@@ -45,4 +45,5 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
             @Param("percentage") Float percentage);
 
     boolean existsByUserUsernameAndCourseId(String username, Long courseId);
+    int countByUserIdAndCompletionPercentageGreaterThanEqual(Long userId, Float completionPercentage);
 }

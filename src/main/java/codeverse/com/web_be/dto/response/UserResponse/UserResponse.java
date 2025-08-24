@@ -29,4 +29,5 @@ public class UserResponse {
     String trainingStatus;
     String lessonProgressStatus;
     LocalDateTime createdAt;
+    Integer completed;
 }

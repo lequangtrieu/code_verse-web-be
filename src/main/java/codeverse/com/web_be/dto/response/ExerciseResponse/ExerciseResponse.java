@@ -19,6 +19,7 @@ public class ExerciseResponse {
     private String lesson;
     private String title;
     private Integer expReward;
+    private Integer duration;
     private String instruction;
     private List<ExerciseTaskResponse> tasks;
     private List<TestCaseResponse> testCases;
@@ -32,7 +33,8 @@ public class ExerciseResponse {
                 .id(exercise.getId())
                 .lesson(exercise.getLesson().getTitle())
                 .title(exercise.getTitle())
-                .expReward(exercise.getExpReward())
+                .expReward(exercise.getLesson().getExpReward())
+                .duration(exercise.getLesson().getDuration())
                 .instruction(exercise.getInstruction())
                 .tasks(exercise.getTasks() == null ? null :
                         exercise.getTasks().stream()

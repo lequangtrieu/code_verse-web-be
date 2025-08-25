@@ -492,6 +492,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         CourseDetailDTO courseDetailDTO = new CourseDetailDTO();
         courseDetailDTO.setData(modules);
         courseDetailDTO.setLanguage(course.getLanguage() != null ? course.getLanguage() : CodeLanguage.ALL);
+        courseDetailDTO.setInstructor(course.getInstructor().getUsername());
         return courseDetailDTO;
     }
 

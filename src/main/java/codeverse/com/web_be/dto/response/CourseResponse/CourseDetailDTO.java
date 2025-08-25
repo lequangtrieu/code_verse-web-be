@@ -16,4 +16,5 @@ public class CourseDetailDTO {
     private List<CourseModuleDTO> data;
     private CodeLanguage language;
     private List<LessonProgress> lessonProgresses;
+    private String instructor;
 }

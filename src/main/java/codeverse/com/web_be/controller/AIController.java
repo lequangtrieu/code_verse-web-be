@@ -68,9 +68,9 @@ public class AIController {
                                     - DO NOT interpret or guess intent based on descriptions. Only trust the actual test case comparison.
                                     - ✅ If the actual output matches the expected output exactly (including spacing, punctuation, and casing), return [RESULT]: PASS.
                                     - ❌ If the actual output does NOT match expected output, return [RESULT]: FAIL.
-                                    - DO NOT suggest using `prompt()`, `Scanner`, `input()`, or `cin` unless input is explicitly required in the test case.
-                                    - DO NOT assume or fabricate input/output variables like 'firstName', 'age', etc.
-                                    - DO NOT suggest any changes unrelated to the actual failed test case.
+                                    - ❌ DO NOT suggest using `prompt()`, `Scanner`, `input()`, or `cin` unless input is explicitly required in the test case.
+                                    - ❌ DO NOT assume or fabricate input/output variables like 'firstName', 'age', etc.
+                                    - ❌ DO NOT suggest any changes unrelated to the actual failed test case.
                                 
                                     Start your response strictly with one of:
                                     [RESULT]: PASS
@@ -217,25 +217,18 @@ public class AIController {
                 transcript = deepgramService.transcribeFromUrl(req.getVideoUrl(), locale);
             }
 
-            System.out.println(req.getVideoUrl());
-            System.out.println("++++++++++++++++");
-            System.out.println(transcript);
             String theoryText = toPlainText(req.getContentHtml());
 
             String systemPrompt = """
-                    You are a concise learning assistant. Summarize lessons into clean MARKDOWN for beginners.
+                    You are a learning assistant. Summarize lessons into clean MARKDOWN for beginners.
                     Rules:
                     - Use English (unless locale says otherwise).
                     - Be concise but clear.
-                    - Structure with these sections (only include sections that make sense):
-                      # TL;DR
+                    - Use sections only if they make sense:
                       # Key Points
-                      # What You Will Learn / Steps
-                      # Glossary
-                      # Quick Quiz
                       # Next Recommendations
-                    - Bullet lists are preferred. Keep each bullet short.
-                    - Do NOT include any JSON. Return plain Markdown text only.
+                    - Prefer bullet lists.
+                    - Do NOT include JSON. Return plain Markdown text only.
                     """;
 
             String userPrompt = """
@@ -244,10 +237,10 @@ public class AIController {
                     Title: %s
                     Locale: %s
                     
-                    === THEORY (plain text) ===
+                    === THEORY ===
                     %s
                     
-                    === TRANSCRIPT (from video, if any) ===
+                    === TRANSCRIPT ===
                     %s
                     """.formatted(
                     safe(req.getTitle()),
@@ -287,42 +280,42 @@ public class AIController {
     }
 
     @PostMapping("/course/module-list")
-    public ApiResponse<?> generateModuleList(@RequestBody AICourseModuleGenerateRequest req){
+    public ApiResponse<?> generateModuleList(@RequestBody AICourseModuleGenerateRequest req) {
         try {
             String prompt = buildModuleGeneratePrompt(req);
             String systemPrompt = """
-                            You are an assistant that generates structured course outlines for programming courses. Return VALID JSON ONLY. No markdown, no prose.
-                            STRICT REQUIREMENTS:
-                                - Output MUST be ONLY a JSON array, nothing else.
-                                - DO NOT wrap inside an object.
-                                - DO NOT include fields like title, description, language, or level at the root.
-                                - Generate EXACTLY %d modules. Do not generate fewer or more.
-                                - DO NOT repeat the available modules and lessons.
-                                - Each module MUST have EXACTLY %d lessons inside "subLessons".
-                                - Lesson type rules:
-                                  * If a module has only 1 lesson → that lesson MUST be "CODE".
-                                  * If a module has more than 1 lesson → the last lesson MUST be "EXAM", and all previous lessons MUST be "CODE".
-                                - For each subLesson:
-                                  * "title": clear and descriptive
-                                  * "lessonType": "CODE" or "EXAM" (must follow the rules above)
-                                  * "duration": positive integer no more than 30 (minutes)
-                                  * "expReward": positive integer no more than 50 (points)
-
-                                SCHEMA (strict shape):
-                                [
-                                  {
-                                    "title": "string",
-                                    "subLessons": [
-                                      {
-                                        "title": "string",
-                                        "lessonType": "CODE" | "EXAM",
-                                        "duration": integer,
-                                        "expReward": integer
-                                      }
-                                    ]
-                                  }
-                                ]
-                            """.formatted(req.getModules(), req.getLessons());
+                    You are an assistant that generates structured course outlines for programming courses. Return VALID JSON ONLY. No markdown, no prose.
+                    STRICT REQUIREMENTS:
+                        - Output MUST be ONLY a JSON array, nothing else.
+                        - DO NOT wrap inside an object.
+                        - DO NOT include fields like title, description, language, or level at the root.
+                        - Generate EXACTLY %d modules. Do not generate fewer or more.
+                        - DO NOT repeat the available modules and lessons.
+                        - Each module MUST have EXACTLY %d lessons inside "subLessons".
+                        - Lesson type rules:
+                          * If a module has only 1 lesson → that lesson MUST be "CODE".
+                          * If a module has more than 1 lesson → the last lesson MUST be "EXAM", and all previous lessons MUST be "CODE".
+                        - For each subLesson:
+                          * "title": clear and descriptive
+                          * "lessonType": "CODE" or "EXAM" (must follow the rules above)
+                          * "duration": positive integer no more than 30 (minutes)
+                          * "expReward": positive integer no more than 50 (points)
+                    
+                        SCHEMA (strict shape):
+                        [
+                          {
+                            "title": "string",
+                            "subLessons": [
+                              {
+                                "title": "string",
+                                "lessonType": "CODE" | "EXAM",
+                                "duration": integer,
+                                "expReward": integer
+                              }
+                            ]
+                          }
+                        ]
+                    """.formatted(req.getModules(), req.getLessons());
 
             Map<String, Object> body = new HashMap<>();
             body.put("model", "llama3-70b-8192");
@@ -380,7 +373,7 @@ public class AIController {
 
     }
 
-    private String buildModuleGeneratePrompt(AICourseModuleGenerateRequest req){
+    private String buildModuleGeneratePrompt(AICourseModuleGenerateRequest req) {
         Course course = courseService.findById(req.getCourseId())
                 .orElseThrow(() -> new RuntimeException("Course not found"));
         List<CourseModuleResponse> existingModules =
@@ -401,16 +394,16 @@ public class AIController {
             existingBuilder.append("No existing modules or lessons.\n");
         }
         return """
-        Generate a JSON array for course outline.
-
-        Course Info (for context only, DO NOT repeat in output):
-        - Title: %s
-        - Description: %s
-        - Language: %s
-        - Level: %s
-        
-        %s
-        """.formatted(
+                Generate a JSON array for course outline.
+                
+                Course Info (for context only, DO NOT repeat in output):
+                - Title: %s
+                - Description: %s
+                - Language: %s
+                - Level: %s
+                
+                %s
+                """.formatted(
                 course.getTitle(),
                 course.getDescription(),
                 course.getLanguage(),
@@ -445,36 +438,36 @@ public class AIController {
             final int targetWords = 450;
 
             String systemPrompt = """
-                You are a precise technical writing assistant for programming courses.
-                Return VALID HTML ONLY. No markdown, no JSON, no backticks.
-                The HTML should be an ARTICLE FRAGMENT (no <html>, <head>, <body>).
-                Allowed tags: <h1>, <h2>, <p>, <ul>, <ol>, <li>, <pre>, <code>, <b>, <em>.
-                Keep code blocks inside <pre><code>…</code></pre>. No inline styles, no scripts, no iframes, no images.
-                Aim for about %d words. Keep paragraphs short and scannable.
-                Include one or two practical code snippets in the course language when relevant (≤ ~30 lines each).
-                
-                IMPORTANT:
-                    - DO NOT insert "\\n" characters for line breaks.
-                    - Format line breaks using proper HTML tags (<p>, <br>, <li>, etc.).
-                    - Output should be continuous HTML without escaped newline characters.
-
-                CONTENT REQUIREMENTS:
-                    - If user provided EXISTING THEORY CONTENT:
-                        * The user may provide existing THEORY CONTENT, already in valid HTML format.
-                        * Carefully READ and UNDERSTAND the provided HTML before generating.
-                        * Do NOT repeat or restate it verbatim.
-                        * Write new material that COMPLEMENTS and EXPANDS it.
-                        * Maintain the same tone, technical level (%s), and teaching style.
-                        * Fill in missing explanations, add clarifying examples, or introduce related concepts.
-                        * Ensure smooth logical flow when read together with the provided content.
-                        * Ensure your generated HTML flows naturally after (or within) the given HTML.
-                    - If NO existing content is provided, generate from scratch.
-                
-                CONTENT REQUIREMENTS:
-                - Follow with a brief intro <p> explaining why this matters at the %s level and common pitfalls.
-                - Use <h2> sections to cover 2–4 core ideas or steps.
-                - Close with a short recap and 3–5 bullet points of key takeaways (<ul><li>…</li></ul>).
-                """.formatted(targetWords,
+                    You are a precise technical writing assistant for programming courses.
+                    Return VALID HTML ONLY. No markdown, no JSON, no backticks.
+                    The HTML should be an ARTICLE FRAGMENT (no <html>, <head>, <body>).
+                    Allowed tags: <h1>, <h2>, <p>, <ul>, <ol>, <li>, <pre>, <code>, <b>, <em>.
+                    Keep code blocks inside <pre><code>…</code></pre>. No inline styles, no scripts, no iframes, no images.
+                    Aim for about %d words. Keep paragraphs short and scannable.
+                    Include one or two practical code snippets in the course language when relevant (≤ ~30 lines each).
+                    
+                    IMPORTANT:
+                        - DO NOT insert "\\n" characters for line breaks.
+                        - Format line breaks using proper HTML tags (<p>, <br>, <li>, etc.).
+                        - Output should be continuous HTML without escaped newline characters.
+                    
+                    CONTENT REQUIREMENTS:
+                        - If user provided EXISTING THEORY CONTENT:
+                            * The user may provide existing THEORY CONTENT, already in valid HTML format.
+                            * Carefully READ and UNDERSTAND the provided HTML before generating.
+                            * Do NOT repeat or restate it verbatim.
+                            * Write new material that COMPLEMENTS and EXPANDS it.
+                            * Maintain the same tone, technical level (%s), and teaching style.
+                            * Fill in missing explanations, add clarifying examples, or introduce related concepts.
+                            * Ensure smooth logical flow when read together with the provided content.
+                            * Ensure your generated HTML flows naturally after (or within) the given HTML.
+                        - If NO existing content is provided, generate from scratch.
+                    
+                    CONTENT REQUIREMENTS:
+                    - Follow with a brief intro <p> explaining why this matters at the %s level and common pitfalls.
+                    - Use <h2> sections to cover 2–4 core ideas or steps.
+                    - Close with a short recap and 3–5 bullet points of key takeaways (<ul><li>…</li></ul>).
+                    """.formatted(targetWords,
                     course.getLevel().toString(),
                     course.getLevel().toString());
             System.out.println(systemPrompt);
@@ -531,27 +524,27 @@ public class AIController {
         String courseLang = (course.getLanguage() == null) ? "GENERAL" : course.getLanguage().toString();
         String level = (course.getLevel() == null) ? "BEGINNER" : course.getLevel().toString();
         String content = "";
-        if(req.getTheoryContent() != null && !req.getTheoryContent().isEmpty()) {
+        if (req.getTheoryContent() != null && !req.getTheoryContent().isEmpty()) {
             content = "- Available Theory content HTML: " + req.getTheoryContent();
         }
 
         return """
-            Generate theory content (HTML fragment only) for a programming course.
-
-            CONTEXT (for guidance, DO NOT echo these fields in the output):
-            - Course Title: %s
-            - Course Description: %s
-            - Course Language: %s
-            - Course Level: %s
-            - Module Title: %s
-            - Lesson Title: %s
-            - Lesson Type: %s
-            - Target Theory Title (use this as the main theme): %s
-            %s
-
-            OUTPUT:
-            - Return ONLY the HTML fragment as specified. No markdown, no JSON, no backticks.
-            """.formatted(
+                Generate theory content (HTML fragment only) for a programming course.
+                
+                CONTEXT (for guidance, DO NOT echo these fields in the output):
+                - Course Title: %s
+                - Course Description: %s
+                - Course Language: %s
+                - Course Level: %s
+                - Module Title: %s
+                - Lesson Title: %s
+                - Lesson Type: %s
+                - Target Theory Title (use this as the main theme): %s
+                %s
+                
+                OUTPUT:
+                - Return ONLY the HTML fragment as specified. No markdown, no JSON, no backticks.
+                """.formatted(
                 nullToEmpty(course.getTitle()),
                 nullToEmpty(course.getDescription()),
                 courseLang,
@@ -588,43 +581,43 @@ public class AIController {
             CourseModule module = lesson.getCourseModule();
 
             String systemPrompt = """
-            You are an assistant that generates programming test cases.
-
-            REQUIREMENTS:
-            - Return ONLY a JSON array. No explanations, no markdown, no backticks.
-            - Each element must follow this schema:
-              {
-                "input": [ "string", "string", ... ],
-                "expectedOutput": "string"
-              }
-            - "input" is always an array of strings (representing multiple inputs).
-            - DO NOT duplicate with the available test cases.
-            - DO NOT concatenate inputs into a single string. Keep them as array elements.
-            - "expectedOutput" must be a single string.
-            - Generate EXACTLY %d test cases.
-            - VERY IMPORTANT:
-                * If the exercise or exercise tasks involve **input**, the "input" array MUST contain values.
-                * If the exercise explicitly has **no input** (e.g., just printing "Hello World"), then use "input": [].
-            - Do NOT provide explanation or code, only valid JSON.
-            - Pay close attention to the instruction and tasks: if they mention reading or entering input, "input" must not be empty.
-            - Ensure variety: include normal, edge, and error-handling cases when relevant.
-
-            EXAMPLES (do not copy content, copy only the shape):
-            [
-                {
-                    "input": ["8", "2"],
-                    "expectedOutput": "10 6 16 4"
-                },
-                {
-                    "input": ["Hello"],
-                    "expectedOutput": "Hello"
-                },
-                {
-                    "input": [],
-                    "expectedOutput": "Hello World"
-                }
-            ]
-        """.formatted(req.getTestCases());
+                        You are an assistant that generates programming test cases.
+                    
+                        REQUIREMENTS:
+                        - Return ONLY a JSON array. No explanations, no markdown, no backticks.
+                        - Each element must follow this schema:
+                          {
+                            "input": [ "string", "string", ... ],
+                            "expectedOutput": "string"
+                          }
+                        - "input" is always an array of strings (representing multiple inputs).
+                        - DO NOT duplicate with the available test cases.
+                        - DO NOT concatenate inputs into a single string. Keep them as array elements.
+                        - "expectedOutput" must be a single string.
+                        - Generate EXACTLY %d test cases.
+                        - VERY IMPORTANT:
+                            * If the exercise or exercise tasks involve **input**, the "input" array MUST contain values.
+                            * If the exercise explicitly has **no input** (e.g., just printing "Hello World"), then use "input": [].
+                        - Do NOT provide explanation or code, only valid JSON.
+                        - Pay close attention to the instruction and tasks: if they mention reading or entering input, "input" must not be empty.
+                        - Ensure variety: include normal, edge, and error-handling cases when relevant.
+                    
+                        EXAMPLES (do not copy content, copy only the shape):
+                        [
+                            {
+                                "input": ["8", "2"],
+                                "expectedOutput": "10 6 16 4"
+                            },
+                            {
+                                "input": ["Hello"],
+                                "expectedOutput": "Hello"
+                            },
+                            {
+                                "input": [],
+                                "expectedOutput": "Hello World"
+                            }
+                        ]
+                    """.formatted(req.getTestCases());
 
             String userPrompt = buildTestCasePrompt(course, module, lesson, req);
 
@@ -692,27 +685,27 @@ public class AIController {
                 : "No available test cases provided.";
 
         return """
-        Generate %d test cases for the following exercise.
-
-        CONTEXT (DO NOT repeat these fields in output):
-        - Course: %s (%s, %s level)
-        - Module: %s
-        - Lesson: %s
-        - Theory HTML (if available): %s
-        - Exercise Instruction: %s
-        - Exercise Tasks:
-        %s
-        - Existing test cases: %s
-
-        OUTPUT:
-        - JSON array only, following schema:
-          [
-            {
-              "input": ["val1", "val2"],
-              "expectedOutput": "string"
-            }
-          ]
-        """.formatted(
+                Generate %d test cases for the following exercise.
+                
+                CONTEXT (DO NOT repeat these fields in output):
+                - Course: %s (%s, %s level)
+                - Module: %s
+                - Lesson: %s
+                - Theory HTML (if available): %s
+                - Exercise Instruction: %s
+                - Exercise Tasks:
+                %s
+                - Existing test cases: %s
+                
+                OUTPUT:
+                - JSON array only, following schema:
+                  [
+                    {
+                      "input": ["val1", "val2"],
+                      "expectedOutput": "string"
+                    }
+                  ]
+                """.formatted(
                 req.getTestCases(),
                 nullToEmpty(course.getTitle()), courseLang, level,
                 nullToEmpty(module.getTitle()),
@@ -748,28 +741,28 @@ public class AIController {
             CourseModule module = lesson.getCourseModule();
 
             String systemPrompt = """
-        You are an assistant that generates multiple-choice quizzes.
-
-        REQUIREMENTS:
-        - Return ONLY a JSON array. No explanations, no markdown, no backticks.
-        - Must generate EXACTLY 40 distinct quiz objects.
-        - Schema:
-          {
-            "question": "string",
-            "quizType": "SINGLE" | "MULTIPLE",
-            "answers": [
-              { "answer": "string", "isCorrect": true|false }
-            ]
-          }
-        - Rules:
-          * SINGLE → exactly 1 correct answer.
-          * MULTIPLE → at least 2 correct answers.
-          * Each question must have 3–4 answer options.
-          * All questions/answers must align with provided course/module/theory.
-          * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
-          * Do NOT create duplicates or near-duplicates.
-          * Ensure clarity, correctness, and variety across the 40 questions.
-        """;
+                    You are an assistant that generates multiple-choice quizzes.
+                    
+                    REQUIREMENTS:
+                    - Return ONLY a JSON array. No explanations, no markdown, no backticks.
+                    - Must generate EXACTLY 40 distinct quiz objects.
+                    - Schema:
+                      {
+                        "question": "string",
+                        "quizType": "SINGLE" | "MULTIPLE",
+                        "answers": [
+                          { "answer": "string", "isCorrect": true|false }
+                        ]
+                      }
+                    - Rules:
+                      * SINGLE → exactly 1 correct answer.
+                      * MULTIPLE → at least 2 correct answers.
+                      * Each question must have 3–4 answer options.
+                      * All questions/answers must align with provided course/module/theory.
+                      * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
+                      * Do NOT create duplicates or near-duplicates.
+                      * Ensure clarity, correctness, and variety across the 40 questions.
+                    """;
 
             String userPrompt = buildQuizPrompt(course, module, lesson);
 
@@ -842,15 +835,15 @@ public class AIController {
         }
 
         return """
-    Generate quiz questions based on the following context.
-
-    CONTEXT (Do NOT repeat these fields in output):
-    - Course: %s (%s, %s level)
-    - Module: %s
-    - Exam Lesson: %s
-    - Theory Content (from preceding lessons if any):
-    %s
-    """.formatted(
+                Generate quiz questions based on the following context.
+                
+                CONTEXT (Do NOT repeat these fields in output):
+                - Course: %s (%s, %s level)
+                - Module: %s
+                - Exam Lesson: %s
+                - Theory Content (from preceding lessons if any):
+                %s
+                """.formatted(
                 nullToEmpty(course.getTitle()), courseLang, level,
                 nullToEmpty(module.getTitle()),
                 nullToEmpty(examLesson.getTitle()),
@@ -905,82 +898,82 @@ public class AIController {
 
     private String buildPrompt(AiCourseSuggestRequest req) {
         return String.format("""
-    Generate a JSON course outline.
-
-    Title: %s
-    Description: %s
-    Language: %s
-    Level: %s
-    CategoryId: %d
-    Paid: %s, Price: %s
-    Modules: %d
-    Lessons per module: %d
-    Time per lesson (minutes): %d
-    Exercises included: %s
-    Quiz included: %s (style=%s, questions=%d, types=%s)
-    Points per lesson: %d
-    Points per quiz question: %d
-
-    STRICT REQUIREMENTS:
-    - Return ONLY valid JSON. No explanations. No markdown fences.
-    - Follow the schema EXACTLY. Do not add extra properties.
-    - For quizzes:
-      * Each question MUST include "quizType": "SINGLE" or "MULTIPLE".
-      * Use "SINGLE" if EXACTLY ONE answer has isCorrect=true.
-      * Use "MULTIPLE" if TWO OR MORE answers have isCorrect=true.
-      * Each question MUST have at least ONE correct answer.
-      * Answers: keep 3–6 options, clear and unambiguous.
-
-    SCHEMA (example shape; populate with real content):
-    {
-      "suggestedTitle": "string",
-      "suggestedDescription": "string",
-      "modules": [
-        {
-          "title": "string",
-          "lessons": [
-            {
-              "title": "string",
-              "type": "CODE" | "EXAM",
-              "duration": %d,
-              "points": %d,
-              "objective": "string",
-              "theory": {
-                "title": "string",
-                "contentHtml": "<p>HTML allowed</p>"
-              },
-              "exercise": {
-                "title": "string",
-                "instruction": "string",
-                "tasks": ["string"],
-                "testCases": [
-                  {
-                    "input": ["line1", "line2"],   // stdin lines as array of strings
-                    "expected": "string",          // exact expected stdout
-                    "priority": "REQUIRED" | "OPTIONAL",
-                    "public": true
-                  }
-                ]
-              },
-              "quiz": {
-                "questions": [
-                  {
-                    "quizType": "SINGLE" | "MULTIPLE",
-                    "question": "string",
-                    "points": %d,
-                    "answers": [
-                      { "answer": "string", "isCorrect": true },
-                      { "answer": "string", "isCorrect": false }
-                    ]
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    }
-    """,
+                        Generate a JSON course outline.
+                        
+                        Title: %s
+                        Description: %s
+                        Language: %s
+                        Level: %s
+                        CategoryId: %d
+                        Paid: %s, Price: %s
+                        Modules: %d
+                        Lessons per module: %d
+                        Time per lesson (minutes): %d
+                        Exercises included: %s
+                        Quiz included: %s (style=%s, questions=%d, types=%s)
+                        Points per lesson: %d
+                        Points per quiz question: %d
+                        
+                        STRICT REQUIREMENTS:
+                        - Return ONLY valid JSON. No explanations. No markdown fences.
+                        - Follow the schema EXACTLY. Do not add extra properties.
+                        - For quizzes:
+                          * Each question MUST include "quizType": "SINGLE" or "MULTIPLE".
+                          * Use "SINGLE" if EXACTLY ONE answer has isCorrect=true.
+                          * Use "MULTIPLE" if TWO OR MORE answers have isCorrect=true.
+                          * Each question MUST have at least ONE correct answer.
+                          * Answers: keep 3–6 options, clear and unambiguous.
+                        
+                        SCHEMA (example shape; populate with real content):
+                        {
+                          "suggestedTitle": "string",
+                          "suggestedDescription": "string",
+                          "modules": [
+                            {
+                              "title": "string",
+                              "lessons": [
+                                {
+                                  "title": "string",
+                                  "type": "CODE" | "EXAM",
+                                  "duration": %d,
+                                  "points": %d,
+                                  "objective": "string",
+                                  "theory": {
+                                    "title": "string",
+                                    "contentHtml": "<p>HTML allowed</p>"
+                                  },
+                                  "exercise": {
+                                    "title": "string",
+                                    "instruction": "string",
+                                    "tasks": ["string"],
+                                    "testCases": [
+                                      {
+                                        "input": ["line1", "line2"],   // stdin lines as array of strings
+                                        "expected": "string",          // exact expected stdout
+                                        "priority": "REQUIRED" | "OPTIONAL",
+                                        "public": true
+                                      }
+                                    ]
+                                  },
+                                  "quiz": {
+                                    "questions": [
+                                      {
+                                        "quizType": "SINGLE" | "MULTIPLE",
+                                        "question": "string",
+                                        "points": %d,
+                                        "answers": [
+                                          { "answer": "string", "isCorrect": true },
+                                          { "answer": "string", "isCorrect": false }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                        """,
                 // ==== data binding ====
                 req.base.courseTitle,
                 req.base.courseDescription,
@@ -1028,9 +1021,79 @@ public class AIController {
         return t;
     }
 
-    private String nullToEmpty(String s) { return (s == null) ? "" : s; }
+    private String nullToEmpty(String s) {
+        return (s == null) ? "" : s;
+    }
 
     private String escapeHtml(String s) {
-        return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    @PostMapping("/quiz-feedback")
+    public ResponseEntity<?> getAIQuizFeedback(@RequestBody Map<String, Object> body) {
+        try {
+            String quizTitle = (String) body.getOrDefault("quizTitle", "Quiz");
+            List<Map<String, Object>> wrongAnswers = (List<Map<String, Object>>) body.get("wrongAnswers");
+
+            String systemPrompt = """
+                    You are a strict AI tutor helping learners understand why their quiz answers are wrong.
+                    
+                    REQUIREMENTS:
+                    - Return ONLY valid JSON array. No markdown, no prose, no backticks.
+                    - Each element must have exactly this schema:
+                      {
+                        "question": "string",
+                        "userAnswer": ["string", ...],
+                        "correctAnswers": ["string", ...],
+                        "explanation": "string"
+                      }
+                    - Explanation must be concise, beginner-friendly, and correct.
+                    - Do NOT merge multiple questions into one explanation. Each question must have its own object.
+                    """;
+
+            String userPrompt = "Quiz Title: " + quizTitle + "\n\nWrong answers:\n" +
+                    wrongAnswers.stream()
+                            .map(w -> "- Question: " + w.get("question") +
+                                    "\n  User Answer: " + w.get("userAnswer") +
+                                    "\n  Correct Answers: " + w.get("correctAnswers"))
+                            .collect(Collectors.joining("\n\n"));
+
+            Map<String, Object> bodyReq = Map.of(
+                    "model", "llama3-70b-8192",
+                    "temperature", 0.3,
+                    "messages", List.of(
+                            Map.of("role", "system", "content", systemPrompt),
+                            Map.of("role", "user", "content", userPrompt)
+                    )
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(GROQ_API_KEY);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(bodyReq, headers);
+            ResponseEntity<String> groqResp = restTemplate.postForEntity(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    entity,
+                    String.class
+            );
+
+            if (!groqResp.getStatusCode().is2xxSuccessful()) {
+                return ResponseEntity.status(groqResp.getStatusCode())
+                        .body(Map.of("message", "Groq error", "raw", groqResp.getBody()));
+            }
+
+            String content = extractAssistantContent(groqResp.getBody());
+            String json = stripCodeFenceIfAny(content).trim();
+
+            ObjectMapper mapper = new ObjectMapper();
+            Object result = mapper.readValue(json, Object.class);
+
+            return ResponseEntity.ok(Map.of("feedback", result));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "QuizFeedback failed", "error", e.getMessage()));
+        }
     }
 }

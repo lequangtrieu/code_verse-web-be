@@ -1,6 +1,4 @@
 package codeverse.com.web_be.config.SystemConfig;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import vn.payos.PayOS;
@@ -8,14 +6,9 @@ import vn.payos.PayOS;
 @Configuration
 public class PayOSConfig {
 
-    @Value("${payos.client-id}")
-    private String clientId;
-
-    @Value("${payos.api-key}")
-    private String apiKey;
-
-    @Value("${payos.checksum-key}")
-    private String checksumKey;
+    private String clientId = System.getenv("PAYOS_CLIENT_ID");
+    private String apiKey = System.getenv("PAYOS_API_KEY");
+    private String checksumKey = System.getenv("PAYOS_CHECKSUM_KEY");
 
     @Bean
     public PayOS payOS() {

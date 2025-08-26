@@ -10,6 +10,7 @@ import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModul
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
+import codeverse.com.web_be.dto.response.NotificationResponse.NotificationResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.*;
@@ -111,10 +112,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
         System.out.println("Name:" + name);
-        return courseRepository.findByInstructorUsername(name)
+        return courseRepository.findByInstructorUsernameAndIsDeletedFalse(name)
                 .stream()
                 .filter(course -> !course.getStatus().equals(CourseStatus.TRAINING_DRAFT)
                                 && !course.getStatus().equals(CourseStatus.TRAINING_PUBLISHED))
+                .sorted(Comparator.comparing(Course::getCreatedAt).reversed())
                 .toList();
     }
 

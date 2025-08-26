@@ -13,6 +13,8 @@ import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerR
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.*;
+import codeverse.com.web_be.exception.AppException;
+import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
@@ -395,6 +397,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             );
         }
         if(request.getStatus().equals(CourseStatus.PUBLISHED)){
+            try{
+                emailService.sendCourseApprovalEmail(course.getInstructor(), course);
+            } catch (MessagingException e) {
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
             notificationService.notifyUsers(
                     List.of(course.getInstructor()),
                     admins.get(0),
@@ -403,6 +410,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             );
         }
         if(request.getStatus().equals(CourseStatus.DRAFT)){
+            try{
+                emailService.sendCourseRejectionEmail(course.getInstructor(), course);
+            } catch (MessagingException e) {
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
             notificationService.notifyUsers(
                     List.of(course.getInstructor()),
                     admins.get(0),

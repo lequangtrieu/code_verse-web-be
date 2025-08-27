@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -54,7 +55,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "GROUP BY c.instructor.id, c.instructor.name")
     List<Object[]> getInstructorRevenueSummary();
 
-    // Doanh thu theo instructor - filter theo YEAR
     @Query("SELECT c.instructor.id, c.instructor.name, " +
             "COUNT(DISTINCT c.id), " +
             "COUNT(DISTINCT o.user.id), " +
@@ -67,7 +67,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "GROUP BY c.instructor.id, c.instructor.name")
     List<Object[]> getInstructorRevenueByYear(@Param("year") int year);
 
-    // Doanh thu theo instructor - filter theo MONTH + YEAR
     @Query("SELECT c.instructor.id, c.instructor.name, " +
             "COUNT(DISTINCT c.id), " +
             "COUNT(DISTINCT o.user.id), " +
@@ -81,7 +80,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "GROUP BY c.instructor.id, c.instructor.name")
     List<Object[]> getInstructorRevenueByMonth(@Param("year") int year, @Param("month") int month);
 
-    // Doanh thu theo instructor - filter theo QUARTER + YEAR
     @Query("SELECT c.instructor.id, c.instructor.name, " +
             "COUNT(DISTINCT c.id), " +
             "COUNT(DISTINCT o.user.id), " +
@@ -94,6 +92,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "AND CEIL(MONTH(o.orderDate) / 3.0) = :quarter " +
             "GROUP BY c.instructor.id, c.instructor.name")
     List<Object[]> getInstructorRevenueByQuarter(@Param("year") int year, @Param("quarter") int quarter);
+
 
     // Doanh thu từng khóa của instructor - filter theo YEAR
     @Query("SELECT c.id, c.title, COUNT(DISTINCT o.user.id), COALESCE(SUM(o.totalAmount), 0) " +
@@ -148,5 +147,38 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("year") int year,
             @Param("quarter") int quarter);
 
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :fromDate AND :toDate")
+    long countNewOrders(@Param("fromDate") LocalDateTime fromDate, @Param("toDate") LocalDateTime toDate);
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.orderDate BETWEEN :fromDate AND :toDate")
+    BigDecimal sumNewRevenue(@Param("fromDate") LocalDateTime fromDate, @Param("toDate") LocalDateTime toDate);
+
+    @Query("SELECT MONTH(o.orderDate), COALESCE(SUM(o.totalAmount), 0) " +
+            "FROM Order o " +
+            "WHERE YEAR(o.orderDate) = :year AND o.status = 'PAID' " +
+            "GROUP BY MONTH(o.orderDate) " +
+            "ORDER BY MONTH(o.orderDate)")
+    List<Object[]> sumRevenueByMonth(@Param("year") int year);
+
+    @Query("SELECT MONTH(o.orderDate), COUNT(o), SUM(o.totalAmount) " +
+            "FROM Order o " +
+            "WHERE YEAR(o.orderDate) = :year AND o.status = 'PAID' " +
+            "GROUP BY MONTH(o.orderDate) " +
+            "ORDER BY MONTH(o.orderDate)")
+    List<Object[]> revenueByMonth(@Param("year") int year);
+
+    @Query("SELECT QUARTER(o.orderDate), COUNT(o), SUM(o.totalAmount) " +
+            "FROM Order o " +
+            "WHERE YEAR(o.orderDate) = :year AND o.status = 'PAID' " +
+            "GROUP BY QUARTER(o.orderDate) " +
+            "ORDER BY QUARTER(o.orderDate)")
+    List<Object[]> revenueByQuarter(@Param("year") int year);
+
+    @Query("SELECT YEAR(o.orderDate), COUNT(o), SUM(o.totalAmount) " +
+            "FROM Order o " +
+            "WHERE o.status = 'PAID' " +
+            "GROUP BY YEAR(o.orderDate) " +
+            "ORDER BY YEAR(o.orderDate)")
+    List<Object[]> revenueByYear();
 }
 

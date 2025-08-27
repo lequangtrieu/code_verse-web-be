@@ -30,6 +30,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -303,5 +304,16 @@ public class CourseController {
     public ResponseEntity<List<SimpleCourseCardDto>> getPopularCourses() {
         List<SimpleCourseCardDto> result = courseService.getPopularCourses();
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{courseId}/is-owner")
+    public ApiResponse<Boolean> isCourseOwner(@PathVariable Long courseId) {
+        Course course = courseService.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found."));
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        return ApiResponse.<Boolean>builder()
+                .result(course.getInstructor().getUsername().equals(name))
+                .build();
     }
 }

@@ -42,6 +42,7 @@ public enum ErrorCode {
     INVALID_EMAIL(2008, "Invalid email format", HttpStatus.BAD_REQUEST),
     INVALID_CREDENTIALS(2010, "Missing or invalid credentials", HttpStatus.BAD_REQUEST),
     INVALID_PHONE(2011, "Phone number required", HttpStatus.BAD_REQUEST),
+    INVALID_NAME(2011, "Name required", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

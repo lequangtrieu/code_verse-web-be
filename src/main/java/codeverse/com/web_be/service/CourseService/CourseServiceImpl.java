@@ -10,9 +10,12 @@ import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModul
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
+import codeverse.com.web_be.dto.response.NotificationResponse.NotificationResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.*;
+import codeverse.com.web_be.exception.AppException;
+import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
@@ -109,10 +112,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
         System.out.println("Name:" + name);
-        return courseRepository.findByInstructorUsername(name)
+        return courseRepository.findByInstructorUsernameAndIsDeletedFalse(name)
                 .stream()
                 .filter(course -> !course.getStatus().equals(CourseStatus.TRAINING_DRAFT)
                                 && !course.getStatus().equals(CourseStatus.TRAINING_PUBLISHED))
+                .sorted(Comparator.comparing(Course::getCreatedAt).reversed())
                 .toList();
     }
 
@@ -395,6 +399,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             );
         }
         if(request.getStatus().equals(CourseStatus.PUBLISHED)){
+            try{
+                emailService.sendCourseApprovalEmail(course.getInstructor(), course);
+            } catch (MessagingException e) {
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
             notificationService.notifyUsers(
                     List.of(course.getInstructor()),
                     admins.get(0),
@@ -403,6 +412,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             );
         }
         if(request.getStatus().equals(CourseStatus.DRAFT)){
+            try{
+                emailService.sendCourseRejectionEmail(course.getInstructor(), course);
+            } catch (MessagingException e) {
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
             notificationService.notifyUsers(
                     List.of(course.getInstructor()),
                     admins.get(0),
@@ -451,11 +465,19 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
 
                 if (Objects.equals(lesson.getLessonType(), LessonType.EXAM)) {
                     List<QuestionDTO> questionDTO = courseRepository.getQuestionByLessonId(lesson.getId());
-                    for (QuestionDTO question : questionDTO) {
-                        question.setAnswers(courseRepository.getAnswersByQuestionID(question.getId()));
-                    }
 
-                    lesson.setQuestions(questionDTO);
+                    if (questionDTO == null || questionDTO.isEmpty()) {
+                        lesson.setQuestions(Collections.emptyList());
+                    } else {
+                        Collections.shuffle(questionDTO);
+                        int limit = Math.min(15, questionDTO.size());
+                        List<QuestionDTO> picked = new ArrayList<>(questionDTO.subList(0, limit));
+
+                        for (QuestionDTO q : picked) {
+                            q.setAnswers(courseRepository.getAnswersByQuestionID(q.getId()));
+                        }
+                        lesson.setQuestions(picked);
+                    }
                 } else {
                     TheoryDTO theory = courseRepository.getTheoryByLessonId(lesson.getId());
                     ExerciseDTO exerciseDTO = courseRepository.getExerciseByLessonId(lesson.getId());
@@ -484,6 +506,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         CourseDetailDTO courseDetailDTO = new CourseDetailDTO();
         courseDetailDTO.setData(modules);
         courseDetailDTO.setLanguage(course.getLanguage() != null ? course.getLanguage() : CodeLanguage.ALL);
+        courseDetailDTO.setInstructor(course.getInstructor().getUsername());
         return courseDetailDTO;
     }
 
@@ -520,14 +543,10 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         CodeSubmission submission = lessonProgress.getCodeSubmission();
         if (submission != null) {
             submission.setCode(request.getCode());
-            submission.setExecutionTime(request.getExecutionTime());
-            submission.setMemoryUsage(request.getMemoryUsage());
         } else {
             submission = CodeSubmission.builder()
                     .lessonProgress(lessonProgress)
                     .code(request.getCode())
-                    .executionTime(request.getExecutionTime())
-                    .memoryUsage(request.getMemoryUsage())
                     .build();
 
             lessonProgress.setCodeSubmission(submission);
@@ -549,7 +568,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         return courseRepository.findPopularCourses(PageRequest.of(0, 5));
     }
 
-    private boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
+    protected boolean updateCourseEnrollmentProgress(Long userId, Long courseId) throws MessagingException {
         CourseEnrollment enrollment = courseEnrollmentRepository
                 .findByUserIdAndCourseId(userId, courseId)
                 .orElseGet(() -> {

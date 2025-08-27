@@ -70,6 +70,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         UserResponse response = userMapper.userToUserResponse(user);
         response.setBadges(getBadgesByUser(user));
+        response.setCompleted(getCompleted(user.getId()));
         response.setTrainingStatus(getTrainingStatus(user.getId()));
         response.setLessonProgressStatus(getLessonProgressStatus(user.getId()));
         return response;
@@ -81,7 +82,21 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        // Chỉ cập nhật các trường được phép
+
+        // 🔒 Validate name
+        if (userUpdateRequest.getName() == null || userUpdateRequest.getName().trim().isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_NAME);
+        }
+
+        if (userUpdateRequest.getPhoneNumber() != null && !userUpdateRequest.getPhoneNumber().trim().isEmpty()) {
+            // ✅ số điện thoại bắt đầu bằng 0 và có đúng 10 chữ số
+            String phoneRegex = "^0\\d{9}$";
+            if (!userUpdateRequest.getPhoneNumber().matches(phoneRegex)) {
+                throw new AppException(ErrorCode.INVALID_PHONE);
+            }
+        }
+
+        // ✅ Chỉ cập nhật các trường được phép
         user.setName(userUpdateRequest.getName());
         user.setBio(userUpdateRequest.getBio());
         user.setPhoneNumber(userUpdateRequest.getPhoneNumber());
@@ -89,6 +104,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
         User updatedUser = userRepository.save(user);
         return userMapper.userToUserResponse(updatedUser);
     }
+
 
     @Override
     public UserResponse updateAvatar(MultipartFile file) {
@@ -271,6 +287,10 @@ public class UserServiceImpl extends GenericServiceImpl<User, Long> implements I
     public String getLessonProgressStatus(Long userId) {
         return lessonProgressRepository.countByUserIdAndStatus(userId, LessonProgressStatus.PASSED) +
                 "/" + lessonRepository.countLessonsByUserId(userId);
+    }
+
+    public Integer getCompleted(Long userId) {
+        return courseEnrollmentRepository.countByUserIdAndCompletionPercentageGreaterThanEqual(userId, 100.0f);
     }
 
 }

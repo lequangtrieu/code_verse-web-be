@@ -18,6 +18,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByInstructorId(Long instructorId);
 
     List<Course> findByInstructorUsername(String username);
+    List<Course> findByInstructorUsernameAndIsDeletedFalse(String username);
 
     Course findCourseById(Long courseId);
 
@@ -47,7 +48,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "(SELECT COUNT(l) FROM Lesson l JOIN l.courseModule ms WHERE ms.course.id = :courseId), " +            // totalLessons
             "(SELECT COALESCE(SUM(l.duration), 0) FROM Lesson l JOIN l.courseModule ms WHERE ms.course.id = :courseId), " + // totalDurations
             "cat.name, " +                                                                                           // category
-            "u.name, u.id) " +                                                                                              // instructor
+            "u.name, u.id, u.username) " +                                                                                              // instructor
             "FROM Course c " +
             "LEFT JOIN c.category cat " +
             "LEFT JOIN c.instructor u " +

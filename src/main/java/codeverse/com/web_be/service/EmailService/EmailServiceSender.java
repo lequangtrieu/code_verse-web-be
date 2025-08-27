@@ -203,6 +203,92 @@ public class EmailServiceSender {
     }
 
     @Async
+    public void sendCourseApprovalEmail(User instructor, Course course) throws MessagingException {
+        String subject = "✅ Your Course Has Been Approved on CodeVerse!";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #f9fffa;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Approval Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #28a745;">Congratulations, %s! 🎉</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            Your course <strong>"%s"</strong> has been <span style="color:#28a745; font-weight:bold;">approved</span> and is now live on <strong>CodeVerse</strong>.
+        </p>
+        <p style="font-size: 16px; color: #555; text-align: center;">
+            Students can now explore your course and start learning from your expertise.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="https://code-verse-web-fe.vercel.app/course/%d"
+               style="background-color: #1677ff; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
+               View Your Course
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            Have questions? <a href="mailto:dolvapple@gmail.com">Contact our support team</a>.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Keep inspiring learners worldwide.</p>
+    </div>
+    """, instructor.getName(), course.getTitle(), course.getId());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(instructor.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
+    @Async
+    public void sendCourseRejectionEmail(User instructor, Course course) throws MessagingException {
+        String subject = "❌ Your Course Submission Was Not Approved on CodeVerse";
+
+        String htmlContent = String.format("""
+    <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fff5f5;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Rejection Icon" style="width: 80px; height: 80px;" />
+        </div>
+        <h2 style="text-align: center; color: #d9534f;">Hello, %s</h2>
+        <p style="font-size: 16px; color: #444; text-align: center;">
+            Unfortunately, your course <strong>"%s"</strong> has been <span style="color:#d9534f; font-weight:bold;">rejected</span>.
+        </p>
+        <p style="font-size: 16px; color: #555; text-align: center;">
+            You can update your course and resubmit it for approval at any time.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="https://code-verse-web-fe.vercel.app/instructor-panel/courses/%d"
+               style="background-color: #1677ff; color: white; padding: 12px 24px; text-decoration: none; font-size: 16px; border-radius: 6px;">
+               Update and Resubmit
+            </a>
+        </div>
+        <p style="font-size: 14px; color: #888; text-align: center;">
+            Need help? <a href="mailto:dolvapple@gmail.com">Contact our support team</a>.
+        </p>
+        <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
+        <p style="font-size: 12px; color: #aaa; text-align: center;">&copy; 2025 CodeVerse. Keep improving and keep inspiring.</p>
+    </div>
+    """, instructor.getName(), course.getTitle(), course.getId());
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(
+                message,
+                MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name()
+        );
+
+        helper.setTo(instructor.getUsername());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+        emailSender.send(message);
+    }
+
+    @Async
     public void sendFreeCourseConfirmationEmail(User user, Course course) throws MessagingException {
         String subject = "🎉 You’ve Successfully Enrolled in a Free Course!";
         String htmlContent = String.format("""

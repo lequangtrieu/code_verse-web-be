@@ -11,11 +11,18 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class DashboardOverviewDTO {
     private long totalUsers;
-    private long totalInstructors;
+    private long newUsers;
+    private double userGrowthPercent;
+
     private long totalCourses;
+    private long newCourses;
+    private double courseGrowthPercent;
+
     private long totalOrders;
+    private long newOrders;
+    private double orderGrowthPercent;
+
     private BigDecimal totalRevenue;
-    private long totalEnrollments;
-    private long totalWithdrawalRequests;
-    private long totalReports;
+    private BigDecimal newRevenue;
+    private double revenueGrowthPercent;
 }

@@ -741,28 +741,33 @@ public class AIController {
             CourseModule module = lesson.getCourseModule();
 
             String systemPrompt = """
-                    You are an assistant that generates multiple-choice quizzes.
-                    
-                    REQUIREMENTS:
-                    - Return ONLY a JSON array. No explanations, no markdown, no backticks.
-                    - Must generate EXACTLY 40 distinct quiz objects.
-                    - Schema:
-                      {
-                        "question": "string",
-                        "quizType": "SINGLE" | "MULTIPLE",
-                        "answers": [
-                          { "answer": "string", "isCorrect": true|false }
-                        ]
-                      }
-                    - Rules:
-                      * SINGLE → exactly 1 correct answer.
-                      * MULTIPLE → at least 2 correct answers.
-                      * Each question must have 3–4 answer options.
-                      * All questions/answers must align with provided course/module/theory.
-                      * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
-                      * Do NOT create duplicates or near-duplicates.
-                      * Ensure clarity, correctness, and variety across the 40 questions.
-                    """;
+        You are an assistant that generates multiple-choice quizzes.
+
+        REQUIREMENTS:
+        - Return ONLY a JSON array. No explanations, no markdown, no backticks.
+        - Must generate EXACTLY 40 quiz objects with different questions.
+        - Schema:
+          {
+            "question": "string",
+            "quizType": "SINGLE" | "MULTIPLE",
+            "answers": [
+              { "answer": "string", "isCorrect": true|false }
+            ]
+          }
+        - Rules:
+          * SINGLE → exactly 1 correct answer.
+          * MULTIPLE → at least 2 correct answers.
+          * Each question must have 3–4 answer options.
+          * All questions/answers must align with provided course/module/theory.
+          * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
+          * Do NOT create duplicates or near-duplicates.
+          * Ensure clarity, correctness, and variety across the 40 questions.
+
+          FORMATTING RULES:
+          - All JSON must be strictly valid and parseable by Jackson.
+          - Any double quotes inside string values (like code snippets or text) must be escaped as \\".
+          - Do not use backticks (`) for code blocks. If code is shown, wrap it directly as a string with escaped quotes.
+        """;
 
             String userPrompt = buildQuizPrompt(course, module, lesson);
 

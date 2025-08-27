@@ -10,9 +10,12 @@ import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseModul
 import codeverse.com.web_be.dto.response.CourseResponse.CourseDetail.CourseMoreInfoDTO;
 import codeverse.com.web_be.dto.response.CourseResponse.*;
 import codeverse.com.web_be.dto.response.CourseResponse.LearnerResponse.LearnerResponse;
+import codeverse.com.web_be.dto.response.NotificationResponse.NotificationResponse;
 import codeverse.com.web_be.dto.response.UserResponse.UserResponse;
 import codeverse.com.web_be.entity.*;
 import codeverse.com.web_be.enums.*;
+import codeverse.com.web_be.exception.AppException;
+import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.mapper.CourseMapper;
 import codeverse.com.web_be.repository.*;
 import codeverse.com.web_be.service.AuthenService.AuthenticationService;
@@ -109,10 +112,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
         System.out.println("Name:" + name);
-        return courseRepository.findByInstructorUsername(name)
+        return courseRepository.findByInstructorUsernameAndIsDeletedFalse(name)
                 .stream()
                 .filter(course -> !course.getStatus().equals(CourseStatus.TRAINING_DRAFT)
                                 && !course.getStatus().equals(CourseStatus.TRAINING_PUBLISHED))
+                .sorted(Comparator.comparing(Course::getCreatedAt).reversed())
                 .toList();
     }
 
@@ -395,6 +399,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             );
         }
         if(request.getStatus().equals(CourseStatus.PUBLISHED)){
+            try{
+                emailService.sendCourseApprovalEmail(course.getInstructor(), course);
+            } catch (MessagingException e) {
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
             notificationService.notifyUsers(
                     List.of(course.getInstructor()),
                     admins.get(0),
@@ -403,6 +412,11 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
             );
         }
         if(request.getStatus().equals(CourseStatus.DRAFT)){
+            try{
+                emailService.sendCourseRejectionEmail(course.getInstructor(), course);
+            } catch (MessagingException e) {
+                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            }
             notificationService.notifyUsers(
                     List.of(course.getInstructor()),
                     admins.get(0),

@@ -82,9 +82,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fdfdfd;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/4202/4202842.png" alt="Welcome Icon" style="width: 80px; height: 80px;" />
-                    </div>
                     <h2 style="text-align: center; color: #1677ff;">Welcome to CodeVerse, %s!</h2>
                     <p style="font-size: 16px; color: #444; text-align: center;">
                         We’re excited to have you onboard. An account has been created for you on CodeVerse.
@@ -125,9 +122,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #f0f8ff;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Instructor Icon" style="width: 80px; height: 80px;" />
-                    </div>
                     <h2 style="text-align: center; color: #1677ff;">Welcome to the Instructor Community, %s!</h2>
                     <p style="font-size: 16px; color: #444; text-align: center;">
                         Your request to become an instructor on <strong>CodeVerse</strong> has been approved.
@@ -168,9 +162,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fff8f8;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Rejected Icon" style="width: 80px; height: 80px;" />
-                    </div>
                     <h2 style="text-align: center; color: #d32f2f;">Instructor Registration Unsuccessful</h2>
                     <p style="font-size: 16px; color: #444; text-align: center;">
                         Dear %s,
@@ -208,9 +199,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
     <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #f9fffa;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Approval Icon" style="width: 80px; height: 80px;" />
-        </div>
         <h2 style="text-align: center; color: #28a745;">Congratulations, %s! 🎉</h2>
         <p style="font-size: 16px; color: #444; text-align: center;">
             Your course <strong>"%s"</strong> has been <span style="color:#28a745; font-weight:bold;">approved</span> and is now live on <strong>CodeVerse</strong>.
@@ -251,9 +239,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
     <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fff5f5;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Rejection Icon" style="width: 80px; height: 80px;" />
-        </div>
         <h2 style="text-align: center; color: #d9534f;">Hello, %s</h2>
         <p style="font-size: 16px; color: #444; text-align: center;">
             Unfortunately, your course <strong>"%s"</strong> has been <span style="color:#d9534f; font-weight:bold;">rejected</span>.
@@ -404,9 +389,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fdfdfd;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/138/138292.png" alt="Withdrawal Icon" style="width: 80px; height: 80px;" />
-                    </div>
                     <h2 style="text-align: center; color: #1677ff;">Withdrawal Approved</h2>
                     <p style="font-size: 16px; color: #444; text-align: center;">
                         Dear %s,
@@ -456,9 +438,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fdfdfd;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/2278/2278992.png" alt="Trophy Icon" style="width: 80px; height: 80px;" />
-                    </div>
                     <h2 style="text-align: center; color: #1677ff;">Congratulations, %s! 🎉</h2>
                     <p style="font-size: 16px; color: #444; text-align: center;">
                         You’ve successfully completed the course:
@@ -496,9 +475,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fff8f8;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/463/463612.png" alt="Ban Icon" style="width: 80px; height: 80px;" />
-                    </div>
                     <h2 style="text-align: center; color: #d32f2f;">Your Account Has Been Banned</h2>
                     <p style="font-size: 16px; color: #444; text-align: center;">
                         Dear %s,
@@ -536,9 +512,6 @@ public class EmailServiceSender {
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #f7fff7;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Unban Icon" style="width: 80px; height: 80px;" />
-                    </div>
                     <h2 style="text-align: center; color: #388e3c;">Welcome Back, %s! 🎉</h2>
                     <p style="font-size: 16px; color: #444; text-align: center;">
                         Your account has been successfully reinstated.

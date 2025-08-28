@@ -35,6 +35,7 @@ public class CodeExecutionController {
             String versionIndex = getVersionIndex(language);
 
             List<Map<String, String>> credentialsList = new ArrayList<>(List.of(
+                    Map.of("clientId", "de8d6503f025cc169f85a1646aaaf42c", "clientSecret", "896393f78b58f013485787c8e0c00c8580cf406378a04d48e08c4d210cc4e299"),
                     Map.of("clientId", "bbb818b20e36927c1e4987bbe30bcaa1", "clientSecret", "6339b7b551404c059c18d77bbd71de78d50ced17174ac3ab797edc7dd86e17ec"),
                     Map.of("clientId", "ae2b51a5522d0f58cd09cddebb4c58a6", "clientSecret", "593e01831cdd9673d0a8ab02bbc35c8130e27add74c84afffc5412309b9456bc"),
                     Map.of("clientId", "c0afa9758fd7e14891882a980bcb2877", "clientSecret", "36a60b7977814f407511c6dbebc5e9267d0d60cde49b7c3ea9c435e2b6e77f69"),
@@ -46,6 +47,10 @@ public class CodeExecutionController {
                     Map.of("clientId", "8fe702687c9640df445647ae66ea165b", "clientSecret", "dfd578c367432b4654df1ccca24214d48a8bd808ea223c45af92f9cebbe512a7"),
                     Map.of("clientId", "17cae29a485c6f8d4cd8ec8b23c1798d", "clientSecret", "fec9dbfcb68a4bf36aa05caa01188ccfd5fa81652ad1fe6cca0d01685b9fde34"),
                     Map.of("clientId", "7cc607cedddb0ac80e1f5c29ba578adc", "clientSecret", "fda43bd8cec73856bc18a0fa011823f21f5bb67a06e1f6f7c2b0dfe85d8aee12"),
+                    Map.of("clientId", "bc641f95b98d4ba6c2dbe0483f78afcf", "clientSecret", "4d8fe55ccd91168b21012c358f3d7b085f9af380a448c7240bd3770c0ca7c0c0"),
+                    Map.of("clientId", "c0f7dc96df67954ead854e139d8f8ca6", "clientSecret", "c56094f416898f8f3b70318f9b2a48b717932df35b521d9a12b2c4db0e972d42"),
+                    Map.of("clientId", "37fb9e1983ffe577519fa617bb301e75", "clientSecret", "c40ebce7ec51037d11082f16c1deabf1862dcc1bf5cb2a4ca7b2be21291e47ad"),
+                    Map.of("clientId", "30dcf9b4bc91491652c3d9044b0e38e", "clientSecret", "e15ab677334d19e5d9d4eabdbdabc84dc19728144bcc180bc71c5b3f6801b8f6"),
                     Map.of("clientId", "73c9be18b31bf13564a7d18230b3f09", "clientSecret", "8b08c342573c726f8e130eb1f0bada98b4c43082824a139e0adabe8887676340")
             ));
 

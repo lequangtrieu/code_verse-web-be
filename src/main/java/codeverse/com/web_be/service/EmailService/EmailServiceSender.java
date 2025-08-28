@@ -349,7 +349,7 @@ public class EmailServiceSender {
         String formattedAmount = currencyFormat.format(amount) + " vnd?";
 
         String verificationLink = String.format(
-                "https://code-verse-web-be.onrender.com/codeVerse/api/instructors/%d/withdrawals/verify?token=%s",
+                "https://codeverse-backend-431045531117.asia-southeast1.run.app/codeVerse/api/instructors/%d/withdrawals/verify?token=%s",
                 instructorId, token
         );
 

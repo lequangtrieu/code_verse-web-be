@@ -89,7 +89,7 @@ public class CodeExecutionController {
                         ObjectMapper mapper = new ObjectMapper();
                         Map<String, Object> errorMap = mapper.readValue(errJson, Map.class);
                         String errorMessage = errorMap.getOrDefault("error", "").toString().toLowerCase();
-                        if (errorMessage.contains("quota") || errorMessage.contains("limit")) {
+                        if (errorMessage.contains("quota") || errorMessage.contains("limit") || ex.getStatusCode().value() == 403) {
                         } else {
                             return ResponseEntity.status(ex.getStatusCode()).body(Map.of("error", errorMap));
                         }

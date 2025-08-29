@@ -29,7 +29,7 @@ public class DiscussionMessage {
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_id")
+    @JoinColumn(name = "lesson_id", nullable = false)
     private Lesson lesson;
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

@@ -49,7 +49,7 @@ public class EmailServiceSender {
     @Async
     public void sendVerificationEmail(String email, String token) throws MessagingException {
         String subject = "Verify Your Email - Welcome to Our Service";
-        String verificationLink = "https://code-verse-web-be.onrender.com/codeVerse/auth/verify-email/" + token;
+        String verificationLink = "https://codeverse-backend-431045531117.asia-southeast1.run.app/codeVerse/auth/verify-email/" + token;
 
         String htmlContent = """
                     <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">
@@ -385,7 +385,7 @@ public class EmailServiceSender {
     public void sendWithdrawalConfirmationEmail(WithdrawalRequest request) throws MessagingException {
         String subject = "💰 Withdrawal Request Approved — Please Confirm";
 
-        String confirmationLink = "https://code-verse-web-be.onrender.com/codeVerse/api/instructors/" + request.getInstructor().getId() + "/withdrawals/" + request.getId() + "/confirm";
+        String confirmationLink = "https://codeverse-backend-431045531117.asia-southeast1.run.app/codeVerse/api/instructors/" + request.getInstructor().getId() + "/withdrawals/" + request.getId() + "/confirm";
 
         String htmlContent = String.format("""
                 <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #e2e2e2; border-radius: 12px; background: #fdfdfd;">

@@ -56,10 +56,10 @@ public class FunctionHelper {
                 sexually explicit, violent, discriminatory, abusive, or meaningless spam content.
                 
                 Rules:
-                - ANY vulgar or swear word in ANY language (e.g. "cặc", "cức", "fuck", "shit") 
-                  → OFFENSIVE.
-                - ANY meaningless spam or junk text (random characters, excessive repetition, gibberish like "ádasds", "!!!!", "xxxxxx") 
-                  → OFFENSIVE.
+                - ANY vulgar or swear word in ANY language (e.g. "cặc", "cức", "fuck", "shit") → OFFENSIVE.
+                - Random meaningless gibberish (e.g. "ádasds", "!!!!", "xxxxxx") → OFFENSIVE.
+                - Repeated characters that are still part of a meaningful sentence (e.g. "tuyệt vời quá điiiiii", "so coooool!") → CLEAN.
+                - Normal sentences, even with uppercase or punctuation → CLEAN.
                 - Only neutral, polite, meaningful text → CLEAN.
                 
                 Output must be exactly one word: OFFENSIVE or CLEAN

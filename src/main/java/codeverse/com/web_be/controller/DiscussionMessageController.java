@@ -9,6 +9,7 @@ import codeverse.com.web_be.enums.UserRole;
 import codeverse.com.web_be.repository.DiscussionMessageRepository;
 import codeverse.com.web_be.repository.LessonRepository;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.NotificationService.INotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class DiscussionMessageController {
     private final LessonRepository lessonRepo;
     private final UserRepository userRepo;
     private final INotificationService notificationService;
+    private final FunctionHelper functionHelper;
 
     private DiscussionMessageResponse toDto(DiscussionMessage msg) {
         if (msg.getIsDeleted()) return null;
@@ -50,6 +52,11 @@ public class DiscussionMessageController {
 
     @PostMapping
     public ResponseEntity<?> createComment(@RequestBody DiscussionRequest request) {
+        if (functionHelper.isOffensive(request.getMessageText())) {
+            return ResponseEntity.badRequest()
+                    .body("Your comment contains offensive or inappropriate language. Please revise it.");
+        }
+
         User user = userRepo.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -70,6 +77,11 @@ public class DiscussionMessageController {
 
     @PostMapping("/{parentId}/reply")
     public ResponseEntity<?> replyToComment(@PathVariable Long parentId, @RequestBody DiscussionRequest request) {
+        if (functionHelper.isOffensive(request.getMessageText())) {
+            return ResponseEntity.badRequest()
+                    .body("Your reply contains offensive or inappropriate language. Please revise it.");
+        }
+
         User user = userRepo.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -89,7 +101,7 @@ public class DiscussionMessageController {
 
         discussionRepo.save(reply);
 
-        if(!Objects.equals(reply.getUser().getId(), parent.getUser().getId())) {
+        if (!Objects.equals(reply.getUser().getId(), parent.getUser().getId())) {
             notificationService.notifyUsers(List.of(parent.getUser()),
                     user,
                     "Discussion Reply",
@@ -117,6 +129,11 @@ public class DiscussionMessageController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateComment(@PathVariable Long id, @RequestBody DiscussionRequest request) {
+        if (functionHelper.isOffensive(request.getMessageText())) {
+            return ResponseEntity.badRequest()
+                    .body("Your updated comment contains offensive or inappropriate language. Please revise it.");
+        }
+
         DiscussionMessage msg = discussionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
 

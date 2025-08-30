@@ -4,6 +4,7 @@ import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.exception.AppException;
 import codeverse.com.web_be.exception.ErrorCode;
 import codeverse.com.web_be.repository.UserRepository;
+import codeverse.com.web_be.service.AIService.GroqService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class FunctionHelper {
     private final UserRepository userRepository;
+    private final GroqService groqService;
 
     public User getActiveUserByUsername(String username) {
         User user = userRepository.findByUsername(username)
@@ -43,5 +45,29 @@ public class FunctionHelper {
         }
 
         return result;
+    }
+
+    public boolean isOffensive(String text) {
+        if (text == null || text.isBlank()) return false;
+
+        String systemPrompt = """
+                You are a strict global content moderation filter for a learning platform.
+                Task: Detect if the text contains ANY offensive, vulgar, hateful, racist,
+                sexually explicit, violent, discriminatory, abusive, or meaningless spam content.
+                
+                Rules:
+                - ANY vulgar or swear word in ANY language (e.g. "cặc", "cức", "fuck", "shit") 
+                  → OFFENSIVE.
+                - ANY meaningless spam or junk text (random characters, excessive repetition, gibberish like "ádasds", "!!!!", "xxxxxx") 
+                  → OFFENSIVE.
+                - Only neutral, polite, meaningful text → CLEAN.
+                
+                Output must be exactly one word: OFFENSIVE or CLEAN
+                """;
+
+        String userPrompt = "Review text:\n" + text;
+
+        String result = groqService.chat(systemPrompt, userPrompt, 0.0);
+        return result != null && result.trim().equalsIgnoreCase("OFFENSIVE");
     }
 }

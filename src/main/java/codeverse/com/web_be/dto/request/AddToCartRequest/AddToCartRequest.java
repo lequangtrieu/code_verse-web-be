@@ -7,6 +7,5 @@ import java.util.List;
 public class AddToCartRequest {
     private String username;
     private Long courseId;
-//    private List<Long> selectedOrderDetailId;
     private List<Long> selectedCartItemId;
 }

@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AIController {
     private final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
+    private final String modelName = "llama-3.3-70b-versatile";
     private final DeepgramService deepgramService;
     private final GroqService groqService;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -60,7 +61,7 @@ public class AIController {
         RestTemplate restTemplate = new RestTemplate();
 
         Map<String, Object> groqRequest = Map.of(
-                "model", "llama3-70b-8192",
+                "model", modelName,
                 "messages", List.of(
                         Map.of("role", "system", "content", """
                                     "You are an AI code reviewer integrated into a browser-based coding platform called CodeVerse. All code is executed via a stateless JDoodle compiler. You must strictly follow the platform’s automatic judging system:
@@ -318,7 +319,7 @@ public class AIController {
                     """.formatted(req.getModules(), req.getLessons());
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
             body.put("response_format", Map.of("type", "json_object"));
             body.put("messages", List.of(
@@ -475,7 +476,7 @@ public class AIController {
             String userPrompt = buildTheoryPrompt(course, module, lesson, req);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
 
             body.put("messages", List.of(
@@ -622,7 +623,7 @@ public class AIController {
             String userPrompt = buildTestCasePrompt(course, module, lesson, req);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
 
             body.put("messages", List.of(
@@ -772,7 +773,7 @@ public class AIController {
             String userPrompt = buildQuizPrompt(course, module, lesson);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
 
             body.put("messages", List.of(
@@ -861,7 +862,7 @@ public class AIController {
         try {
             String prompt = buildPrompt(req);
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
             body.put("response_format", Map.of("type", "json_object"));
 
@@ -1064,7 +1065,7 @@ public class AIController {
                             .collect(Collectors.joining("\n\n"));
 
             Map<String, Object> bodyReq = Map.of(
-                    "model", "llama3-70b-8192",
+                    "model", modelName,
                     "temperature", 0.3,
                     "messages", List.of(
                             Map.of("role", "system", "content", systemPrompt),

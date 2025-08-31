@@ -15,7 +15,7 @@ public class GroqService {
 
     private String groqApiKey = System.getenv("GROQ_API_KEY");
 
-    @Value("${ai.groq.model:llama3-70b-8192}")
+    @Value("${ai.groq.model:llama-3.3-70b-versatile}")
     private String groqModel;
 
     private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";

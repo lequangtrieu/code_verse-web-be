@@ -1,18 +1,13 @@
 package codeverse.com.web_be.controller;
 
 import codeverse.com.web_be.dto.request.AISummaryRequest.AISummaryRequest;
-import codeverse.com.web_be.dto.request.AISummaryRequest.AISummaryResponse;
 import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AICourseModuleGenerateRequest;
 import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AITestCaseGenerateRequest;
 import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AITheoryGenerateRequest;
 import codeverse.com.web_be.dto.request.AiCourseSuggestRequest.AiCourseSuggestRequest;
-import codeverse.com.web_be.dto.request.CourseModuleRequest.CourseModuleCreateRequest;
-import codeverse.com.web_be.dto.request.QuizRequest.QuizQuestionCreateRequest;
-import codeverse.com.web_be.dto.response.CourseModuleResponse.AICourseModuleResponse;
 import codeverse.com.web_be.dto.response.CourseModuleResponse.CourseModuleResponse;
 import codeverse.com.web_be.dto.response.LessonResponse.LessonResponse;
 import codeverse.com.web_be.dto.response.SystemResponse.ApiResponse;
-import codeverse.com.web_be.dto.response.TestCaseResponse.AITestCaseResponse;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.CourseModule;
 import codeverse.com.web_be.entity.Lesson;
@@ -24,7 +19,6 @@ import codeverse.com.web_be.service.CourseModuleService.ICourseModuleService;
 import codeverse.com.web_be.service.CourseService.ICourseService;
 import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import codeverse.com.web_be.service.LessonService.ILessonService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -36,14 +30,18 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ai")
 @RequiredArgsConstructor
 public class AIController {
-    private final String GROQ_API_KEY = System.getenv("GROQ_API_KEY");
+    private final String GROQ_API_KEY1 = System.getenv("GROQ_API_KEY1");
+    private final String GROQ_API_KEY2 = System.getenv("GROQ_API_KEY2");
+    private final String modelName = "llama-3.3-70b-versatile";
     private final DeepgramService deepgramService;
     private final GroqService groqService;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -60,7 +58,7 @@ public class AIController {
         RestTemplate restTemplate = new RestTemplate();
 
         Map<String, Object> groqRequest = Map.of(
-                "model", "llama3-70b-8192",
+                "model", modelName,
                 "messages", List.of(
                         Map.of("role", "system", "content", """
                                     "You are an AI code reviewer integrated into a browser-based coding platform called CodeVerse. All code is executed via a stateless JDoodle compiler. You must strictly follow the platform’s automatic judging system:
@@ -85,7 +83,7 @@ public class AIController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(GROQ_API_KEY);
+        headers.setBearerAuth(GROQ_API_KEY1);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(groqRequest, headers);
 
@@ -318,7 +316,7 @@ public class AIController {
                     """.formatted(req.getModules(), req.getLessons());
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
             body.put("response_format", Map.of("type", "json_object"));
             body.put("messages", List.of(
@@ -329,7 +327,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY);
+            headers.setBearerAuth(GROQ_API_KEY1);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
@@ -475,7 +473,7 @@ public class AIController {
             String userPrompt = buildTheoryPrompt(course, module, lesson, req);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
 
             body.put("messages", List.of(
@@ -485,7 +483,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY);
+            headers.setBearerAuth(GROQ_API_KEY1);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(
@@ -622,7 +620,7 @@ public class AIController {
             String userPrompt = buildTestCasePrompt(course, module, lesson, req);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
 
             body.put("messages", List.of(
@@ -632,7 +630,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY);
+            headers.setBearerAuth(GROQ_API_KEY2);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(
@@ -741,38 +739,38 @@ public class AIController {
             CourseModule module = lesson.getCourseModule();
 
             String systemPrompt = """
-        You are an assistant that generates multiple-choice quizzes.
-
-        REQUIREMENTS:
-        - Return ONLY a JSON array. No explanations, no markdown, no backticks.
-        - Must generate EXACTLY 40 quiz objects with different questions.
-        - Schema:
-          {
-            "question": "string",
-            "quizType": "SINGLE" | "MULTIPLE",
-            "answers": [
-              { "answer": "string", "isCorrect": true|false }
-            ]
-          }
-        - Rules:
-          * SINGLE → exactly 1 correct answer.
-          * MULTIPLE → at least 2 correct answers.
-          * Each question must have 3–4 answer options.
-          * All questions/answers must align with provided course/module/theory.
-          * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
-          * Do NOT create duplicates or near-duplicates.
-          * Ensure clarity, correctness, and variety across the 40 questions.
-
-          FORMATTING RULES:
-          - All JSON must be strictly valid and parseable by Jackson.
-          - Any double quotes inside string values (like code snippets or text) must be escaped as \\".
-          - Do not use backticks (`) for code blocks. If code is shown, wrap it directly as a string with escaped quotes.
-        """;
+                    You are an assistant that generates multiple-choice quizzes.
+                    
+                    REQUIREMENTS:
+                    - Return ONLY a JSON array. No explanations, no markdown, no backticks.
+                    - Must generate EXACTLY 40 quiz objects with different questions.
+                    - Schema:
+                      {
+                        "question": "string",
+                        "quizType": "SINGLE" | "MULTIPLE",
+                        "answers": [
+                          { "answer": "string", "isCorrect": true|false }
+                        ]
+                      }
+                    - Rules:
+                      * SINGLE → exactly 1 correct answer.
+                      * MULTIPLE → at least 2 correct answers.
+                      * Each question must have 3–4 answer options.
+                      * All questions/answers must align with provided course/module/theory.
+                      * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
+                      * Do NOT create duplicates or near-duplicates.
+                      * Ensure clarity, correctness, and variety across the 40 questions.
+                    
+                      FORMATTING RULES:
+                      - All JSON must be strictly valid and parseable by Jackson.
+                      - Any double quotes inside string values (like code snippets or text) must be escaped as \\".
+                      - Do not use backticks (`) for code blocks. If code is shown, wrap it directly as a string with escaped quotes.
+                    """;
 
             String userPrompt = buildQuizPrompt(course, module, lesson);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
 
             body.put("messages", List.of(
@@ -782,7 +780,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY);
+            headers.setBearerAuth(GROQ_API_KEY2);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(
@@ -861,7 +859,7 @@ public class AIController {
         try {
             String prompt = buildPrompt(req);
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "llama3-70b-8192");
+            body.put("model", modelName);
             body.put("temperature", 0.3);
             body.put("response_format", Map.of("type", "json_object"));
 
@@ -873,7 +871,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY);
+            headers.setBearerAuth(GROQ_API_KEY2);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
@@ -1064,7 +1062,7 @@ public class AIController {
                             .collect(Collectors.joining("\n\n"));
 
             Map<String, Object> bodyReq = Map.of(
-                    "model", "llama3-70b-8192",
+                    "model", modelName,
                     "temperature", 0.3,
                     "messages", List.of(
                             Map.of("role", "system", "content", systemPrompt),
@@ -1074,7 +1072,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY);
+            headers.setBearerAuth(GROQ_API_KEY2);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(bodyReq, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(

@@ -13,7 +13,11 @@ public class GroqKeyManager {
     private final List<String> apiKeys;
     private final AtomicInteger index = new AtomicInteger(0);
 
-    public GroqKeyManager(@Value("${GROQ_API_KEYS}") String keys) {
+    public GroqKeyManager() {
+        String keys = System.getenv("GROQ_API_KEYS");
+        if (keys == null || keys.isBlank()) {
+            throw new IllegalStateException("Missing GROQ_API_KEYS env variable");
+        }
         this.apiKeys = Arrays.asList(keys.split(","));
     }
 

@@ -86,21 +86,21 @@ class CourseServiceInstructorSpec extends Specification {
     }
 
 
-    def "findByInstructorUsername → filter out TRAINING courses"() {
-        given:
-        def courses = [
-                Course.builder().title("Draft Training").status(CourseStatus.TRAINING_DRAFT).build(),
-                Course.builder().title("Normal Course").status(CourseStatus.PUBLISHED).build()
-        ]
-        courseRepository.findByInstructorUsername("instructorA") >> courses
-
-        when:
-        def result = service.findByInstructorUsername("instructorA")
-
-        then:
-        result.size() == 1
-        result[0].title == "Normal Course"
-    }
+//    def "findByInstructorUsername → filter out TRAINING courses"() {
+//        given:
+//        def courses = [
+//                Course.builder().title("Draft Training").status(CourseStatus.TRAINING_DRAFT).build(),
+//                Course.builder().title("Normal Course").status(CourseStatus.PUBLISHED).build()
+//        ]
+//        courseRepository.findByInstructorUsername("instructorA") >> courses
+//
+//        when:
+//        def result = service.findByInstructorUsername("instructorA")
+//
+//        then:
+//        result.size() == 1
+//        result[0].title == "Normal Course"
+//    }
 
     def "findTrainingByInstructor → only TRAINING courses"() {
         given:

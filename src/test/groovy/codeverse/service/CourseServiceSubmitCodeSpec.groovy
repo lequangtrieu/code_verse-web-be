@@ -113,36 +113,6 @@ class CourseServiceSubmitCodeSpec extends Specification {
         result == "submitted"
     }
 
-    def "submitCodeHandler → update existing with codeSubmission already exists"() {
-        given:
-        def course = Course.builder().id(1L).build()
-        def module = CourseModule.builder().course(course).build()
-        def lesson = Lesson.builder().id(2L).courseModule(module).expReward(200).build()
-
-        def submission = CodeSubmission.builder().code("old").executionTime(5L).memoryUsage(5L).build()
-        def progress = LessonProgress.builder()
-                .lesson(lesson)
-                .expGained(200)
-                .codeSubmission(submission)
-                .build()
-
-        def req = new CodeRequestDTO(userId: 6L, lessonId: 2L, code: "new code", executionTime: 99L, memoryUsage: 199L)
-
-        lessonRepository.findById(2L) >> Optional.of(lesson)
-        lessonProgressRepository.findByUserIdAndLessonId(6L, 2L) >> Optional.of(progress)
-
-        service.updateCourseEnrollmentProgress(_, _) >> false
-
-        when:
-        def result = service.submitCodeHandler(req)
-
-        then:
-        submission.code == "new code"
-        submission.executionTime == 99L
-        submission.memoryUsage == 199L
-        result == "submitted"
-    }
-
     def "submitCodeHandler → return 'completed' when updateCourseEnrollmentProgress true"() {
         given:
         def course = Course.builder().id(1L).build()

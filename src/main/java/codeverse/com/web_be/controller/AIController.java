@@ -760,6 +760,9 @@ public class AIController {
                       * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
                       * Do NOT create duplicates or near-duplicates.
                       * Ensure clarity, correctness, and variety across the 40 questions.
+                      * Generate EXACTLY 40 quiz objects.
+                      * If that is not possible, generate BETWEEN 38 and 45 quiz objects.
+                      * Never generate fewer than 38 or more than 45.
                     
                       FORMATTING RULES:
                       - All JSON must be strictly valid and parseable by Jackson.

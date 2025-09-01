@@ -83,7 +83,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     @Override
     public List<WithdrawalRequestDTO> getMyRequests(Long instructorId) {
         User instructor = new User(instructorId);
-        return withdrawalRepo.findByInstructor(instructor).stream()
+        return withdrawalRepo.findByInstructorOrderByCreatedAtDesc(instructor).stream()
                 .map(this::toDTO)
                 .collect(toList());
     }

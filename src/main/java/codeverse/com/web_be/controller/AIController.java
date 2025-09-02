@@ -743,7 +743,7 @@ public class AIController {
                     
                     REQUIREMENTS:
                     - Return ONLY a JSON array. No explanations, no markdown, no backticks.
-                    - Must generate EXACTLY 40 quiz objects with different questions.
+                    - Must generate EXACTLY 30 quiz objects with different questions.
                     - Schema:
                       {
                         "question": "string",
@@ -759,10 +759,10 @@ public class AIController {
                       * All questions/answers must align with provided course/module/theory.
                       * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
                       * Do NOT create duplicates or near-duplicates.
-                      * Ensure clarity, correctness, and variety across the 40 questions.
-                      * Generate EXACTLY 40 quiz objects.
-                      * If that is not possible, generate BETWEEN 38 and 45 quiz objects.
-                      * Never generate fewer than 38 or more than 45.
+                      * Ensure clarity, correctness, and variety across the 30 questions.
+                      * Generate EXACTLY 30 quiz objects.
+                      * If that is not possible, generate BETWEEN 15 and 30 quiz objects.
+                      * Never generate fewer than 15 or more than 30.
                     
                       FORMATTING RULES:
                       - All JSON must be strictly valid and parseable by Jackson.

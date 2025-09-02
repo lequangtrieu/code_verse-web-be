@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 public class AIController {
     private final String GROQ_API_KEY1 = System.getenv("GROQ_API_KEY1");
     private final String GROQ_API_KEY2 = System.getenv("GROQ_API_KEY2");
+    private final String GROQ_API_KEY3 = System.getenv("GROQ_API_KEY3");
     private final String modelName = "llama-3.3-70b-versatile";
     private final DeepgramService deepgramService;
     private final GroqService groqService;
@@ -483,7 +484,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY1);
+            headers.setBearerAuth(GROQ_API_KEY2);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(
@@ -783,7 +784,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY2);
+            headers.setBearerAuth(GROQ_API_KEY3);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(
@@ -1075,7 +1076,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY2);
+            headers.setBearerAuth(GROQ_API_KEY3);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(bodyReq, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(

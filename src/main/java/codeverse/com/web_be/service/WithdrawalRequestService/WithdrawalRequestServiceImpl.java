@@ -68,11 +68,6 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
 
         try {
             emailSender.sendWithdrawalVerificationEmail(instructor.getUsername(), verifyToken, request.getAmount(), instructorId);
-            List<User> admins = userRepo.findAll().stream()
-                    .filter(u -> u.getRole().equals(UserRole.ADMIN))
-                    .toList();
-            notificationService.notifyUsers(admins, instructor, "New Withdrawal Request",
-                    "<p>" + instructor.getName() + " has sent a  withdrawal request.<p/>");
         } catch (MessagingException e) {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
@@ -83,7 +78,7 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
     @Override
     public List<WithdrawalRequestDTO> getMyRequests(Long instructorId) {
         User instructor = new User(instructorId);
-        return withdrawalRepo.findByInstructor(instructor).stream()
+        return withdrawalRepo.findByInstructorOrderByCreatedAtDesc(instructor).stream()
                 .map(this::toDTO)
                 .collect(toList());
     }
@@ -101,6 +96,14 @@ public class WithdrawalRequestServiceImpl implements WithdrawalRequestService {
         request.setStatus(WithdrawalStatus.PENDING);
         request.setVerifyToken(null);
         withdrawalRepo.save(request);
+
+        List<User> admins = userRepo.findAll().stream()
+                .filter(u -> u.getRole().equals(UserRole.ADMIN))
+                .toList();
+        notificationService.notifyUsers(admins, request.getInstructor(), "New Withdrawal Request",
+                "<p>" + request.getInstructor().getName() + " has sent a  withdrawal request. " +
+                        "<a href=\"https://code-verse-web-fe.vercel.app/admin-panel/withdrawalRequests" +
+                        "\">View Request >></a><p/>");
     }
 
     @Override

@@ -470,7 +470,7 @@ public class CourseServiceImpl extends GenericServiceImpl<Course, Long> implemen
                         lesson.setQuestions(Collections.emptyList());
                     } else {
                         Collections.shuffle(questionDTO);
-                        int limit = Math.min(15, questionDTO.size());
+                        int limit = Math.min(10, questionDTO.size());
                         List<QuestionDTO> picked = new ArrayList<>(questionDTO.subList(0, limit));
 
                         for (QuestionDTO q : picked) {

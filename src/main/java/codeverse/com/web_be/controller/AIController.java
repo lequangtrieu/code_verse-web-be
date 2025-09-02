@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @RestController
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 public class AIController {
     private final String GROQ_API_KEY1 = System.getenv("GROQ_API_KEY1");
     private final String GROQ_API_KEY2 = System.getenv("GROQ_API_KEY2");
+    private final String GROQ_API_KEY3 = System.getenv("GROQ_API_KEY3");
+    private final String GROQ_API_KEY4 = System.getenv("GROQ_API_KEY4");
     private final String modelName = "llama-3.3-70b-versatile";
     private final DeepgramService deepgramService;
     private final GroqService groqService;
@@ -50,6 +53,7 @@ public class AIController {
     private final ILessonService lessonService;
     private final TestCaseRepository testCaseRepository;
     private final FunctionHelper functionHelper;
+    private final Random random = new Random();
 
     @PostMapping("/feedback")
     public ResponseEntity<?> getAIFeedback(@RequestBody Map<String, Object> body) {
@@ -483,7 +487,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY1);
+            headers.setBearerAuth(GROQ_API_KEY2);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(
@@ -743,7 +747,7 @@ public class AIController {
                     
                     REQUIREMENTS:
                     - Return ONLY a JSON array. No explanations, no markdown, no backticks.
-                    - Must generate EXACTLY 40 quiz objects with different questions.
+                    - Must generate EXACTLY 30 quiz objects with different questions.
                     - Schema:
                       {
                         "question": "string",
@@ -759,7 +763,10 @@ public class AIController {
                       * All questions/answers must align with provided course/module/theory.
                       * Vary question style: mix definitions, purposes, syntax, code-output prediction, error detection, conceptual comparisons, and practical applications.
                       * Do NOT create duplicates or near-duplicates.
-                      * Ensure clarity, correctness, and variety across the 40 questions.
+                      * Ensure clarity, correctness, and variety across the 30 questions.
+                      * Generate EXACTLY 30 quiz objects.
+                      * If that is not possible, generate BETWEEN 15 and 30 quiz objects.
+                      * Never generate fewer than 15 or more than 30.
                     
                       FORMATTING RULES:
                       - All JSON must be strictly valid and parseable by Jackson.
@@ -780,7 +787,10 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY2);
+            headers.setBearerAuth(List.of(
+                    GROQ_API_KEY3,
+                    GROQ_API_KEY4
+            ).get(random.nextInt(2)));
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(
@@ -1072,7 +1082,7 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY2);
+            headers.setBearerAuth(GROQ_API_KEY3);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(bodyReq, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(

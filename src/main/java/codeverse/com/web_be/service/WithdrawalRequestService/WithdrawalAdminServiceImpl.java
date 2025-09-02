@@ -15,8 +15,10 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 import static java.util.stream.Collectors.toList;
 
@@ -74,10 +76,12 @@ public class WithdrawalAdminServiceImpl implements WithdrawalAdminService {
             List<User> admins = userRepository.findAll().stream()
                     .filter(u -> u.getRole().equals(UserRole.ADMIN))
                     .toList();
+            NumberFormat currencyFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
+
             notificationService.notifyUsers(List.of(request.getInstructor()), admins.get(0),
                     "Withdrawal Request Approved",
                     "<p><b>Dear " + request.getInstructor().getName() + ",</b></p>" +
-                            "<p>Your withdrawal request for <strong>" + request.getAmount() + " VND</strong> has been approved by the admin.</p>" +
+                            "<p>Your withdrawal request for <strong>" + currencyFormat.format(request.getAmount()) + " VND</strong> has been approved by the admin.</p>" +
                             "<p>To complete the process, please check your email and confirm the withdrawal by clicking the confirmation link.</p>" +
                             "<p>Sincerely,<br/>The Admin Team</p>");
         } catch (MessagingException e) {
@@ -105,12 +109,13 @@ public class WithdrawalAdminServiceImpl implements WithdrawalAdminService {
         String reasonHtml = (note != null && !note.isBlank())
                 ? "<p><b>Reason:</b> " + note + "</p>"
                 : "";
+        NumberFormat currencyFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
         notificationService.notifyUsers(
                 List.of(request.getInstructor()),
                 admins.get(0),
                 "Withdrawal Request Rejected",
                 "<p><b>Dear " + request.getInstructor().getName() + ",</b></p>" +
-                        "<p>We regret to inform you that your withdrawal request for <strong>" + request.getAmount() + " VND</strong> has been rejected by the admin.</p>" +
+                        "<p>We regret to inform you that your withdrawal request for <strong>" + currencyFormat.format(request.getAmount()) + " VND</strong> has been rejected by the admin.</p>" +
                         reasonHtml +
                         "<p>If you have any questions or believe this was a mistake, feel free to <a href=\"mailto:dolvapple@gmail.com\">contact us via email</a>.</p>" +
                         "<p>Thank you for your understanding.</p>" +

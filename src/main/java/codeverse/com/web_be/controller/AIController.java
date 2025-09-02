@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,6 +43,7 @@ public class AIController {
     private final String GROQ_API_KEY1 = System.getenv("GROQ_API_KEY1");
     private final String GROQ_API_KEY2 = System.getenv("GROQ_API_KEY2");
     private final String GROQ_API_KEY3 = System.getenv("GROQ_API_KEY3");
+    private final String GROQ_API_KEY4 = System.getenv("GROQ_API_KEY4");
     private final String modelName = "llama-3.3-70b-versatile";
     private final DeepgramService deepgramService;
     private final GroqService groqService;
@@ -51,6 +53,7 @@ public class AIController {
     private final ILessonService lessonService;
     private final TestCaseRepository testCaseRepository;
     private final FunctionHelper functionHelper;
+    private final Random random = new Random();
 
     @PostMapping("/feedback")
     public ResponseEntity<?> getAIFeedback(@RequestBody Map<String, Object> body) {
@@ -784,7 +787,10 @@ public class AIController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(GROQ_API_KEY3);
+            headers.setBearerAuth(List.of(
+                    GROQ_API_KEY3,
+                    GROQ_API_KEY4
+            ).get(random.nextInt(2)));
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             ResponseEntity<String> groqResp = restTemplate.postForEntity(

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface WithdrawalRequestRepository extends JpaRepository<WithdrawalRequest, Long> {
 
-    List<WithdrawalRequest> findByInstructor(User instructor);
+    List<WithdrawalRequest> findByInstructorOrderByCreatedAtDesc(User instructor);
 
     boolean existsByInstructorAndStatusIn(User instructor, List<WithdrawalStatus> statuses);
 
@@ -25,7 +25,8 @@ public interface WithdrawalRequestRepository extends JpaRepository<WithdrawalReq
             "AND (:status IS NULL OR wr.status = :status) " +
             "AND (:name IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "AND (:startDate IS NULL OR wr.createdAt >= :startDate) " +
-            "AND (:endDate IS NULL OR wr.createdAt <= :endDate)")
+            "AND (:endDate IS NULL OR wr.createdAt <= :endDate)" +
+            "ORDER BY wr.createdAt DESC")
     List<WithdrawalRequest> filterAll(
             @Param("status") WithdrawalStatus status,
             @Param("name") String name,

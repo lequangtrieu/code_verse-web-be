@@ -3,6 +3,8 @@ package codeverse.com.web_be.service.EmailService;
 import codeverse.com.web_be.entity.Course;
 import codeverse.com.web_be.entity.User;
 import codeverse.com.web_be.entity.WithdrawalRequest;
+import codeverse.com.web_be.enums.UserRole;
+import codeverse.com.web_be.service.FunctionHelper.FunctionHelper;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class EmailServiceSender {
     private final JavaMailSender emailSender;
+    private final FunctionHelper functionHelper;
 
     @Async
     public void sendResetPasswordEmail(String toEmail, String newPassword) throws MessagingException {
@@ -49,7 +52,8 @@ public class EmailServiceSender {
     @Async
     public void sendVerificationEmail(String email, String token) throws MessagingException {
         String subject = "Verify Your Email - Welcome to Our Service";
-        String verificationLink = "https://codeverse-backend-431045531117.asia-southeast1.run.app/codeVerse/auth/verify-email/" + token;
+        User user = functionHelper.getActiveUserByUsername(email);
+        String verificationLink = "https://codeverse-backend-431045531117.asia-southeast1.run.app/codeVerse/auth/verify-email/" + token + (user.getRole().equals(UserRole.INSTRUCTOR) ? "/instructor/" + user.getId() : "");
 
         String htmlContent = """
                     <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px;">

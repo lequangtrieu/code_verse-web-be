@@ -247,6 +247,67 @@ public class CartServiceImpl implements ICartService {
         }
     }
 
+    public CheckoutResponse payNowWithPayOS(String username, Long courseId) {
+        if (courseId == null) {
+            throw new AppException(ErrorCode.ILLEGAL_ARGS);
+        }
+
+        User user = functionHelper.getActiveUserByUsername(username);
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTED_ENTITY));
+
+        // Check if free course
+        BigDecimal discountedPrice = course.getPrice().multiply(
+                BigDecimal.ONE.subtract(course.getDiscount().divide(BigDecimal.valueOf(100)))
+        );
+
+        if (discountedPrice.compareTo(BigDecimal.ZERO) == 0) {
+            throw new AppException(ErrorCode.FREE_COURSE_IN_CART);
+        }
+
+        // Create new order
+        Order order = Order.builder()
+                .user(user)
+                .totalAmount(discountedPrice)
+                .status(OrderStatus.PENDING)
+                .orderDate(LocalDateTime.now())
+                .build();
+        orderRepository.save(order);
+
+        // Create order item
+        OrderItem orderItem = OrderItem.builder()
+                .order(order)
+                .course(course)
+                .priceAtPurchase(discountedPrice)
+                .build();
+        orderItemRepository.save(orderItem);
+
+        // Generate payment link
+        long orderCode = System.currentTimeMillis();
+
+        try {
+            PaymentData paymentRequest = PaymentData.builder()
+                    .amount(discountedPrice.intValue())
+                    .orderCode(orderCode)
+                    .description("CodeVerse Course Payment")
+                    .returnUrl("https://code-verse-web-fe.vercel.app/payment-success?orderCode="
+                            + orderCode + "&orderId=" + order.getId())
+                    .cancelUrl("https://code-verse-web-fe.vercel.app/payment-failed?orderCode="
+                            + orderCode + "&orderId=" + order.getId())
+                    .build();
+
+            CheckoutResponseData paymentLink = payOS.createPaymentLink(paymentRequest);
+
+            return CheckoutResponse.builder()
+                    .checkoutUrl(paymentLink.getCheckoutUrl())
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+
     @Transactional
     public void updateOrderStatusToPaid(Long orderId, String username) {
         User user = functionHelper.getActiveUserByUsername(username);

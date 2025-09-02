@@ -81,7 +81,13 @@ public class CartController {
 
     @PostMapping("/checkout")
     public ResponseEntity<ApiResponse<CheckoutResponse>> checkout(@RequestBody AddToCartRequest request) {
-        CheckoutResponse response = cartService.checkoutWithPayOS(request.getUsername(), request.getSelectedCartItemId());
+        CheckoutResponse response;
+        if (request.getCourseId() == null) {
+            response = cartService.checkoutWithPayOS(request.getUsername(), request.getSelectedCartItemId());
+        } else {
+            response = cartService.payNowWithPayOS(request.getUsername(), request.getCourseId());
+        }
+
         return ResponseEntity.ok(
                 ApiResponse.<CheckoutResponse>builder()
                         .result(response)
@@ -107,5 +113,4 @@ public class CartController {
                 .result("Success")
                 .build());
     }
-
 }
